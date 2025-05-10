@@ -1,5 +1,7 @@
 ---
-layout: default
+title: About QuickUp
+layout: post
+permalink: /about/
 ---
 
 # QuickUp
