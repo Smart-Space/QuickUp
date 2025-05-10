@@ -1,6 +1,7 @@
 ---
 layout: post
 title: First Post
+published: True
 ---
 # QuickUp first post on website
 
