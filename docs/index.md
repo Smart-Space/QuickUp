@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # QuickUp
 QuickUp is a simple and lightweight tool that helps you start working, studying or entertaining by launching groups of applications or commands quickly on your computer for Windows. It is designed to be easy to use and fast.
 
