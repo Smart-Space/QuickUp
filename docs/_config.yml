@@ -18,6 +18,7 @@ analytics: UA-83979019-4
 # Comments
 disqus-shortname: webjeda-demo
 
+encoding: UTF-8
 
 #optimization
 #compress.html
