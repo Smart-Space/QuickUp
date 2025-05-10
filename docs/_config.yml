@@ -32,6 +32,8 @@ compress_html:
   profile: false
   startings: []
 
+logging:
+  level: info
 
 sass:
   sass_dir: /assets/css/_sass
