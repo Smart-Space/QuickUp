@@ -1,0 +1,27 @@
+title: "QuickUp - Windows应用组启动器"
+description: "A fast and easy-to-use kit to start applications for Windows."
+url: "https://quickup.smart-space.com.cn/"
+
+author:
+  name: "Smart-Space"
+  email: "smart-space@qq.com"
+
+encoding            : "utf-8"
+markdown_ext        : "markdown,mkdown,mkdn,mkd,md"
+
+markdown            : kramdown
+highlighter         : rouge
+lsi                 : false
+excerpt_separator   : "\n\n"
+incremental         : false
+
+# Markdown 处理器 Markdown Processors
+kramdown:
+  auto_ids          : true
+  entity_output     : as_char
+  toc_levels        : [1, 2, 3, 4, 5, 6]
+  smart_quotes      : lsquo,rsquo,ldquo,rdquo
+  input             : GFM
+  hard_wrap         : false
+  footnote_nr       : 1
+  show_warnings     : false
