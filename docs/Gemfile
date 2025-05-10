@@ -1,0 +1,3 @@
+source 'httpsrubygems.org'
+
+gem 'jekyll'
