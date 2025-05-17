@@ -1,6 +1,6 @@
 ---
 layout: post
-title the Priority of Task
+title: the Priority of Task
 published: True
 ---
 # About the Priority of Task
