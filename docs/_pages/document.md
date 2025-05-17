@@ -48,6 +48,8 @@ The top bar of editor window:
 
   - path-button: click to set the working path of this task. **Noted that** if a sub-task has NULL working path, it will inherit its sup-task working path. If there is no working path at all, the default working path will be the place of folder of QuickUp.
 
+  - star-button: click to add this task to (or delete it from) `priority.txt` of this workspace. For more information, please see [the priority of task](https://quickup.smart-space.com.cn/priority-of-task/).
+
   - open-button: click to show where the task `.json` file is.
 
   - shortcut-button: click to create a shortcut on desktop of this task.
@@ -169,3 +171,15 @@ User can refresh the view list or to open a task or a workspace folder.
 QuickUp can be closed to system tray. It can only be stopped by pressing the quit-button of the menu (mouse-right-click to show the menu) or shutdown the computer.
 
 QuickUp (root workspace) can be raised by using the hot-key. Be sure there is not another application using the same hot-key.
+
+---
+
+# Command Line
+
+`quickup [-w|--workspace] [-t|--task] [-s|--silent]`
+
+`-w,--workspace`: open specific workspace. When there is no `-t`, this command just opens a workspace of QuickUp window.
+
+`-t,--task`: run specific task.
+
+`-s,--silent`: close to system stray if it can when QuickUp start.
