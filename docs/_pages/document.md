@@ -164,6 +164,10 @@ In this page, user can view the structure of his or her workspaces and tasks.
 
 User can refresh the view list or to open a task or a workspace folder.
 
+## Shortcut
+
+In this page, user can see all shortcut keys that QuickUp supports.
+
 ---
 
 # System Tray
