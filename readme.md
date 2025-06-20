@@ -1,3 +1,4 @@
 # QuickUp
 
-[介绍](https://smart-space.com.cn/project/quickup)
+[介绍](https://quickup.smart-space.com.cn/)
+
