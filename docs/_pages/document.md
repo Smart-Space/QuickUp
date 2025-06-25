@@ -1,189 +1,188 @@
 ---
-title: QuickUp Document
+title: QuickUp 说明文档
 layout: post
 permalink: /document/
 ---
 
-# Main Window
-
+# 主窗口
 ![](/assets/images/mainwindow.png)
 
-The top bar of main window:
+主窗口顶部工具栏：
 
-- task-search-entry: type task name in to search for tasks. **It uses *rapidfuzz* to match names of tasks.**
-- add-button: click it to show a new-task editor window. Then you can create a new task throw this it.
-- setting-button: click it to show setting window of QuickUp.
-- about-button: click it to show some information about QuickUp.
+- 任务搜索框：输入任务的名字来搜索相似任务。该部分的模糊搜索算法为最长公共子序列算法（LCS），由`./cppextend/quickfuzz.h`实现。
+- 添加按钮：添加一个新的任务并用编辑窗口打开。
+- 设置按钮：打开设置窗口。
+- 关于按钮：打开关于窗口。
 
-The tasks-list-view of main window:
+任务列表：
 
-- task item:
-  - name of each task
-  - run-button: click to start this task.
-  - edit-button: click to open an editor window of this task.
-  - delete-button: click to delete this task. **Noted that** any action of deleting a task is not recoverable. So be careful when you decide to remove a task when QuickUp asks you if you want to continue to do it.
+- 任务栏：
+  - 任务名称。
+  - 运行按钮：点击运行任务。
+  - 编辑按钮：在编辑窗口编辑任务。
+  - 删除按钮：删除任务。**注意**，删除行为是不可恢复的，所以QuickUp会进行二次询问。
 
-> In **sub-workspace main window**, there are not setting-button or about-button. Instead, info-button and shortcut-button will take their places.
+> 在子工作区的主窗口中，没有设置和关于按钮，信息按钮和快捷方式按钮会取代它们。
 >
-> - info-button: click to show the whole name of this sub-workspace.
-> - shortcut-button: click to create a shortcut on desktop of this sub-workspace.
+> - 信息按钮：显示工作区的完整名称。
+> - 快捷键按钮：将工作区以快捷键的形式添加到桌面。
 
 ---
 
-# Editor Window
+# 编辑窗口
 
-![](/assets/images/editwindow.png)
+![](/assets/images/editor.png)
 
-The top bar of editor window:
+编辑窗口顶部工具栏：
 
-- task-name-entry: literal meaning of its name.
+- 任务名输入框。
 
-- button-part
+- 按钮部分：
 
-  - save-button: click to save current edition of this task.
+  - 保存按钮。
 
-    > A new task will be added to the task-list-view after saving and closing this window.
+    > 一个新的任务只有保存成功后才会显示在任务列表中。
 
-  - run-button: click to start this task.
+  - 运行按钮：运行前会尝试保存任务，只有任务不处于修改状态，才能运行。
 
-  - path-button: click to set the working path of this task. **Noted that** if a sub-task has NULL working path, it will inherit its sup-task working path. If there is no working path at all, the default working path will be the place of folder of QuickUp.
+  - 工作目录按钮：设置任务的工作目录。**注意**，如果子任务没有工作目录，会继承这一选项。默认工作目录是QuickUp的安装目录。
 
-  - star-button: click to add this task to (or delete it from) `priority.txt` of this workspace. For more information, please see [the priority of task](https://quickup.smart-space.com.cn/priority-of-task/).
+  - 标星按钮：将该任务放入置顶组或从中删除。
 
-  - open-button: click to show where the task `.json` file is.
+  - 文本位置按钮：打开该任务对应的`.json`文件在哪。
 
-  - shortcut-button: click to create a shortcut on desktop of this task.
+  - 快捷键按钮：将任务以快捷键的形式添加到桌面。
 
-- item-part
+- 任务元素：
 
-  - command
+  - 命令
 
-    - target: where the application is.
-    - arguments: other contents to use in the command line to start this application.
-    - threading-mode: as default, to start this application with a sub-thread. Turn on to wait until this application finishes.
-    - administrator-mode: turn on to start this application with administrator rights.
-    - delete-button: click to delete this item.
+    - 目标：应用在哪里。
+    - 参数：启动应用的参数。
+    - 扩展按钮：
+      - 并行按钮：该任务是并行还是单线运行。如果是单线运行，则该任务会等待该应用结束后才继续运行。
+      - 管理员模式：是否使用管理员身份运行应用。
+      - 最大/最小化。
 
-  - command lines
+  - 命令集
 
-    - text-box: the contents of command lines.
-    - threading-mode: as default, to start this application with a sub-thread. Turn on to wait until this application finishes.
-    - radio-box: choose cmd or powershell to run these command lines.
-    - delete-button: click to delete this item.
+    - 文本框：需要执行的命令。
+    - 并行按钮：该任务是并行还是单线运行。如果是单线运行，则该任务会等待该应用结束后才继续运行。
+    - 选择框：用`cmd`或`powershell`运行命令。
 
-  - sub-task
+  - 子任务
 
-    - sub-task-name-entry: type a name of one sub-task.
-    - delete-button: click to delete this item.
+    - 编辑按钮：在编辑窗口打开子任务，这时无法修改任务名。
+    - 子任务名输入框：输入一个已经存在的子任务名。
 
-  - sub-workspace
+  - 子工作区
 
-    - sub-workspace-name-entry: type a name of one sub-workspace.
+    - 打开按钮：打开该工作区。
 
-      > Unlike other items, when user click this button, QuickUp will ask user to input the name of a sub-workspace. If the name does not exist, QuickUp will ask user whether to create this sub-workspace.
+    - 工作区名输入框：输入一个已经存在的工作区名称。
 
-    - delete-button: click to delete this item.
+      > 不同于子任务，当第一次创建该条目时，QuickUp会要求输入工作区名称，并判断其是否存在，如果不存在，则会询问是否创建这个工作区。
 
-> Any action of edit will change the status of editor window into "unsaved". In this status, the window can't be closed until user chooses whether to save it or not.
+  - 备注
+
+    - 文本框：备注文本。
+    - 并行按钮：该任务是并行还是单线运行。如果是单线运行，则该任务会等待该应用结束后才继续运行。
+    - 显示按钮：是否以窗口形式显示该备注。
+    - 置顶按钮：是否置顶备注信息窗口。
+
+> 任何修改任务条目的操作均会将编辑窗口的状态改为“未保存”，在这个状态下，窗口无法关闭，直到保存成功。
 >
-> The following cases will make the saving failed:
+> 以下情形会导致保存失败：
 >
-> 1. The name of task is empty.
-> 2. The name of task does not comply with Windows system file naming conventions.
-> 3. The name of task has been used.
+> 1. 任务名空。
+> 2. 任务名无法被Windows文件系统接受。
+> 3. 任务名已被使用。
+> 4. QuickUp文件操作失败。
 
 ---
 
-# Setting Window
+# 设置窗口
 
-**The setting will influence all workspaces. And, it can just be modified under root workspace of QuickUp.**
+**设置将影响所有工作区，并且只能在主工作区更改。**
 
-To make QuickUp work as you think, please restart all workspaces when you change the configuration.
+每次设置完毕后，请重启QuickUp以完全应用设置。
 
-## General
+## 常规
 
 ![](/assets/images/setting-general.png)
 
-### Theme
+### 样式
 
-In QuickUp, you can set the appearance of it within light-mode or dark-mode. The last change will work after restarting QuickUp.
+设置明亮或黑暗样式。
 
-### Searching threshold
+### 搜索阈值
 
-Set the threshold for fuzzy search. **Noted that** user should press the Enter key if making the change directly in the input box.
+设置模糊搜索的阈值。**注意**，如果手动输入更改，记得按回车键确认。
 
-### Making QuickUp topmost
+### 置顶
 
-It is a function like its name.
+置顶QuickUp主窗口。
 
-### Closing QuickUp to system tray
+### 关闭到系统托盘。
 
-It is a function like its name.
+关闭QuickUp到系统托盘
 
-### Updating
+### 更新
 
-User can check the version of QuickUp by clicking the button, or make QuickUp check new version by itself.
+检测QuickUp是否有新版本。QuickUp的版本更新设计为全依赖使用者决定是否更新，包括处置新版安装包。
 
-When user turns on QuickUp auto-checking, the new installer will be downloaded automatically. But user can install QuickUp of new version by self whether they turn on auto-checking or not.
-
-## Advanced
+## 高级
 
 ![](/assets/images/setting-advanced.png)
 
-### Auto-save when closing editor window
+### 关闭窗口时自动保存
 
-When user turns on this function, editor window will try to save the task when user closes it. **Noted that** it may be failed if one of the cases that stop editor saving a task occurs.
+**注意**，在保存失败时，这会导致编辑窗口无法正常关闭。
 
-### Forbidding task with administrator rights
+### 禁止以管理员身份运行
 
-It is a function like its name.
+在任何任务中，永不使用管理员身份。
 
-### Starting QuickUp upon startup
+### 开机自启动
 
-It is a function like its name. **Noted that** QuickUp does not use any service. This function will create a shortcut in Windows "StartUp" folder.
+QuickUp将在注册表`HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run`中注册启动应用信息`<quickup-path> -s`。
 
-### Setting hot-key to raise QuickUp from system tray
+### 热键
 
- User can select function keys (at least one) in Control, Alt, Shift and with a character in English as a hot-key, to raise QuickUp from system tray.
+设置至少一个功能案件和一个英文字母来从系统托盘唤醒QuickUp。
 
-> It can only raise the root workspace main window.
+> 只对主工作区有效
 
-### QuickUp command line
+### 命令行支持
 
-User can use following arguments to start QuickUp:
+- `-w | --workspace [name]`：打开指定工作区。
+- `-t | --task [name]`：运行指定任务。
+- `-s | --silent`：静默模式打开QuickUp (仅当能被关闭到系统托盘时可用)。
 
-- `-w | --workspace [name]`: open the specific workspace.
-- `-t | --task [name]`: open the specific task.
-- `-s | --silent`: open QuickUp as silent-mode. (only use when QuickUp can be closed to system tray)
-
-## Storage
+## 存储
 
 ![](/assets/images/setting-storage.png)
 
-In this page, user can view the structure of his or her workspaces and tasks.
+在这个页面，可以查看所有任务和工作区关系，并且能够打开指定文件的位置。
 
-User can refresh the view list or to open a task or a workspace folder.
+## 快捷键
 
-## Shortcut
-
-In this page, user can see all shortcut keys that QuickUp supports.
+这个页面可以查看所有支持的快捷键。
 
 ---
 
-# System Tray
+# 系统托盘
 
-QuickUp can be closed to system tray. It can only be stopped by pressing the quit-button of the menu (mouse-right-click to show the menu) or shutdown the computer.
-
-QuickUp (root workspace) can be raised by using the hot-key. Be sure there is not another application using the same hot-key.
+QuickUp可以被关闭到系统托盘，通过右键菜单中的退出键彻底推出。
 
 ---
 
-# Command Line
+# 命令行
 
 `quickup [-w|--workspace] [-t|--task] [-s|--silent]`
 
-`-w,--workspace`: open specific workspace. When there is no `-t`, this command just opens a workspace of QuickUp window.
+`-w,--workspace`：打开指定工作区组. 没有 `-t`是，这将启动主工作区
 
-`-t,--task`: run specific task.
+`-t,--task`：打开指定任务。
 
-`-s,--silent`: close to system stray if it can when QuickUp start.
+`-s,--silent`：打开到系统托盘（如果可用）
