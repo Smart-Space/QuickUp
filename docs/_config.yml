@@ -7,7 +7,7 @@ email: smart-space@qq.com
 highlighter: rouge
 
 permalink: /:title/
-paginate: 4
+paginate: 5
 paginate_path: /page:num/
 
 
