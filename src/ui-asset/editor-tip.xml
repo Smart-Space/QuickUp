@@ -1,0 +1,20 @@
+<tinui>
+<!-- QuickUp Editor cmd part-->
+<line x='5' y='0'>
+    <textbox width='360' height='100' scrollbar="True">textbox</textbox>
+</line>
+<line x='475' y='25' lineanchor='e'>
+    <line>
+        <togglebutton text="并行" command="self.funcs['if_wait']">wbutton</togglebutton>
+        <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']"></button2>
+    </line>
+</line>
+<line x='385' y='50'>
+    <line>
+        <checkbutton text="显示备注" command="self.funcs['show_tip']">tipcheckbox</checkbutton>
+    </line>
+    <line y='75'>
+        <checkbutton text="置顶窗口" command="self.funcs['top_tip']">topcheckbox</checkbutton>
+    </line>
+</line>
+</tinui>

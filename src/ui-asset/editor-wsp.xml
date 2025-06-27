@@ -1,0 +1,14 @@
+<tinui>
+<!-- QuickUp Editor workspace part-->
+<line y="15">
+    <paragraph text="工作区组（填写已经存在的区组的名称）"></paragraph>
+</line>
+<line>
+    <entry width="430">wspEntry</entry>
+</line>
+<line x="475" y="25" anchor="w" lineanchor="e">
+    <button2 icon="&#xF71C;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['open_quickup']"></button2>
+    <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']"></button2>
+</line>
+</tinui>
+

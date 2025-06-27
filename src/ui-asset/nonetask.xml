@@ -1,0 +1,9 @@
+<tinui>
+<!-- Nonetask: 任务listview中的第一个元素（如果整体为空） -->
+<line x="5" y="40" anchor="w">
+    <title text="创建第一个任务"></title>
+</line>
+<line x="475" y="40" anchor="e">
+    <button2 text="创建任务" command="self.funcs['createtask']"></button2>
+</line>
+</tinui>

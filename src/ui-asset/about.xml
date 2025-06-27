@@ -1,0 +1,30 @@
+<tinui>
+<line>
+    <title text="About QuickUp"></title>
+    <line x="210" y="10" pady="10">
+        <line>
+            <paragraph text="作者：Smart-Space"></paragraph>
+        </line>
+        <line padx="10">
+            <paragraph text="发布页面"></paragraph>
+            <link text="GitHub" url="https://github.com/Smart-Space/QuickUp/releases/"></link>
+            <link text="Gitee" url="https://gitee.com/captorking/QuickUp/releases/"></link>
+        </line>
+        <line padx="10">
+            <button text="访问QuickUp网站" command='self.funcs["open_url"]'></button>
+        </line>
+        <line padx="10">
+            <button text="查看QuickUp说明文档" command='self.funcs["open_doc"]'></button>
+        </line>
+    </line>
+</line>
+<line x="5" y="50">
+    <image width="100" height="100" state="uniform" imgfile="./logo-small.png"></image>
+</line>
+<line x="5">
+    <paragraph width="490" text="QuickUp 是一个简单易用的应用启动程序，它可以帮助你快速启动常用软件，通过一键创建、编辑、运行应用组合的方式，简化学习和工作中的软件场景建立流程。"></paragraph>
+</line>
+<line x="5">
+    <paragraph width="490" text="copyright © 2024-present QuickUp"></paragraph>
+</line>
+</tinui>

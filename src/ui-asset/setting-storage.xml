@@ -1,0 +1,8 @@
+<tinui>
+<line x="300" y="530" lineanchor="s">
+    <button2 text="刷新" command="self.funcs['refresh_storage']"></button2>
+    <button2 text="打开选定项目位置" command="self.funcs['open_selected']"></button2>
+    <button2 text="用默认应用编辑选定项目" command="self.funcs['edit_selected']"></button2>
+    <button2 text="关于置顶任务" command="self.funcs['about_top_task']"></button2>
+</line>
+</tinui>

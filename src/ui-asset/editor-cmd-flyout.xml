@@ -1,0 +1,8 @@
+<tinui>
+<line y="25" x="215" padx="10" lineanchor="center" anchor="w">
+    <togglebutton text="并行" command="self.funcs['if_wait']">wbutton</togglebutton>
+    <checkbutton text="管理员" command="self.funcs['run_as_admin']">checkbox</checkbutton>
+    <checkbutton text="最大化" command="self.funcs['run_max']">maxcheckbox</checkbutton>
+    <checkbutton text="最小化" command="self.funcs['run_min']">mincheckbox</checkbutton>
+</line>
+</tinui>

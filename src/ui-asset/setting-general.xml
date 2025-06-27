@@ -1,0 +1,40 @@
+<tinui>
+<line pady="20">
+    <line pady="15">
+        <line>
+            <paragraph text='样式 (重启软件后生效)'></paragraph>
+        </line>
+        <line>
+            <radiobox content="('明亮','黑暗')" command="self.funcs['sel_theme']">themeradio</radiobox>
+        </line>
+    </line>
+    <line pady="15">
+        <line>
+            <paragraph text='模糊搜索阈值 (%)'></paragraph>
+        </line>
+        <line>
+            <spinbox width="60" data="self.datas['blur_rank']" command="self.funcs['sel_blur']">blurspin</spinbox>
+        </line>
+    </line>
+    <line pady="15">
+        <checkbutton text="置顶QuickUp" command="self.funcs['set_topmost']">topmostcheck</checkbutton>
+    </line>
+    <line pady="15">
+        <line>
+            <paragraph text='关闭窗口时'></paragraph>
+        </line>
+        <line>
+            <radiobox content="('退出应用','缩小到托盘')" command="self.funcs['sel_exit_mode']">exitradio</radiobox>
+        </line>
+    </line>
+    <line pady="15">
+        <line anchor="w" lineanchor="nw">
+            <paragraph text='当前版本：%VERSION%'></paragraph>
+            <button text="查看更新" command="self.funcs['check_update']"></button>
+        </line>
+        <line>
+            <checkbutton text="自动检查更新" command="self.funcs['auto_check_update']">updatecheck</checkbutton>
+        </line>
+    </line>
+</line>
+</tinui>

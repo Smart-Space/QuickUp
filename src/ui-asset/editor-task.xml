@@ -1,0 +1,13 @@
+<tinui>
+<!-- QuickUp Editor task part-->
+<line y="15">
+    <paragraph text="子任务名称（填写已经存在的任务的名称）"></paragraph>
+</line>
+<line>
+    <entry width="430">taskEntry</entry>
+</line>
+<line x="475" y="25" anchor="w" lineanchor="e">
+    <button2 icon="&#xE70F;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['edit_task']"></button2>
+    <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']"></button2>
+</line>
+</tinui>

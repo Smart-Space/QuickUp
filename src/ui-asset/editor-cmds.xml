@@ -1,0 +1,15 @@
+<tinui>
+<!-- QuickUp Editor cmd part-->
+<line x='5' y='0'>
+    <textbox width='345' height='100' scrollbar="True">textbox</textbox>
+</line>
+<line x='475' y='25' lineanchor='e'>
+    <line>
+        <togglebutton text="并行" command="self.funcs['if_wait']">wbutton</togglebutton>
+        <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']"></button2>
+    </line>
+</line>
+<line x='370' y='50'>
+    <radiobox content='("cmd","","powershell")' command="self.funcs['set_shell']">radiobox</radiobox>
+</line>
+</tinui>

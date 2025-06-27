@@ -1,0 +1,29 @@
+<tinui>
+<line>
+    <line>
+        <line>
+            <title text="主界面"></title>
+        </line>
+        <line>
+            <table data="self.datas['tdata1']"></table>
+        </line>
+    </line>
+    <line>
+        <line>
+            <title text="设置界面"></title>
+        </line>
+        <line>
+            <table data="self.datas['tdata2']"></table>
+        </line>
+    </line>
+    <back></back>
+    <line>
+        <line>
+            <title text="编辑界面"></title>
+        </line>
+        <line>
+            <table data="self.datas['tdata3']"></table>
+        </line>
+    </line>
+</line>
+</tinui>

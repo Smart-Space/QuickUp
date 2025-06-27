@@ -1,0 +1,31 @@
+<tinui>
+<line pady="20">
+    <line pady="15" anchor="w" lineanchor="nw">
+        <onoff bd='28' command='self.funcs["auto_save"]'>autosaveonoff</onoff>
+        <paragraph text='关闭编辑窗口时自动保存'></paragraph>
+    </line>
+    <line pady="15">
+        <checkbutton text='禁止以管理员身份运行命令' command='self.funcs["dis_admin"]'>admincheck</checkbutton>
+    </line>
+    <line pady="15" anchor='w' lineanchor='nw'>
+        <checkbutton text='开机启动' command='self.funcs["start_on_boot"]'>check</checkbutton>
+        <button text='关于QuickUp的开机启动' command='self.funcs["about_start_on_boot"]'></button>
+    </line>
+    <line pady="15" anchor='w' lineanchor='nw'>
+        <paragraph text='快速唤醒主窗口热键: '></paragraph>
+        <togglebutton text='Ctrl' command='self.funcs["toggle_hk_ctrl"]'>b1</togglebutton>
+        <togglebutton text='Alt' command='self.funcs["toggle_hk_alt"]'>b2</togglebutton>
+        <togglebutton text='Shift' command='self.funcs["toggle_hk_shift"]'>b3</togglebutton>
+        <entry width='20'>hkentry</entry>
+        <back linew='0' uids="('b1', 'b2', 'b3', 'hkentry')"></back>
+        <button text='应用' command='self.funcs["apply_hk"]'></button>
+    </line>
+    <line pady="15">
+        <paragraph text='复制QuickUp路径到环境变量，方便命令行中使用QuickUp'></paragraph>
+    </line>
+    <line pady="15">
+        <button2 text='复制QuickUp路径' command='self.funcs["copy_path"]'></button2>
+        <button2 text='QuickUp命令行参数' command='self.funcs["open_cmd_args"]'></button2>
+    </line>
+</line>
+</tinui>

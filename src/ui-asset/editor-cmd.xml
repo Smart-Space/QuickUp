@@ -1,0 +1,14 @@
+<tinui>
+<!-- QuickUp Editor cmd part-->
+<line y="25" anchor="w" lineanchor="w">
+    <paragraph text="目标"></paragraph>
+    <entry width="360">targetEntry</entry>
+    <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']"></button2>
+</line>
+<line y="75" anchor="w" lineanchor="w">
+    <paragraph text="参数"></paragraph>
+    <entry width="360">argsEntry</entry>
+    <button2 icon="&#xE712;" text="" font="{Segoe Fluent Icons} 16">morebtn</button2>
+    <flyout fid="morebtn" height="50" width="430" anchor="w">flyout</flyout>
+</line>
+</tinui>

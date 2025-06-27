@@ -1,0 +1,26 @@
+<tinui>
+<!-- QuickUp Editor -->
+<line x="0">
+    <line>
+        <entry width="345">entry</entry>
+        <button2 icon="&#xE74E;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['save_task']"></button2>
+        <button2 icon="&#xE724;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['run_task']"></button2>
+        <button2 icon="&#xE8B7;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['set_cwd']"></button2>
+    </line>
+    <line padx="15" x="5" anchor="w" lineanchor="nw">
+        <button2 text="命令" command="self.funcs['add_task_cmd']"></button2>
+        <button2 text="命令集" command="self.funcs['add_task_cmds']"></button2>
+        <button2 text="子任务" command="self.funcs['add_task_task']"></button2>
+        <button2 text="工作区组" command="self.funcs['add_workspace']"></button2>
+        <button2 text="备注" command="self.funcs['add_tip']"></button2>
+        <line x='493' padx='5' lineanchor='e'>
+            <ratingbar num='1' size='16' command="self.funcs['set_priority']">ratingbar</ratingbar>
+            <button2 icon="&#xE8DA;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['open_local']"></button2>
+            <button2 icon="&#xEE49;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['create_task_lnk']"></button2>
+        </line>
+    </line>
+</line>
+<line>
+    <listview width="480" height="500" num="0" linew="100">view</listview>
+</line>
+</tinui>
