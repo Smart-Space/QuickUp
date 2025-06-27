@@ -173,7 +173,7 @@ QuickUp将在注册表`HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVers
 
 # 系统托盘
 
-QuickUp可以被关闭到系统托盘，通过右键菜单中的退出键彻底推出。
+QuickUp可以被关闭到系统托盘，通过右键菜单中的退出键彻底退出。
 
 ---
 
