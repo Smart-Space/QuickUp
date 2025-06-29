@@ -28,7 +28,6 @@ Licensed under the GPLv3 and LGPLv3 Licenses. (since 3.0 version)
 import tkinter as tk
 import sys
 import os
-from threading import Timer
 import ctypes
 import signal
 import argparse
@@ -98,6 +97,7 @@ if os.path.exists(installerexe):
 config.init_config()
 init_tip()
 
+
 def close_root():
     config.save_config()
     root.tk.call('winico','delete',icon)
@@ -129,6 +129,7 @@ def signal_handler(signal, frame):
     close_root()
 signal.signal(signal.SIGINT, signal_handler)
 
+
 loading = False
 original_text = ''
 search_timer = None
@@ -143,10 +144,13 @@ def if_taskEntry_empty(text):
     if text == '' and original_text != '':
         search_tasks('')
     else:
-        search_timer = Timer(0.7, lambda: search_tasks(text, True))
-        search_timer.start()
+        root.after(700, lambda text=text: go_search_tasks(text))
     original_text = text
     loading = False
+
+def go_search_tasks(text:str):
+    if taskVar.get() == text:
+        search_tasks(text, True)
 
 
 root = tk.Tk()
@@ -170,7 +174,7 @@ geometry = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenhei
 root.geometry(geometry)
 if args.silent and config.settings['general']['closeToTray']:
     # 静默模式，不显示UI，最小化到托盘
-    root.withdraw()
+    close_root_check()
 else:
     root.attributes("-topmost", True)
     root.update()
