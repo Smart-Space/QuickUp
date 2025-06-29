@@ -53,8 +53,8 @@ class CmdEditor:
         self.argsEntry = self.uixml.tags['argsEntry'][0]
         self.flyoutui:BasicTinUI = self.uixml.tags['flyout'][0]
         flyoutuixml:TinUIXml = self.uixml.tags['flyout'][1]
-        del flyoutuixml
-        flyoutuixml = TinUIXml(theme(self.flyoutui))
+        del flyoutuixml.ui
+        flyoutuixml.ui = theme(self.flyoutui)
         flyoutuixml.funcs.update({
             'if_wait': self.change_wait_state,
             'run_as_admin': lambda tag, task=self: self.editor.cmd_run_as_admin(task, tag),
@@ -611,8 +611,8 @@ class Editor(tk.Toplevel):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
-        del uixml
-        uixml = TinUIXml(theme(ui))
+        del uixml.ui
+        uixml.ui = theme(ui)
         ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = CmdEditor(uixml, self)
         uixml.environment({
@@ -632,8 +632,8 @@ class Editor(tk.Toplevel):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
-        del uixml
-        uixml = TinUIXml(theme(ui))
+        del uixml.ui
+        uixml.ui = theme(ui)
         ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = CmdsEditor(uixml)
         uixml.environment({
@@ -651,8 +651,8 @@ class Editor(tk.Toplevel):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
-        del uixml
-        uixml = TinUIXml(theme(ui))
+        del uixml.ui
+        uixml.ui = theme(ui)
         ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = TaskEditor(uixml)
         task.root = self
@@ -683,8 +683,8 @@ class Editor(tk.Toplevel):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
-        del uixml
-        uixml = TinUIXml(theme(ui))
+        del uixml.ui
+        uixml.ui = theme(ui)
         ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = WspEditor(uixml)
         task.root = self
@@ -703,8 +703,8 @@ class Editor(tk.Toplevel):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
-        del uixml
-        uixml = TinUIXml(theme(ui))
+        del uixml.ui
+        uixml.ui = theme(ui)
         ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = TipEditor(uixml)
         task.root = self

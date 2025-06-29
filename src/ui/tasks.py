@@ -46,8 +46,8 @@ def initial_tasks_view(_taskView, _root):
     i = 0
     for task in tasknames:
         ui, _, uixml, _ = taskView.getui(i)
-        del uixml
-        uixml = TinUIXml(theme(ui))
+        del uixml.ui
+        uixml.ui = theme(ui)
         ui.bind('<Destroy>', lambda e, uixml=uixml: on_ui_destroy(uixml))
         taskuixml.append(uixml)
         uixml.environment({
@@ -72,8 +72,8 @@ def refresh_tasks_view():
     i = 0
     for task in tasknames:
         ui, _, uixml, _ = taskView.getui(i)
-        del uixml
-        uixml = TinUIXml(theme(ui))
+        del uixml.ui
+        uixml.ui = theme(ui)
         ui.bind('<Destroy>', lambda e, uixml=uixml: on_ui_destroy(uixml))
         taskuixml.append(uixml)
         uixml.environment({
@@ -123,8 +123,8 @@ def add_task_view(task:str):
     datas.tasks_name_add(task)
     # 前端添加任务
     cui, _, cuixml, _ = taskView.add()
-    del cuixml
-    cuixml = TinUIXml(theme(cui))
+    del cuixml.ui
+    cuixml.ui = theme(cui)
     cui.bind('<Destroy>', lambda e, cuixml=cuixml: on_ui_destroy(cuixml))
     taskuixml.append(cuixml)
     cuixml.environment({
@@ -209,8 +209,8 @@ def search_tasks(keyword:str, silence=False):
         tasknames = sort_with_priority(tasknames.copy())
         for task in tasknames:
             cui, _, cuixml, _ = taskView.add()
-            del cuixml
-            cuixml = TinUIXml(theme(cui))
+            del cuixml.ui
+            cuixml.ui = theme(cui)
             cui.bind('<Destroy>', lambda e, uixml=cuixml: on_ui_destroy(uixml))
             taskuixml.append(cuixml)
             cuixml.environment({
