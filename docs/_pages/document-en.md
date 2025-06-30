@@ -120,6 +120,10 @@ In QuickUp, you can set the appearance of it within light-mode or dark-mode. The
 
 Set the threshold for fuzzy search. **Noted that** user should press the Enter key if making the change directly in the input box.
 
+### Maximum number of matching results
+
+Set the maximum number of matching results. 0 is unlimited. Currently, it can be set from 0 to 10. **Noted that** user should press the Enter key if making the change directly in the input box.
+
 ### Making QuickUp topmost
 
 It is a function like its name.

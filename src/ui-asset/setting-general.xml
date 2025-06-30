@@ -8,12 +8,19 @@
             <radiobox content="('明亮','黑暗')" command="self.funcs['sel_theme']">themeradio</radiobox>
         </line>
     </line>
-    <line pady="15">
+    <line pady="15" padx="20">
         <line>
             <paragraph text='模糊搜索阈值 (%)'></paragraph>
         </line>
         <line>
             <spinbox width="60" data="self.datas['blur_rank']" command="self.funcs['sel_blur']">blurspin</spinbox>
+        </line>
+        <back></back>
+        <line>
+            <paragraph text='最大结果数 (0为无限制 | 可选范围:0-10)'></paragraph>
+        </line>
+        <line>
+            <spinbox width="60" data="['10','9','8','7','6','5','4','3','2','1','0']" command="self.funcs['sel_msc']">mscspin</spinbox>
         </line>
     </line>
     <line pady="15">

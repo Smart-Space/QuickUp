@@ -41,7 +41,7 @@ def init_general():
     gUIxml.datas.update({'blur_rank': blur_rank})
     gUIxml.funcs.update({'sel_theme': sel_theme, 'sel_blur': sel_blur, 'check_update': check_update,
                          "set_topmost": set_topmost, "auto_check_update": s_auto_check_update,
-                         "sel_exit_mode": sel_exit_mode})
+                         "sel_exit_mode": sel_exit_mode, 'sel_msc': sel_msc})
     with open("./ui-asset/setting-general.xml", "r", encoding="utf-8") as f:
         gUIxml.loadxml(f.read().replace('%VERSION%', datas.version))
     
@@ -55,6 +55,10 @@ def init_general():
     blurspin = gUIxml.tags["blurspin"][0]
     blurspin.delete(0, 'end')
     blurspin.insert(0, str(config.settings['general']['patternRank']))
+
+    mscspin = gUIxml.tags["mscspin"][0]
+    mscspin.delete(0, 'end')
+    mscspin.insert(0, str(config.settings['general']['maxSearchCount']))
     
     tmcheck = gUIxml.tags["topmostcheck"][-2]
     isTopMost = config.settings['general'].get('topMost', False)
@@ -155,9 +159,15 @@ def sel_theme(theme):
     config.save_config()
 
 def sel_blur(blur):
-    # 切换背景模糊
+    # 切换模糊搜索阈值
     datas.patternRank = int(blur)
     config.settings['general']['patternRank'] = int(blur)
+    config.save_config()
+
+def sel_msc(msc):
+    # 切换最大搜索匹配结果数
+    datas.maxSearchCount = int(msc)
+    config.settings['general']['maxSearchCount'] = int(msc)
     config.save_config()
 
 

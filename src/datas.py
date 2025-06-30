@@ -16,7 +16,7 @@ from cppextend.QUmodule import quick_fuzz
 import config
 
 # 版本
-version = "3.0"
+version = "3.1"
 
 # 任务名称集合，从./tasks/*.json初始化，始终按文本字典排序
 """
@@ -70,13 +70,22 @@ def tasks_namn_find(name:str):
     # 忽略大小写
     global tasks_name
     patternRank = config.settings['general']['patternRank']
-    del tasks_name[:]
+    tasks_name.clear()
     if name == '':
         tasks_name = all_tasks_name.copy()
         return tasks_name
     else:
         name = name.lower()
-    tasks_name = [n for n in all_tasks_name if quick_fuzz(name, n.lower()) >= patternRank]
+    search_count = 0
+    max_search_count = config.settings['general']['maxSearchCount']
+    if max_search_count == 0:
+        max_search_count = len(all_tasks_name)
+    for n in all_tasks_name:
+        if quick_fuzz(name, n.lower()) >= patternRank:
+            tasks_name.append(n)
+            search_count += 1
+            if search_count >= max_search_count:
+                break
     return tasks_name
 
 invalid_chars = re.compile(r'[<>:"/\\|?*]')

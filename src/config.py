@@ -10,6 +10,7 @@ settings = {
     'general': {
         'theme': 'light',# light dark
         'patternRank': 75,
+        'maxSearchCount': 5,
         'topMost': False,
         'checkUpdate': True,
         'closeToTray': True,

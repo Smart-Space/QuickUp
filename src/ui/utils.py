@@ -7,7 +7,6 @@ import subprocess
 import ctypes
 from ctypes import windll, byref, Structure, c_int
 from ctypes.wintypes import COLORREF, DWORD
-from runner.runwcmd import run_wcmd
 
 kernel32 = ctypes.windll.kernel32
 

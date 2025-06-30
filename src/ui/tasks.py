@@ -7,7 +7,6 @@ QuickUp的任务列表视图，有两种显示模式：
 import os
 import json
 
-from tinui import TinUIXml
 from tinui.TinUIDialog import Dialog
 from tinui.theme.tinuidark import TinUIDark
 from tinui.theme.tinuilight import TinUILight
