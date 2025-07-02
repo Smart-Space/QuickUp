@@ -11,7 +11,7 @@ from tinui import BasicTinUI, TinUIXml
 from tinui.theme.tinuidark import TinUIDark
 from tinui.theme.tinuilight import TinUILight
 
-from ui.utils import set_title_bar_color
+from ui.utils import set_window_dark
 import config
 
 aboutwindow = False
@@ -48,10 +48,9 @@ def show_about(e=None):
     root.update_idletasks()
     if config.settings['general']['theme'] == 'dark':
         theme = TinUIDark
-        set_title_bar_color(root, 0x202020, 0xffffff)
+        set_window_dark(root)
     else:
         theme = TinUILight
-        set_title_bar_color(root, 0xf3f3f3, 0x000000)
     root.focus_set()
 
     ui = BasicTinUI(root, background='#f3f3f3')

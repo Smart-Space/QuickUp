@@ -191,10 +191,9 @@ if config.settings['general']['topMost']:
 ui = BasicTinUI(root)
 ui.pack(fill=tk.BOTH, expand=True)
 if config.settings['general']['theme'] == 'dark':
-    utils.set_title_bar_color(root, 0x202020, 0xffffff)
+    utils.set_window_dark(root)
     theme = TinUIDark(ui)
 else:
-    utils.set_title_bar_color(root, 0xf3f3f3, 0x000000)
     theme = TinUILight(ui)
 uixml = TinUIXml(theme)
 uixml.environment({

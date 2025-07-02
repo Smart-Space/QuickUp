@@ -6,7 +6,7 @@ from tkinter import Toplevel, Label
 
 import config
 from runner import Task
-from ui.utils import set_title_bar_color
+from ui.utils import set_window_dark
 import datas
 
 def init_tip():
@@ -29,10 +29,9 @@ class TipUI(Toplevel):
         self.update()
         if themename == 'dark':
             label.config(fg='#ffffff', bg='#202020')
-            set_title_bar_color(self, 0x333333, 0xffffff)
+            set_window_dark(self)
         else:
             label.config(fg='#000000', bg='#f3f3f3')
-            set_title_bar_color(self, 0xffffff, 0x000000)
         if top:
             self.wm_attributes('-topmost', True)
         if wait:

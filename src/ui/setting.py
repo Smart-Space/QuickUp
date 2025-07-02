@@ -17,7 +17,7 @@ from cppextend.QUmodule import register_start, unregister_start, have_start_valu
 
 import config
 import datas
-from ui.utils import set_title_bar_color, show_dialog
+from ui.utils import set_window_dark, show_dialog
 from runner.update import update_program, update_QuickUp
 
 
@@ -482,10 +482,9 @@ def show_setting(e):
     root.update_idletasks()
     if config.settings['general']['theme'] == "light":
         theme = TinUILight
-        set_title_bar_color(root, 0xf3f3f3, 0x000000)
     else:
         theme = TinUIDark
-        set_title_bar_color(root, 0x202020, 0xffffff)
+        set_window_dark(root)
     root.focus_set()
 
     ui = BasicTinUI(root, background="#f3f3f3")

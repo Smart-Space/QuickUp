@@ -16,7 +16,7 @@ import datas
 from datas import is_valid_windows_filename
 from runner.runtask import run_task, run_cmd
 import config
-from ui.utils import set_title_bar_color, on_ui_destroy, show_dialog
+from ui.utils import set_window_dark, on_ui_destroy, show_dialog
 from runner.create_lnk import create_task_lnk
 
 
@@ -363,9 +363,7 @@ class Editor(tk.Toplevel):
         self.resizable(False, False)
         self.update_idletasks()
         if themename == 'dark':
-            set_title_bar_color(self, 0x202020, 0xffffff)
-        else:
-            set_title_bar_color(self, 0xf3f3f3, 0x000000)
+            set_window_dark(self)
         self.focus_set()
 
         self.ui = BasicTinUI(self, background='#f3f3f3')
