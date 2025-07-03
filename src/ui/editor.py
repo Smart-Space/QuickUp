@@ -157,8 +157,8 @@ class CmdsEditor:
         self.textbox.delete('1.0', 'end')
         if themename == 'dark':
             self.textbox.config(insertbackground='#ffffff')
-        for cmd in self.cmds:
-            self.textbox.insert('end', cmd + '\n')
+        self.textbox.insert('end', '\n'.join(cmds))
+        self.textbox.edit_modified(False)
         self.textbox.update()
         self.textbox.bind('<<Modified>>', self.textContentChanged)
     
@@ -276,7 +276,6 @@ class TipEditor:
         self.wait = False
         self.show = True
         self.top = False
-        self.root = None
         self.contentChanged = None
     
     def init(self, tip:str="", wait:bool=False, show:bool=True, top:bool=False):
@@ -289,7 +288,6 @@ class TipEditor:
         self.wbuttont = self.uixml.tags['wbutton'][0]
         self.tipcheckbox = self.uixml.tags['tipcheckbox'][-2]
         self.topcheckbox = self.uixml.tags['topcheckbox'][-2]
-        self.textbox.insert('end', tip)
         if wait:
             self.wbutton.on()
         else:
@@ -302,10 +300,10 @@ class TipEditor:
             self.topcheckbox.on()
         else:
             pass
-        self.textbox.delete('1.0', 'end')
         if themename == 'dark':
             self.textbox.config(insertbackground='#ffffff')
         self.textbox.insert('end', tip)
+        self.textbox.edit_modified(False)
         self.textbox.update()
         self.textbox.bind('<<Modified>>', self.textContentChanged)
     
@@ -705,7 +703,6 @@ class Editor(tk.Toplevel):
         uixml.ui = theme(ui)
         ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = TipEditor(uixml)
-        task.root = self
         uixml.environment({
             'delete_task': lambda e, task=task: self.delete_task(task),
             'if_wait': None,
