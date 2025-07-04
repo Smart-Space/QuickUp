@@ -186,6 +186,8 @@ def change_task_name(task:str, newname:str):
             'delete_task': lambda e, task=newname: delete_task_view(task),
         })
         uixml.loadxml(str.replace(uixml_content, '%TITLENAME%', newname))
+        index2 = tasknames.index(task)
+        tasknames[index2] = newname
     index2 = datas.all_tasks_name.index(task)
     datas.all_tasks_name[index2] = newname
 

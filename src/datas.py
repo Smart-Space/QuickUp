@@ -16,9 +16,8 @@ from cppextend.QUmodule import quick_fuzz
 import config
 
 # 版本
-version = "3.1"
+version = "3.2"
 
-# 任务名称集合，从./tasks/*.json初始化，始终按文本字典排序
 """
 操作函数：
 - tasks_name_initial() 初始化/重新载入
@@ -27,6 +26,7 @@ version = "3.1"
 - tasks_namn_find(name:str) -> res:list 模糊查找：返回符合条件的列表
 - is_valid_windows_filename(filename:str) -> res:bool 检查文件名是否合法：返回合法与否
 """
+# 任务名称集合，从./tasks/*.json初始化，始终按文本字典排序
 all_tasks_name = []# 总tasks
 tasks_name = []# 当前显示的tasks，datas.tasks_name是当前显示的所有任务名称，没有顺序
 
