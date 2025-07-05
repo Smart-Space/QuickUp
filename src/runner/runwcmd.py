@@ -36,7 +36,7 @@ ShellExecuteEx.restype = wintypes.BOOL
 
 
 class RunWCmd(Task):
-    def __init__(self, name:str, cmd:str, args:str, admin:bool, cwd:str=''):
+    def __init__(self, name:str, cmd:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
         super().__init__(name, 'wcmd')
         self.cwd = cwd
         if cmd.startswith('"') and cmd.endswith('"'):
@@ -44,8 +44,15 @@ class RunWCmd(Task):
         self.cmd = cmd
         self.args = args
         self.admin = admin
+        self.maximize = maximize
+        self.minimize = minimize
         if not admin:
-            self.cmd = '"' + cmd + '" ' + args
+            self.cmd = "start \"\" /wait "
+            if self.maximize:
+                self.cmd += "/max "
+            if self.minimize:
+                self.cmd += "/min "
+            self.cmd += "\"" + cmd + "\" " + args
         else:
             pass
     
@@ -62,7 +69,12 @@ class RunWCmd(Task):
             sei.lpFile = self.cmd
             sei.lpParameters = self.args
             sei.lpDirectory = self.cwd if self.cwd else None
-            sei.nShow = 1
+            if self.maximize:
+                sei.nShow = 3  # SW_MAXIMIZE
+            elif self.minimize:
+                sei.nShow = 2  # SW_SHOWMINIMIZED
+            else:
+                sei.nShow = 1  # SW_SHOWNORMAL
             if ShellExecuteEx(ctypes.byref(sei)):
                 p = sei.hProcess
                 ctypes.windll.kernel32.WaitForSingleObject(p, -1)
@@ -72,6 +84,6 @@ class RunWCmd(Task):
                 pass
 
 
-def run_wcmd(name:str, cmd:str, args:str, admin:bool=False, cwd:str='None'):
-    task = RunWCmd(name, cmd, args, admin, cwd)
+def run_wcmd(name:str, cmd:str, args:str, admin:bool=False, cwd:str='None', maximize:bool=False, minimize:bool=False):
+    task = RunWCmd(name, cmd, args, admin, cwd, maximize, minimize)
     task.run()

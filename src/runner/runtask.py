@@ -36,8 +36,8 @@ class RunTask(Task):
             self.tasks = json_data['tasks']
         self.deamon = deamon
     
-    def __run_wcmd(self, target:str, args:str, admin:bool, cwd:str=''):
-        run_wcmd(self.name, target, args, admin, cwd)
+    def __run_wcmd(self, target:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
+        run_wcmd(self.name, target, args, admin, cwd, maximize, minimize)
         self.run()
     
     def __run_cmds(self, name:str, cmds:list, cmd:str, wait:bool, cwd:str=''):
@@ -48,10 +48,10 @@ class RunTask(Task):
         while self.tasks:
             task = self.tasks.pop(0)
             if task['type'] == 'cmd':
-                run_cmd(self.name, task['target'], task['args'], task['admin'], self.cwd)
+                run_cmd(self.name, task['target'], task['args'], task['admin'], self.cwd, task.get('max', False), task.get('min', False))
             elif task['type'] == 'wcmd':
                 # run_wcmd(self.name, task['target'], task['args'], self.cwd)
-                t = Thread(target=self.__run_wcmd, args=(task['target'], task['args'], task['admin'], self.cwd), name=task['target'])
+                t = Thread(target=self.__run_wcmd, args=(task['target'], task['args'], task['admin'], self.cwd, task.get('max', False), task.get('min', False)), name=task['target'])
                 t.daemon = self.deamon
                 t.start()
                 break

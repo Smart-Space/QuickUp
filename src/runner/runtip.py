@@ -34,8 +34,8 @@ class TipUI(Toplevel):
             label.config(fg='#000000', bg='#f3f3f3')
         if top:
             self.wm_attributes('-topmost', True)
+        self.focus_set()
         if wait:
-            self.focus_set()
             self.grab_set()
             self.wait_window(self)
 

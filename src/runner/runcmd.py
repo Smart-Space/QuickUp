@@ -9,7 +9,7 @@ from runner import Task
 import config
 
 class RunCmd(Task):
-    def __init__(self, name:str, cmd:str, args:str, admin:bool, cwd:str=''):
+    def __init__(self, name:str, cmd:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
         super().__init__(name, 'cmd')
         self.admin = admin
         self.cwd = cwd if cwd != '' else None
@@ -20,9 +20,16 @@ class RunCmd(Task):
         # 毕竟都写成快捷启动方式了，在创建任务的时候耐心点没什么问题吧
         self.cmd = cmd
         self.args = args
+        self.maximize = maximize
+        self.minimize = minimize
         if not admin:
             # start "" "{cmd}" {args}
-            self.cmd = "start \"\" \"" + cmd + "\" " + args
+            self.cmd = "start \"\" "
+            if self.maximize:
+                self.cmd += "/max "
+            if self.minimize:
+                self.cmd += "/min "
+            self.cmd += "\"" + cmd + "\" " + args
         else:
             # 管理员权限
             # runas, {cmd}, {args}
@@ -39,12 +46,17 @@ class RunCmd(Task):
             file = self.cmd
             params = self.args
             directory = self.cwd if self.cwd else None
-            show_cmd = 1
+            if self.maximize:
+                show_cmd = 3
+            elif self.minimize:
+                show_cmd = 2
+            else:
+                show_cmd = 1
             try:
                 ctypes.windll.shell32.ShellExecuteW(hwnd, operation, file, params, directory, show_cmd)
             except:
                 pass
 
-def run_cmd(name:str, cmd:str, args:str, admin:bool, cwd:str=''):
-    task = RunCmd(name, cmd, args, admin, cwd)
+def run_cmd(name:str, cmd:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
+    task = RunCmd(name, cmd, args, admin, cwd, maximize, minimize)
     task.run()
