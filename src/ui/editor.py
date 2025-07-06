@@ -16,7 +16,7 @@ import datas
 from datas import is_valid_windows_filename
 from runner.runtask import run_task, run_cmd
 import config
-from ui.utils import set_window_dark, on_ui_destroy, show_dialog
+from ui.utils import set_window_dark, show_dialog
 from runner.create_lnk import create_task_lnk
 
 
@@ -609,7 +609,6 @@ class Editor(tk.Toplevel):
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
         uixml.ui = theme(ui)
-        ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = CmdEditor(uixml, self)
         uixml.environment({
             'delete_task': lambda e, task=task: self.delete_task(task),
@@ -630,7 +629,6 @@ class Editor(tk.Toplevel):
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
         uixml.ui = theme(ui)
-        ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = CmdsEditor(uixml)
         uixml.environment({
             'delete_task': lambda e, task=task: self.delete_task(task),
@@ -649,7 +647,6 @@ class Editor(tk.Toplevel):
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
         uixml.ui = theme(ui)
-        ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = TaskEditor(uixml)
         task.root = self
         uixml.environment({
@@ -681,7 +678,6 @@ class Editor(tk.Toplevel):
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
         uixml.ui = theme(ui)
-        ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = WspEditor(uixml)
         task.root = self
         uixml.environment({
@@ -701,7 +697,6 @@ class Editor(tk.Toplevel):
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
         uixml.ui = theme(ui)
-        ui.bind('<Destroy>', lambda e: on_ui_destroy(uixml))
         task = TipEditor(uixml)
         uixml.environment({
             'delete_task': lambda e, task=task: self.delete_task(task),
@@ -752,14 +747,9 @@ class Editor(tk.Toplevel):
             del task_editors[self.task]
             if self.flag == "NEW" and self.callback:
                 self.callback(self.task)
-        del self.uixml
-        del self.data
-        del self.tasks
-        del self.ui
-        del self.entryfunc
-        del self.view
-        del self.cmdxml
-        del self
+        self.uixml.clean()
+        self.data.clear()
+        self.tasks.clear()
 
 
 def create_editor(task:str='', callback=None, flag="EDIT", name_changeable=True):

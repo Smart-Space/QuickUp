@@ -21,9 +21,6 @@ def set_window_dark(root):
         4
     )
 
-def on_ui_destroy(uixml):
-    del uixml
-
 def show_dialog(dialog, title, content, wtype="msg", theme="light", input=""):
     dialog.update_idletasks()
     if theme == "dark":

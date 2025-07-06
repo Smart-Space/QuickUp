@@ -15,7 +15,7 @@ import datas
 from runner.runtask import run_task
 from ui import editor
 from ui.editor import create_editor
-from ui.utils import on_ui_destroy, show_dialog
+from ui.utils import show_dialog
 import config
 
 taskView = None
@@ -47,7 +47,6 @@ def initial_tasks_view(_taskView, _root):
         ui, _, uixml, _ = taskView.getui(i)
         del uixml.ui
         uixml.ui = theme(ui)
-        ui.bind('<Destroy>', lambda e, uixml=uixml: on_ui_destroy(uixml))
         taskuixml.append(uixml)
         uixml.environment({
             'run_task': lambda e, task=task: run_task(task),
@@ -73,7 +72,6 @@ def refresh_tasks_view():
         ui, _, uixml, _ = taskView.getui(i)
         del uixml.ui
         uixml.ui = theme(ui)
-        ui.bind('<Destroy>', lambda e, uixml=uixml: on_ui_destroy(uixml))
         taskuixml.append(uixml)
         uixml.environment({
             'run_task': lambda e, task=task: run_task(task),
@@ -124,7 +122,6 @@ def add_task_view(task:str):
     cui, _, cuixml, _ = taskView.add()
     del cuixml.ui
     cuixml.ui = theme(cui)
-    cui.bind('<Destroy>', lambda e, cuixml=cuixml: on_ui_destroy(cuixml))
     taskuixml.append(cuixml)
     cuixml.environment({
         'run_task': lambda e, task=task: start_task(task),
@@ -212,7 +209,6 @@ def search_tasks(keyword:str, silence=False):
             cui, _, cuixml, _ = taskView.add()
             del cuixml.ui
             cuixml.ui = theme(cui)
-            cui.bind('<Destroy>', lambda e, uixml=cuixml: on_ui_destroy(uixml))
             taskuixml.append(cuixml)
             cuixml.environment({
                 'run_task': lambda e, task=task: start_task(task),
