@@ -37,6 +37,7 @@ from tinui.TinUIDialog import Dialog
 from tinui.theme.tinuidark import TinUIDark
 from tinui.theme.tinuilight import TinUILight
 
+import ui.tasks as taskslib
 from ui.tasks import initial_tasks_view, create_task, search_tasks, refresh_tasks_view
 from ui.about import show_about
 from ui.setting import show_setting
@@ -128,6 +129,23 @@ def show_window():
 def signal_handler(signal, frame):
     close_root()
 signal.signal(signal.SIGINT, signal_handler)
+
+
+def run_this_task(e):
+    # 运行选中的任务
+    taskindex = taskView.getsel()
+    if taskindex != -1:
+        run_task(taskslib.tasknames[taskindex])
+
+def next_task_view(e):
+    # 选中下一个任务
+    taskindex = taskView.getsel()
+    taskView.select(taskindex+1)
+
+def prev_task_view(e):
+    # 选中上一个任务
+    taskindex = taskView.getsel()
+    taskView.select(taskindex-1)
 
 
 loading = False
@@ -258,5 +276,8 @@ root.bind("<Control-r>", lambda e: refresh_tasks_view())
 root.bind("<Control-n>", create_task)
 root.bind("<Control-i>", show_setting)
 root.bind("<Control-q>", lambda e: close_root_check())
+root.bind("<Shift-Return>", run_this_task)
+root.bind("<Up>", prev_task_view)
+root.bind("<Down>", next_task_view)
 
 root.mainloop()
