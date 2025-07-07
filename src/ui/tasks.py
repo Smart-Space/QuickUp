@@ -175,7 +175,10 @@ def change_task_name(task:str, newname:str):
     if task in datas.tasks_name:
         index1 = datas.tasks_name.index(task)
         datas.tasks_name[index1] = newname
-        uixml = taskuixml[index1]
+        index2 = tasknames.index(task)
+        tasknames[index2] = newname
+        uixml = taskuixml[index2]
+        uixml.realui.delete('all')
         uixml.clean()
         uixml.environment({
             'run_task': lambda e, task=newname: start_task(task),
@@ -183,8 +186,6 @@ def change_task_name(task:str, newname:str):
             'delete_task': lambda e, task=newname: delete_task_view(task),
         })
         uixml.loadxml(str.replace(uixml_content, '%TITLENAME%', newname))
-        index2 = tasknames.index(task)
-        tasknames[index2] = newname
     index2 = datas.all_tasks_name.index(task)
     datas.all_tasks_name[index2] = newname
 

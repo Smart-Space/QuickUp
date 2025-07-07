@@ -2,7 +2,6 @@ __pycache__/
 .vscode/launch.json
 原理图示.excalidraw
 draft.png
-NEWS.txt
 .lock
 tasks/priority.txt
 cppextend/cppmodule.o

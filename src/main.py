@@ -137,6 +137,12 @@ def run_this_task(e):
     if taskindex != -1:
         run_task(taskslib.tasknames[taskindex])
 
+def edit_this_task(e):
+    # 编辑选中的任务
+    taskindex = taskView.getsel()
+    if taskindex != -1:
+        taskslib.edit_task(taskslib.tasknames[taskindex])
+
 def next_task_view(e):
     # 选中下一个任务
     taskindex = taskView.getsel()
@@ -277,6 +283,7 @@ root.bind("<Control-n>", create_task)
 root.bind("<Control-i>", show_setting)
 root.bind("<Control-q>", lambda e: close_root_check())
 root.bind("<Shift-Return>", run_this_task)
+root.bind("<Control-e>", edit_this_task)
 root.bind("<Up>", prev_task_view)
 root.bind("<Down>", next_task_view)
 

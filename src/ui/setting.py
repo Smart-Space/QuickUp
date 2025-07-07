@@ -392,6 +392,7 @@ tdata1 = (
     ('Ctrl+Q','退出主窗口'),
     ('Up/Down','选择任务'),
     ('Shift+↲','运行任务'),
+    ('Ctrl+E','编辑任务'),
 )
 
 tdata2 = (
@@ -400,7 +401,8 @@ tdata2 = (
     ('Alt+2','高级设置'),
     ('Alt+3','存储设置'),
     ('Alt+4','快捷键设置'),
-    ('Ctrl+U','检查更新')
+    ('Ctrl+U','检查更新'),
+    ('Ctrl+W','关闭窗口'),
 )
 
 tdata3 = (
@@ -511,3 +513,4 @@ def show_setting(e):
     root.bind("<Alt-KeyPress-3>", lambda e: select_page('storage'))
     root.bind("<Alt-KeyPress-4>", lambda e: select_page('shortcut'))
     root.bind("<Control-u>", check_update)
+    root.bind("<Control-w>", lambda e: close_setting())
