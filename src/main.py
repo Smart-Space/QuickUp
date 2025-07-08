@@ -154,6 +154,13 @@ def prev_task_view(e):
     taskView.select(taskindex-1)
 
 
+def show_task_error(e):
+    # 显示任务执行错误
+    d = Dialog(root, "error", config.settings['general']['theme'])
+    utils.show_dialog(d, f"任务执行错误", datas.root_error_message, "msg", config.settings['general']['theme'])
+    datas.root_error_message = None
+
+
 loading = False
 original_text = ''
 search_timer = None
@@ -286,5 +293,7 @@ root.bind("<Shift-Return>", run_this_task)
 root.bind("<Control-e>", edit_this_task)
 root.bind("<Up>", prev_task_view)
 root.bind("<Down>", next_task_view)
+
+root.bind("<<RunCmdError>>", show_task_error)
 
 root.mainloop()

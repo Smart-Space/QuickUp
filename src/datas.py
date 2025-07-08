@@ -16,7 +16,7 @@ from cppextend.QUmodule import quick_fuzz
 import config
 
 # 版本
-version = "3.3"
+version = "3.4"
 
 """
 操作函数：
@@ -32,6 +32,7 @@ tasks_name = []# 当前显示的tasks，datas.tasks_name是当前显示的所有
 
 root_callback = None# 主窗口回调函数
 root = None# 主窗口对象
+root_error_message = None# 主窗口错误信息
 
 workspace = None# 工作区对象
 
@@ -80,16 +81,10 @@ def tasks_namn_find(name:str):
         return tasks_name
     else:
         name = name.lower()
-    search_count = 0
     max_search_count = config.settings['general']['maxSearchCount']
     if max_search_count == 0:
         max_search_count = len(all_tasks_name)
-    for n in all_tasks_name:
-        if quick_fuzz(name, n.lower()) >= patternRank:
-            tasks_name.append(n)
-            search_count += 1
-            if search_count >= max_search_count:
-                break
+    tasks_name = quick_fuzz(all_tasks_name, name, patternRank, max_search_count)
     return tasks_name
 
 invalid_chars = re.compile(r'[<>:"/\\|?*]')

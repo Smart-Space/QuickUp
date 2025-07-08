@@ -2,11 +2,11 @@
 """
 执行命令行命令
 """
-import subprocess
 import ctypes
 
 from runner import Task
 import config
+import datas
 
 class RunCmd(Task):
     def __init__(self, name:str, cmd:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
@@ -22,40 +22,33 @@ class RunCmd(Task):
         self.args = args
         self.maximize = maximize
         self.minimize = minimize
-        if not admin:
-            # start "" "{cmd}" {args}
-            self.cmd = "start \"\" "
-            if self.maximize:
-                self.cmd += "/max "
-            if self.minimize:
-                self.cmd += "/min "
-            self.cmd += "\"" + cmd + "\" " + args
-        else:
-            # 管理员权限
-            # runas, {cmd}, {args}
-            pass
 
     def run(self):
         if not self.admin or config.settings['advanced']['disAdmin']:
             # 非管理员权限，直接运行
-            subprocess.Popen(self.cmd, shell=True, cwd=self.cwd if self.cwd else None)
+            operation = "open"
         else:
-            # 管理员权限，使用ctypes.windll.shell32.ShellExecuteW()
-            hwnd = None
+            # 管理员权限
             operation = "runas"
-            file = self.cmd
-            params = self.args
-            directory = self.cwd if self.cwd else None
-            if self.maximize:
-                show_cmd = 3
-            elif self.minimize:
-                show_cmd = 2
-            else:
-                show_cmd = 1
-            try:
-                ctypes.windll.shell32.ShellExecuteW(hwnd, operation, file, params, directory, show_cmd)
-            except:
-                pass
+        hwnd = None
+        file = self.cmd
+        params = self.args
+        directory = self.cwd if self.cwd else None
+        if self.maximize:
+            show_cmd = 3
+        elif self.minimize:
+            show_cmd = 2
+        else:
+            show_cmd = 5
+        res = ctypes.windll.shell32.ShellExecuteW(hwnd, operation, file, params, directory, show_cmd)
+        if res <= 32:
+            # 出错
+            error_msg = ctypes.FormatError()
+            datas.root_error_message = f"任务: {self.name}\n\n"\
+            f"目标: {self.cmd}\n\n"\
+            f"参数: {self.args}\n\n"\
+            f"错误: {error_msg}"
+            datas.root.event_generate('<<RunCmdError>>')
 
 def run_cmd(name:str, cmd:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
     task = RunCmd(name, cmd, args, admin, cwd, maximize, minimize)

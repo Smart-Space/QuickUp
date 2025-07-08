@@ -2,11 +2,11 @@
 """
 执行单线命令
 """
-import subprocess
 import ctypes
 from ctypes import wintypes
 
 from runner import Task
+import datas
 
 
 # 定义 ShellExecuteEx 函数原型
@@ -46,42 +46,37 @@ class RunWCmd(Task):
         self.admin = admin
         self.maximize = maximize
         self.minimize = minimize
-        if not admin:
-            self.cmd = "start \"\" /wait "
-            if self.maximize:
-                self.cmd += "/max "
-            if self.minimize:
-                self.cmd += "/min "
-            self.cmd += "\"" + cmd + "\" " + args
-        else:
-            pass
     
     def run(self):
+        sei = SHELLEXECUTEINFO()
         if not self.admin:
-            p = subprocess.Popen(self.cmd, shell=True, cwd=self.cwd if self.cwd else None)
-            p.wait()
+            sei.lpVerb = "open"
         else:
-            sei = SHELLEXECUTEINFO()
-            sei.cbSize = ctypes.sizeof(SHELLEXECUTEINFO)
-            sei.fMask = 0x00000040  # SEE_MASK_NOCLOSEPROCESS
-            sei.hwnd = None
             sei.lpVerb = "runas"
-            sei.lpFile = self.cmd
-            sei.lpParameters = self.args
-            sei.lpDirectory = self.cwd if self.cwd else None
-            if self.maximize:
-                sei.nShow = 3  # SW_MAXIMIZE
-            elif self.minimize:
-                sei.nShow = 2  # SW_SHOWMINIMIZED
-            else:
-                sei.nShow = 1  # SW_SHOWNORMAL
-            if ShellExecuteEx(ctypes.byref(sei)):
-                p = sei.hProcess
-                ctypes.windll.kernel32.WaitForSingleObject(p, -1)
-                ctypes.windll.kernel32.CloseHandle(p)
-            else:
-                # without UAC
-                pass
+        sei.cbSize = ctypes.sizeof(SHELLEXECUTEINFO)
+        sei.fMask = 0x00000040  # SEE_MASK_NOCLOSEPROCESS
+        sei.hwnd = None
+        sei.lpFile = self.cmd
+        sei.lpParameters = self.args
+        sei.lpDirectory = self.cwd if self.cwd else None
+        if self.maximize:
+            sei.nShow = 3  # SW_MAXIMIZE
+        elif self.minimize:
+            sei.nShow = 2  # SW_SHOWMINIMIZED
+        else:
+            sei.nShow = 5  # SW_SHOW
+        if ShellExecuteEx(ctypes.byref(sei)):
+            p = sei.hProcess
+            ctypes.windll.kernel32.WaitForSingleObject(p, -1)
+            ctypes.windll.kernel32.CloseHandle(p)
+        else:
+            # 出错
+            error_msg = ctypes.FormatError()
+            datas.root_error_message = f"任务: {self.name}\n\n"\
+            f"目标: {self.cmd}\n\n"\
+            f"参数: {self.args}\n\n"\
+            f"错误: {error_msg}"
+            datas.root.event_generate('<<RunCmdError>>')
 
 
 def run_wcmd(name:str, cmd:str, args:str, admin:bool=False, cwd:str='None', maximize:bool=False, minimize:bool=False):

@@ -5,6 +5,8 @@ Quickup C++ module
 - unregister_start 取消注册开机自启动
 - have_start_value 判断是否存在开机自启动项
 */
+#include <algorithm>
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -13,17 +15,31 @@ Quickup C++ module
 
 
 static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
-    char* a;
-    char* b;
-    int result;
-    int flag = PyArg_ParseTuple(args, "ss:quick_fuzz", &a, &b);
+    PyObject* list;
+    char* name;
+    int acc;
+    int num;
+    int flag = PyArg_ParseTuple(args, "Osii:quick_fuzz_list", &list, &name, &acc, &num);
     if (!flag) {
         return NULL;
     }
-    std::string a_str(a);
-    std::string b_str(b);
-    result = calculateSimilarity(a_str, b_str);
-    return Py_BuildValue("i", result);
+    PyObject* result = PyList_New(0);
+    int length = PyList_Size(list);
+    int nownum = 0;
+    for (int i = 0; i < length; i++) {
+        PyObject* item = PyList_GetItem(list, i);
+        std::string itemstr = (std::string)PyUnicode_AsUTF8(item);
+        std::transform(itemstr.begin(), itemstr.end(), itemstr.begin(), ::tolower);
+        int score = calculateSimilarity(name, itemstr);
+        if (score >= acc) {
+            PyList_Append(result, item);
+            nownum++;
+            if (nownum >= num) {
+                break;
+            }
+        }
+    }
+    return result;
 }
 
 static PyObject* register_start(PyObject* self, PyObject* args) {
@@ -75,7 +91,7 @@ static PyObject* have_start_value(PyObject* self, PyObject* args) {
 }
 
 static PyMethodDef QUModuleMethods[] = {
-    {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(a:str, b:str) -> int")},
+    {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(list:list, name:str, acc:int, num:int) -> list")},
     {"register_start", (PyCFunction)register_start, METH_VARARGS, PyDoc_STR("register_start(value:str, path:str) -> int")},
     {"unregister_start", (PyCFunction)unregister_start, METH_VARARGS, PyDoc_STR("unregister_start(value:str) -> int")},
     {"have_start_value", (PyCFunction)have_start_value, METH_VARARGS, PyDoc_STR("have_start_value(value:str) -> int")},

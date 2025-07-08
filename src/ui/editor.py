@@ -501,6 +501,11 @@ class Editor(tk.Toplevel):
                 show_dialog(d, "无法保存", "任务名已存在", "msg", theme=themename)
                 self.task = oldname
                 return False
+            if self.task.endswith('[x]'):
+                d = Dialog(self, "warning", themename)
+                show_dialog(d, "QuickUp 隐藏任务", "任务名以[x]结尾表示隐藏，将在下次启动QuickUp之后不再显示在任务列表中。" \
+                "放心，这仍然是一个可用的任务，你可以随时通过其它任务或者QuickUp命令行运行它，别忘了\"[x]\"是它名字的一部分。" \
+                "\n\n你可以随时将任务文件名的隐藏标记\"[x]\"去掉。", "msg", theme=themename)
             os.rename(datas.workspace + oldname + '.json', datas.workspace + self.task + '.json')
             del task_editors[oldname]
             task_editors[self.task] = self
