@@ -3,9 +3,10 @@
 QuickUp UI Utils
 """
 import os
-import subprocess
 import ctypes
 from ctypes import windll, byref, c_int
+
+from cppextend.QUmodule import create_link
 
 kernel32 = ctypes.windll.kernel32
 
@@ -30,40 +31,26 @@ def show_dialog(dialog, title, content, wtype="msg", theme="light", input=""):
     elif wtype == "input":
         return dialog.initial_input(title, content, input)
 
-workspace_lnk_command = """$wshell = New-Object -ComObject WScript.Shell
-$shortcut = $wshell.CreateShortcut("$env:USERPROFILE\\Desktop\\%wsp_name%.lnk")
-$shortcut.TargetPath = "`"%quickup_path%\\QuickUp.exe`""
-$shortcut.Arguments = "-w `"%wsp_relname%`""
-$shortcut.IconLocation = "%quickup_path%\\share\\workspace.ico"
-$shortcut.Save()
-exit 0
-"""
+
+quickup_path = os.path.abspath(".") + "\\QuickUp.exe"
+desk_path = os.path.join(os.path.expanduser("~"), "Desktop")
+workspace_icon_path = os.path.join(os.path.abspath("."), "share", "workspace.ico")
+task_icon_path = os.path.join(os.path.abspath("."), "share", "task.ico")
+
 def create_workspace_lnk(workspace):
     # 创建工作区快捷方式
-    cmd = workspace_lnk_command.replace("%wsp_name%", workspace.replace('/','.')).replace("%wsp_relname%", workspace).replace("%quickup_path%", os.path.abspath("."))
-    kernel32.AllocConsole()
-    p = subprocess.Popen('powershell -NoExit -Command chcp 65001', stdin=subprocess.PIPE, shell=True)
-    p.communicate(cmd.encode('utf-8'))
-    p.wait()
-    kernel32.FreeConsole()
+    wsp_name = workspace.replace('/', '.').replace('\\', '.')
+    wsp_relname = workspace
+    cmd = f'-w "{wsp_relname}"'
+    lnk_path = os.path.join(desk_path, f"{wsp_name}.lnk")
+    create_link(quickup_path, cmd, lnk_path, workspace_icon_path)
 
-task_lnk_command = """$wshell = New-Object -ComObject WScript.Shell
-$shortcut = $wshell.CreateShortcut("$env:USERPROFILE\\Desktop\\%task_name%.lnk")
-$shortcut.TargetPath = "`"%quickup_path%\\QuickUp.exe`""
-$shortcut.Arguments = "-w `"%wsp_relname%`" -t `"%task_name%`""
-$shortcut.IconLocation = "%quickup_path%\\share\\task.ico"
-$shortcut.Save()
-exit 0
-"""
 def create_task_lnk(workspace, task):
     # 创建任务快捷方式
     if workspace == "./tasks/":
         workspace = '.'
     else:
         workspace = workspace[8:-1]
-    cmd = task_lnk_command.replace("%task_name%", task).replace("%wsp_relname%", workspace).replace("%quickup_path%", os.path.abspath("."))
-    kernel32.AllocConsole()
-    p = subprocess.Popen('powershell -NoExit -Command chcp 65001', stdin=subprocess.PIPE, shell=True)
-    p.communicate(cmd.encode('utf-8'))
-    p.wait()
-    kernel32.FreeConsole()
+    cmd = f'-w "{workspace}" -t "{task}"'
+    lnk_path = os.path.join(desk_path, f"{task}.lnk")
+    create_link(quickup_path, cmd, lnk_path, task_icon_path)

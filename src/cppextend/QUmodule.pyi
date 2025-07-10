@@ -16,3 +16,12 @@ def unregister_start(value: str) -> int:
 def have_start_value(value: str) -> bool:
     # return True if value is registered, False otherwise.
     ...
+def create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool:
+    """
+    app: the application to be launched
+    cmd: the command line arguments to be passed to the application
+    lnkpath: the path of the shortcut to be created
+    icopath: the path of the icon to be used for the shortcut
+    return: True if successful, False otherwise.
+    """
+    ...

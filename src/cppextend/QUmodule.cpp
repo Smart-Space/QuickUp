@@ -12,6 +12,7 @@ Quickup C++ module
 
 #include "quickfuzz.h"
 #include "regrun.h"
+#include "shortcut.h"
 
 
 static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
@@ -90,11 +91,29 @@ static PyObject* have_start_value(PyObject* self, PyObject* args) {
     return Py_BuildValue("i", 0);
 }
 
+static PyObject* create_link(PyObject* self, PyObject* args) {
+    PyObject* pyapp;
+    PyObject* pycmd;
+    PyObject* pylnkpath;
+    PyObject* pyicopath;
+    int flag = PyArg_ParseTuple(args, "OOOO:create_link", &pyapp, &pycmd, &pylnkpath, &pyicopath);
+    if (!flag) {
+        return NULL;
+    }
+    wchar_t* app = PyUnicode_AsWideCharString(pyapp, NULL);
+    wchar_t* cmd = PyUnicode_AsWideCharString(pycmd, NULL);
+    wchar_t* lnkpath = PyUnicode_AsWideCharString(pylnkpath, NULL);
+    wchar_t* icopath = PyUnicode_AsWideCharString(pyicopath, NULL);
+    bool result = CreateLinkFile((LPCWSTR)app, (LPCWSTR)cmd, (LPCOLESTR)lnkpath, (LPCWSTR)icopath);
+    return PyBool_FromLong(result);
+}
+
 static PyMethodDef QUModuleMethods[] = {
     {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(list:list, name:str, acc:int, num:int) -> list")},
     {"register_start", (PyCFunction)register_start, METH_VARARGS, PyDoc_STR("register_start(value:str, path:str) -> int")},
     {"unregister_start", (PyCFunction)unregister_start, METH_VARARGS, PyDoc_STR("unregister_start(value:str) -> int")},
     {"have_start_value", (PyCFunction)have_start_value, METH_VARARGS, PyDoc_STR("have_start_value(value:str) -> int")},
+    {"create_link", (PyCFunction)create_link, METH_VARARGS, PyDoc_STR("create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool")},
     {NULL, NULL, 0, NULL}
 };
 
