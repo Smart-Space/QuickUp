@@ -51,7 +51,7 @@ def show_about(e=None):
         set_window_dark(root)
     else:
         theme = TinUILight
-    root.focus_set()
+    root.focus_force()
 
     ui = BasicTinUI(root, background='#f3f3f3')
     ui.pack(fill=tk.BOTH, expand=True)

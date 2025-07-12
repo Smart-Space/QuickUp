@@ -44,7 +44,6 @@ from ui.setting import show_setting
 import config
 from ui import editor
 from ui import utils
-from ui.traymenu import QuickUpTrayMenu
 import datas
 from runner.runtask import run_task
 from runner.runtip import init_tip
@@ -105,8 +104,7 @@ init_tip()
 def close_root():
     config.save_config()
     remove_tray()
-    root.withdraw()
-    root.quit()
+    root.destroy()
 datas.root_callback = close_root
 
 def close_root_check():
@@ -191,14 +189,6 @@ def go_search_tasks(text:str):
 root = tk.Tk()
 datas.root = root
 
-show_handle = QuickUpTrayMenu(root).create_menubar(cont=(
-    ('  显示  ', show_window),
-    ('  关于  ', show_about),
-    ('  退出  ', close_root)
-))
-def event(x,y):
-    show_handle(x,y)
-
 width = 500
 height = 700
 screenwidth = root.winfo_screenwidth()
@@ -278,7 +268,7 @@ def regeometry(e):
         pass
 root.bind("<Visibility>", regeometry)
 
-init_tray(thisName, show_window, event)
+init_tray(thisName, show_window, show_about, close_root)
 
 initial_tasks_view(taskView, root)# 初始化任务列表
 

@@ -111,14 +111,15 @@ static PyObject* create_link(PyObject* self, PyObject* args) {
 
 static PyObject* init_tray(PyObject* self, PyObject* args) {
     PyObject* pytooltip;
-    PyObject* pyleft_callback;
-    PyObject* pyright_callback;
-    int flag = PyArg_ParseTuple(args, "OOO:init_tray", &pytooltip, &pyleft_callback, &pyright_callback);
+    PyObject* show_callback;
+    PyObject* about_callback;
+    PyObject* exit_callback;
+    int flag = PyArg_ParseTuple(args, "OOOO:init_tray", &pytooltip, &show_callback, &about_callback, &exit_callback);
     if (!flag) {
         return NULL;
     }
     wchar_t* tooltip = PyUnicode_AsWideCharString(pytooltip, NULL);
-    if (init_ui_tray(tooltip, pyleft_callback, pyright_callback)) {
+    if (init_ui_tray(tooltip, show_callback, about_callback, exit_callback)) {
         return Py_BuildValue("i", 0);
     }
     return Py_BuildValue("i", -1);
@@ -136,7 +137,7 @@ static PyMethodDef QUModuleMethods[] = {
     {"unregister_start", (PyCFunction)unregister_start, METH_VARARGS, PyDoc_STR("unregister_start(value:str) -> int")},
     {"have_start_value", (PyCFunction)have_start_value, METH_VARARGS, PyDoc_STR("have_start_value(value:str) -> int")},
     {"create_link", (PyCFunction)create_link, METH_VARARGS, PyDoc_STR("create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool")},
-    {"init_tray", (PyCFunction)init_tray, METH_VARARGS, PyDoc_STR("init_tray(tooltip:str, left_callback:function, right_callback:function) -> int")},
+    {"init_tray", (PyCFunction)init_tray, METH_VARARGS, PyDoc_STR("init_tray(tooltip:str, show_callback:function, about_callback:function, exit_callback:function) -> int")},
     {"remove_tray", (PyCFunction)remove_tray, METH_VARARGS, PyDoc_STR("remove_tray() -> None")},
     {NULL, NULL, 0, NULL}
 };
