@@ -44,11 +44,14 @@ from ui.setting import show_setting
 import config
 from ui import editor
 from ui import utils
+from ui.traymenu import QuickUpTrayMenu
 import datas
 from runner.runtask import run_task
 from runner.runtip import init_tip
 from runner.update import installerexe, auto_check_update, update_program, update_QuickUp
 from runner import create_lnk, hotkey
+
+from cppextend.QUmodule import init_tray, remove_tray
 
 # 设置程序所在目录为工作目录
 rootpath=sys.path[0]
@@ -101,8 +104,9 @@ init_tip()
 
 def close_root():
     config.save_config()
-    root.tk.call('winico','delete',icon)
-    root.destroy()
+    remove_tray()
+    root.withdraw()
+    root.quit()
 datas.root_callback = close_root
 
 def close_root_check():
@@ -187,15 +191,13 @@ def go_search_tasks(text:str):
 root = tk.Tk()
 datas.root = root
 
-menu = tk.Menu(tearoff=False)
-menu.add_command(label="显示", command=show_window)
-menu.add_command(label="关于", command=show_about)
-menu.add_command(label="退出", command=close_root)
-def event(evt, id, icon, x, y):
-    if evt == "WM_RBUTTONDOWN":
-        menu.tk_popup(x, y)
-    elif evt == "WM_LBUTTONUP":
-        show_window()
+show_handle = QuickUpTrayMenu(root).create_menubar(cont=(
+    ('  显示  ', show_window),
+    ('  关于  ', show_about),
+    ('  退出  ', close_root)
+))
+def event(x,y):
+    show_handle(x,y)
 
 width = 500
 height = 700
@@ -276,12 +278,7 @@ def regeometry(e):
         pass
 root.bind("<Visibility>", regeometry)
 
-root.tk.call('lappend', 'auto_path', rootpath+'\\tclexp')
-root.tk.call('package', 'require', 'Winico')
-icon = root.tk.call('winico', 'createfrom', './logo.ico')
-root.tk.call('winico', 'taskbar', 'add', icon, 
-             '-callback', (root.register(event), '%m', '%i', root, '%x', '%y'),
-             '-pos', 0, '-text', thisName)
+init_tray(thisName, show_window, event)
 
 initial_tasks_view(taskView, root)# 初始化任务列表
 

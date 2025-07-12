@@ -25,3 +25,14 @@ def create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool:
     return: True if successful, False otherwise.
     """
     ...
+def init_tray(tooltip:str, left_callback:function, right_callback:function) -> int:
+    """
+    tooltip: the tooltip to be displayed on the tray icon
+    left_callback: the function to be called when left-clicking on the tray icon
+    right_callback: the function to be called when right-clicking on the tray icon
+    return: 0 if successful, -1 if failed.
+    """
+    ...
+def remove_tray() -> None:
+    # remove the tray icon.
+    ...

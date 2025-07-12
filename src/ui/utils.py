@@ -3,12 +3,9 @@
 QuickUp UI Utils
 """
 import os
-import ctypes
 from ctypes import windll, byref, c_int
 
 from cppextend.QUmodule import create_link
-
-kernel32 = ctypes.windll.kernel32
 
 
 def set_window_dark(root):

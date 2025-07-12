@@ -13,6 +13,7 @@ Quickup C++ module
 #include "quickfuzz.h"
 #include "regrun.h"
 #include "shortcut.h"
+#include "ui.h"
 
 
 static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
@@ -108,12 +109,35 @@ static PyObject* create_link(PyObject* self, PyObject* args) {
     return PyBool_FromLong(result);
 }
 
+static PyObject* init_tray(PyObject* self, PyObject* args) {
+    PyObject* pytooltip;
+    PyObject* pyleft_callback;
+    PyObject* pyright_callback;
+    int flag = PyArg_ParseTuple(args, "OOO:init_tray", &pytooltip, &pyleft_callback, &pyright_callback);
+    if (!flag) {
+        return NULL;
+    }
+    wchar_t* tooltip = PyUnicode_AsWideCharString(pytooltip, NULL);
+    if (init_ui_tray(tooltip, pyleft_callback, pyright_callback)) {
+        return Py_BuildValue("i", 0);
+    }
+    return Py_BuildValue("i", -1);
+}
+
+static PyObject* remove_tray(PyObject* self, PyObject* args) {
+    remove_ui_tray();
+    return Py_None;
+}
+
+
 static PyMethodDef QUModuleMethods[] = {
     {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(list:list, name:str, acc:int, num:int) -> list")},
     {"register_start", (PyCFunction)register_start, METH_VARARGS, PyDoc_STR("register_start(value:str, path:str) -> int")},
     {"unregister_start", (PyCFunction)unregister_start, METH_VARARGS, PyDoc_STR("unregister_start(value:str) -> int")},
     {"have_start_value", (PyCFunction)have_start_value, METH_VARARGS, PyDoc_STR("have_start_value(value:str) -> int")},
     {"create_link", (PyCFunction)create_link, METH_VARARGS, PyDoc_STR("create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool")},
+    {"init_tray", (PyCFunction)init_tray, METH_VARARGS, PyDoc_STR("init_tray(tooltip:str, left_callback:function, right_callback:function) -> int")},
+    {"remove_tray", (PyCFunction)remove_tray, METH_VARARGS, PyDoc_STR("remove_tray() -> None")},
     {NULL, NULL, 0, NULL}
 };
 
