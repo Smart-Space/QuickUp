@@ -130,6 +130,30 @@ static PyObject* remove_tray(PyObject* self, PyObject* args) {
     return Py_None;
 }
 
+static PyObject* enable_entry_drop(PyObject* self, PyObject* args) {
+    long long pyhwnd;
+    PyObject* pycallback;
+    int flag = PyArg_ParseTuple(args, "iO:enable_entry_drop", &pyhwnd, &pycallback);
+    if (!flag) {
+        return NULL;
+    }
+    HWND hwnd = (HWND)pyhwnd;
+    DropTarget* dt = new DropTarget(hwnd, pycallback);
+    dt->enable_drop();
+    return PyCapsule_New(dt, NULL, NULL);;
+}
+
+static PyObject* disable_entry_drop(PyObject* self, PyObject* args) {
+    PyObject* pydt;
+    int flag = PyArg_ParseTuple(args, "O:disable_entry_drop", &pydt);
+    if (!flag) {
+        return NULL;
+    }
+    DropTarget* dt = (DropTarget*)PyCapsule_GetPointer(pydt, NULL);
+    delete dt;
+    return Py_None;
+}
+
 
 static PyMethodDef QUModuleMethods[] = {
     {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(list:list, name:str, acc:int, num:int) -> list")},
@@ -139,6 +163,8 @@ static PyMethodDef QUModuleMethods[] = {
     {"create_link", (PyCFunction)create_link, METH_VARARGS, PyDoc_STR("create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool")},
     {"init_tray", (PyCFunction)init_tray, METH_VARARGS, PyDoc_STR("init_tray(tooltip:str, show_callback:function, about_callback:function, exit_callback:function) -> int")},
     {"remove_tray", (PyCFunction)remove_tray, METH_VARARGS, PyDoc_STR("remove_tray() -> None")},
+    {"enable_entry_drop", (PyCFunction)enable_entry_drop, METH_VARARGS, PyDoc_STR("enable_entry_drop(hwnd:int, callback:function) -> DropTarget")},
+    {"disable_entry_drop", (PyCFunction)disable_entry_drop, METH_VARARGS, PyDoc_STR("disable_entry_drop(dt:DropTarget) -> None")},
     {NULL, NULL, 0, NULL}
 };
 

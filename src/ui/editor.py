@@ -19,6 +19,8 @@ import config
 from ui.utils import set_window_dark, show_dialog
 from runner.create_lnk import create_task_lnk
 
+from cppextend.QUmodule import enable_entry_drop, disable_entry_drop
+
 
 def init_editor():
     global theme, themename
@@ -88,6 +90,8 @@ class CmdEditor:
         self.args = args
         self.admin = admin
         self.targetEntry.insert(0, target)
+        dt = enable_entry_drop(self.targetEntry.winfo_id(), self.target_drop)
+        self.targetEntry.bind('<Destroy>', lambda e: disable_entry_drop(dt))
         self.argsEntry.insert(0, args)
     
     def change_wait_state(self, flag):
@@ -109,6 +113,16 @@ class CmdEditor:
         # 最小化运行
         self.runMIN = tag
         self.contentChanged(None)
+    
+    def target_drop(self, file):
+        # 目标文件拖拽
+        if os.path.isfile(file):
+            self.targetEntry.delete(0, 'end')
+            self.targetEntry.insert(0, file)
+        else:
+            # 暂且不做检测
+            self.targetEntry.delete(0, 'end')
+            self.targetEntry.insert(0, f'shell:AppsFolder\\{file}')
     
     def get(self):
         # 获取命令数据

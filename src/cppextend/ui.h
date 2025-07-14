@@ -119,3 +119,41 @@ void remove_ui_tray() {
     Py_XDECREF(exit_callback);
     show_callback = about_callback = exit_callback = nullptr;
 }
+
+
+class DropTarget {
+public:
+    DropTarget(HWND _hwnd, PyObject* _callback) : hwnd(_hwnd), callback(_callback) {
+        Py_INCREF(callback);
+    }
+
+    ~DropTarget() {
+        Py_DECREF(callback);
+        callback = nullptr;
+    }
+
+    void enable_drop() {
+        DragAcceptFiles(hwnd, TRUE);
+        SetWindowSubclass(hwnd, StaticDropProc, 0, reinterpret_cast<DWORD_PTR>(this));
+    }
+private:
+    HWND hwnd;
+    PyObject* callback;
+
+    static LRESULT CALLBACK StaticDropProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+        DropTarget* target = reinterpret_cast<DropTarget*>(dwRefData);
+        if (message == WM_DROPFILES) {
+            PyGILState_STATE gstate = PyGILState_Ensure();
+            wchar_t filename[MAX_PATH];
+            DragQueryFileW(reinterpret_cast<HDROP>(wParam), 0, filename, MAX_PATH);
+            PyObject* pyfilename = PyUnicode_FromWideChar(filename, -1);
+            PyObject* arg = PyTuple_Pack(1, pyfilename);
+            PyObject_CallObject(target->callback, arg);
+            Py_DECREF(arg);
+            Py_DECREF(pyfilename);
+            DragFinish(reinterpret_cast<HDROP>(wParam));
+            PyGILState_Release(gstate);
+        }
+        return DefSubclassProc(hWnd, message, wParam, lParam);
+    }
+};

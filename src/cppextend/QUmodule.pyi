@@ -37,3 +37,14 @@ def init_tray(tooltip:str, show_callback:function, about_callback:function, exit
 def remove_tray() -> None:
     # remove the tray icon.
     ...
+def enable_entry_drop(hwnd:int, callback:function) -> object:
+    """
+    hwnd: the handle of the control to enable drop target
+    callback: the function to be called when a file is dropped on the control
+    return: a handle to the drop target object.
+    """
+    ...
+def disable_entry_drop(dt:object) -> None:
+    # delete (but not disable) the drop target object.
+    # use when control is destroyed.
+    ...
