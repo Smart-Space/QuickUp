@@ -59,7 +59,11 @@ The top bar of editor window:
   - command
 
     - target: where the application is.
+  
+      > You can replace the input by dragging the target file into this input box. **Note that** when dragging a file with an unconventional address, QuickUp will default to the application under `shell:appsfolder`.
+  
     - arguments: other contents to use in the command line to start this application.
+  
     - Expansion button：
       - threading-mode: as default, to start this application with a sub-thread. Turn on to wait until this application finishes.
       - administrator-mode: turn on to start this application with administrator rights.
@@ -72,16 +76,16 @@ The top bar of editor window:
     - radio-box: choose `cmd` or `powershell` to run these command lines.
     
   - sub-task
-
+  
     - edit-button: open a sub-task in the edit window. At this point, the task name cannot be modified.
     - sub-task-name-entry: type a name of one sub-task.
 
   - sub-workspace
 
     - open-button: open this workspace.
-
+  
     - sub-workspace-name-entry: type a name of one sub-workspace.
-
+  
       > Unlike other items, when user click this button, QuickUp will ask user to input the name of a sub-workspace. If the name does not exist, QuickUp will ask user whether to create this sub-workspace.
   
   - tip
