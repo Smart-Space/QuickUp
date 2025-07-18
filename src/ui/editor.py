@@ -76,16 +76,10 @@ class CmdEditor:
             self.checkbox.off()
         if wait:
             self.wbutton.on()
-        else:
-            pass
         if runMAX:
             self.maxcheckbox.on()
-        else:
-            pass
         if runMIN:
             self.mincheckbox.on()
-        else:
-            pass
         self.target = target
         self.args = args
         self.admin = admin
@@ -165,8 +159,6 @@ class CmdsEditor:
         if wait:
             self.wbutton.on()
             self.wait = True
-        else:
-            pass
         self.cmds = cmds
         self.textbox.delete('1.0', 'end')
         if themename == 'dark':
@@ -304,16 +296,12 @@ class TipEditor:
         self.topcheckbox = self.uixml.tags['topcheckbox'][-2]
         if wait:
             self.wbutton.on()
-        else:
-            pass
         if show:
             self.tipcheckbox.on()
         else:
-            pass
+            self.show = False
         if top:
             self.topcheckbox.on()
-        else:
-            pass
         if themename == 'dark':
             self.textbox.config(insertbackground='#ffffff')
         self.textbox.insert('end', tip)
