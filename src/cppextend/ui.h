@@ -13,7 +13,8 @@ PyObject* show_callback = nullptr;
 PyObject* about_callback = nullptr;
 PyObject* exit_callback = nullptr;
 
-HMENU hmenu;//菜单句柄
+HWND quickup_window;// QuickUp主窗口句柄
+HMENU hmenu;// 菜单句柄
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     UINT WM_TASKBARCREATED = RegisterWindowMessage(TEXT("TaskbarCreated"));
@@ -28,6 +29,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 POINT pt;
                 GetCursorPos(&pt);
                 SetForegroundWindow(hWnd);
+                if (IsWindowVisible(quickup_window)) {
+                    PyObject_CallObject(show_callback, NULL);
+                }
                 int res = TrackPopupMenu(hmenu, TPM_RETURNCMD, pt.x, pt.y, 0, hWnd, NULL);
                 if (res == ID_SHOW) {
                     PyObject_CallObject(show_callback, NULL);
@@ -67,13 +71,15 @@ HWND create_hidden_window() {
     );
 }
 
-bool init_ui_tray(const wchar_t* tooltip, PyObject* _show_callback, PyObject* _about_callback, PyObject* _exit_callback) {
+bool init_ui_tray(HWND quhwnd, const wchar_t* tooltip, PyObject* _show_callback, PyObject* _about_callback, PyObject* _exit_callback) {
     Py_XINCREF(_show_callback);
     Py_XINCREF(_about_callback);
     Py_XINCREF(_exit_callback);
     show_callback = _show_callback;
     about_callback = _about_callback;
     exit_callback = _exit_callback;
+
+    quickup_window = quhwnd;
 
     // 创建隐藏窗口
     HWND hWnd = create_hidden_window();

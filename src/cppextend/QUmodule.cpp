@@ -110,16 +110,18 @@ static PyObject* create_link(PyObject* self, PyObject* args) {
 }
 
 static PyObject* init_tray(PyObject* self, PyObject* args) {
+    int pyhwnd;
     PyObject* pytooltip;
     PyObject* show_callback;
     PyObject* about_callback;
     PyObject* exit_callback;
-    int flag = PyArg_ParseTuple(args, "OOOO:init_tray", &pytooltip, &show_callback, &about_callback, &exit_callback);
+    int flag = PyArg_ParseTuple(args, "iOOOO:init_tray", &pyhwnd, &pytooltip, &show_callback, &about_callback, &exit_callback);
     if (!flag) {
         return NULL;
     }
+    HWND hWnd = (HWND)pyhwnd;
     wchar_t* tooltip = PyUnicode_AsWideCharString(pytooltip, NULL);
-    if (init_ui_tray(tooltip, show_callback, about_callback, exit_callback)) {
+    if (init_ui_tray(hWnd, tooltip, show_callback, about_callback, exit_callback)) {
         return Py_BuildValue("i", 0);
     }
     return Py_BuildValue("i", -1);
@@ -161,7 +163,7 @@ static PyMethodDef QUModuleMethods[] = {
     {"unregister_start", (PyCFunction)unregister_start, METH_VARARGS, PyDoc_STR("unregister_start(value:str) -> int")},
     {"have_start_value", (PyCFunction)have_start_value, METH_VARARGS, PyDoc_STR("have_start_value(value:str) -> int")},
     {"create_link", (PyCFunction)create_link, METH_VARARGS, PyDoc_STR("create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool")},
-    {"init_tray", (PyCFunction)init_tray, METH_VARARGS, PyDoc_STR("init_tray(tooltip:str, show_callback:function, about_callback:function, exit_callback:function) -> int")},
+    {"init_tray", (PyCFunction)init_tray, METH_VARARGS, PyDoc_STR("init_tray(window:int, tooltip:str, show_callback:function, about_callback:function, exit_callback:function) -> int")},
     {"remove_tray", (PyCFunction)remove_tray, METH_VARARGS, PyDoc_STR("remove_tray() -> None")},
     {"enable_entry_drop", (PyCFunction)enable_entry_drop, METH_VARARGS, PyDoc_STR("enable_entry_drop(hwnd:int, callback:function) -> DropTarget")},
     {"disable_entry_drop", (PyCFunction)disable_entry_drop, METH_VARARGS, PyDoc_STR("disable_entry_drop(dt:DropTarget) -> None")},

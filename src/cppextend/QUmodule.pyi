@@ -25,8 +25,9 @@ def create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool:
     return: True if successful, False otherwise.
     """
     ...
-def init_tray(tooltip:str, show_callback:function, about_callback:function, exit_callback:function) -> int:
+def init_tray(window:int, tooltip:str, show_callback:function, about_callback:function, exit_callback:function) -> int:
     """
+    window: the handle of the main window
     tooltip: the tooltip to be displayed on the tray icon
     show_callback: the function to be called when the tray icon is clicked
     about_callback: the function to be called when the "About" menu item is clicked

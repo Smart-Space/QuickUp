@@ -268,7 +268,7 @@ def regeometry(e):
         pass
 root.bind("<Visibility>", regeometry)
 
-init_tray(thisName, show_window, show_about, close_root)
+init_tray(root.winfo_id(), thisName, show_window, show_about, close_root)
 
 initial_tasks_view(taskView, root)# 初始化任务列表
 
