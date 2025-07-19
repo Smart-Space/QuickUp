@@ -48,7 +48,10 @@ class RunCmd(Task):
             f"目标: {self.cmd}\n\n"\
             f"参数: {self.args}\n\n"\
             f"错误: {error_msg}"
-            datas.root.event_generate('<<RunCmdError>>')
+            if datas.root:
+                datas.root.event_generate('<<RunCmdError>>')
+            # else:
+            #     print(datas.root_error_message)
 
 def run_cmd(name:str, cmd:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
     task = RunCmd(name, cmd, args, admin, cwd, maximize, minimize)

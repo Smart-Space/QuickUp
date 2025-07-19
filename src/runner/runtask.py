@@ -65,8 +65,9 @@ class RunTask(Task):
                 RunTask(task['task'], self.cwd, self.deamon).run()
             elif task['type'] == 'wsp':
                 if task['name'] == '' or os.path.exists(datas.workspace + task['name']) == False:
-                    d = Dialog(datas.root, 'error', config.settings['general']['theme'])
-                    show_dialog(d, "错误", "未在当前任务空间内找到名为 {} 的工作区。".format(task['name']), "msg", config.settings['general']['theme'])
+                    if datas.root:
+                        d = Dialog(datas.root, 'error', config.settings['general']['theme'])
+                        show_dialog(d, "错误", "未在当前任务空间内找到名为 {} 的工作区。".format(task['name']), "msg", config.settings['general']['theme'])
                     continue
                 if datas.workspace != './tasks/':
                     workspace = datas.workspace[8:] + task['name']

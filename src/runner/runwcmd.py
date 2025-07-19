@@ -76,7 +76,10 @@ class RunWCmd(Task):
             f"目标: {self.cmd}\n\n"\
             f"参数: {self.args}\n\n"\
             f"错误: {error_msg}"
-            datas.root.event_generate('<<RunCmdError>>')
+            if datas.root:
+                datas.root.event_generate('<<RunCmdError>>')
+            # else:
+            #     print(datas.root_error_message)
 
 
 def run_wcmd(name:str, cmd:str, args:str, admin:bool=False, cwd:str='None', maximize:bool=False, minimize:bool=False):

@@ -16,7 +16,7 @@ from cppextend.QUmodule import quick_fuzz
 import config
 
 # 版本
-version = "3.5"
+version = "3.6"
 
 """
 操作函数：
