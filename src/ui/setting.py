@@ -361,7 +361,7 @@ def refresh_storage(e):
         sthemeUI.add_label((5,5), text="无存储", font=("微软雅黑", 16))
         nowselected = None
         return
-    storageTree = sthemeUI.add_treeview((5,5), width=585, height=470, content=storageContent, command=__select_storage)
+    storageTree = sthemeUI.add_treeview((0,0), width=585, height=470, content=storageContent, command=__select_storage)
     nowselected = None
 
 def open_selected(e):

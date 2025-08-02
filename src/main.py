@@ -238,7 +238,6 @@ taskEntry.bind("<Return>", lambda e: search_tasks(taskEntry.get()))
 taskVar = taskEntry.var
 taskVar.trace_add("write", lambda *args: if_taskEntry_empty(taskVar.get()))
 taskView = uixml.tags["taskView"][-2]# listview functions
-# settingbutton = uixml.tags["settingbutton"][-2]
 
 editor.init_editor()
 root.protocol("WM_DELETE_WINDOW", close_root_check)

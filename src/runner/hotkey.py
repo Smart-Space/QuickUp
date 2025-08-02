@@ -59,14 +59,15 @@ def __listen_hotkey(command):
     # 监听热键
     flag = False
     create_hotkey()
+    msgw = ctypes.byref(msg)
     while running:
-        if not user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1):
-            sleep(0.1)
+        sleep(0.1)
+        if not user32.PeekMessageW(msgw, None, 0, 0, 1):
             continue
         if msg.message == WM_HOTKEY and msg.wParam == 1:
             flag = True
-        user32.TranslateMessage(ctypes.byref(msg))
-        user32.DispatchMessageW(ctypes.byref(msg))
+        user32.TranslateMessage(msgw)
+        user32.DispatchMessageW(msgw)
         if flag:
             break
     command()
