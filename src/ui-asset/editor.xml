@@ -20,7 +20,7 @@
         </line>
     </line>
 </line>
-<line>
+<line x="-3">
     <listview width="480" height="500" num="0" linew="100">view</listview>
 </line>
 </tinui>
