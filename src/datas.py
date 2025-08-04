@@ -24,7 +24,6 @@ version = "3.6"
 - tasks_name_delete(name:str) -> res:bool 删除某一个值：返回成功与否
 - tasks_name_add(name:str) -> res:bool 添加一个值：返回成功与否
 - tasks_namn_find(name:str) -> res:list 模糊查找：返回符合条件的列表
-- is_valid_windows_filename(filename:str) -> res:bool 检查文件名是否合法：返回合法与否
 """
 # 任务名称集合，从./tasks/*.json初始化，始终按文本字典排序
 all_tasks_name = []# 总tasks
@@ -86,24 +85,3 @@ def tasks_namn_find(name:str):
         max_search_count = len(all_tasks_name)
     tasks_name = quick_fuzz(all_tasks_name, name, patternRank, max_search_count)
     return tasks_name
-
-invalid_chars = re.compile(r'[<>:"/\\|?*]')
-def is_valid_windows_filename(filename):
-    # 检查文件名是否包含非法字符
-    if invalid_chars.search(filename):
-        return False
-    # 检查文件名是否以空格或点结束
-    if filename.endswith(' ') or filename.endswith('.'):
-        return False
-    # 检查文件名是否为保留字
-    reserved_names = {
-        'CON', 'PRN', 'AUX', 'NUL',
-        'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
-        'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
-    }
-    # 将文件名转换为大写进行比较
-    uppercase_filename = filename.upper()
-    if any(uppercase_filename == reserved_name for reserved_name in reserved_names):
-        return False
-    # 如果所有检查都通过，则返回True
-    return True

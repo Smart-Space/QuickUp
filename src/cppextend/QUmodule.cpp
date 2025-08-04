@@ -156,6 +156,17 @@ static PyObject* disable_entry_drop(PyObject* self, PyObject* args) {
     return Py_None;
 }
 
+static PyObject* is_valid_windows_filename(PyObject* self, PyObject* args) {
+    PyObject* pyfilename;
+    int flag = PyArg_ParseTuple(args, "O:is_valid_windows_filename", &pyfilename);
+    if (!flag) {
+        return NULL;
+    }
+    wchar_t* filename = PyUnicode_AsWideCharString(pyfilename, NULL);
+    bool result = valid_windows_filename(filename);
+    return PyBool_FromLong(result);
+}
+
 
 static PyMethodDef QUModuleMethods[] = {
     {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(list:list, name:str, acc:int, num:int) -> list")},
@@ -167,6 +178,7 @@ static PyMethodDef QUModuleMethods[] = {
     {"remove_tray", (PyCFunction)remove_tray, METH_VARARGS, PyDoc_STR("remove_tray() -> None")},
     {"enable_entry_drop", (PyCFunction)enable_entry_drop, METH_VARARGS, PyDoc_STR("enable_entry_drop(hwnd:int, callback:function) -> DropTarget")},
     {"disable_entry_drop", (PyCFunction)disable_entry_drop, METH_VARARGS, PyDoc_STR("disable_entry_drop(dt:DropTarget) -> None")},
+    {"is_valid_windows_filename", (PyCFunction)is_valid_windows_filename, METH_VARARGS, PyDoc_STR("is_valid_windows_filename(filename:str) -> bool")},
     {NULL, NULL, 0, NULL}
 };
 

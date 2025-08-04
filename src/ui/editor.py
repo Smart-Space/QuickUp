@@ -13,13 +13,12 @@ from tinui.theme.tinuidark import TinUIDark
 from tinui.theme.tinuilight import TinUILight
 
 import datas
-from datas import is_valid_windows_filename
 from runner.runtask import run_task, run_cmd
 import config
 from ui.utils import set_window_dark, show_dialog
 from runner.create_lnk import create_task_lnk
 
-from cppextend.QUmodule import enable_entry_drop, disable_entry_drop
+from cppextend.QUmodule import enable_entry_drop, disable_entry_drop, is_valid_windows_filename
 
 
 def init_editor():
@@ -472,7 +471,7 @@ class Editor(tk.Toplevel):
         # 返回True表示保存成功，False表示保存失败
         name = self.entry.get()
         # 判断任务名是否符合Windows系统文件名规范
-        if not is_valid_windows_filename(name):
+        if not is_valid_windows_filename(name.upper()):
             self.saved = False
             d = Dialog(self, "error", themename)
             show_dialog(d, "无法保存", "任务名不符合Windows系统文件名规范", "msg", theme=themename)

@@ -49,3 +49,9 @@ def disable_entry_drop(dt:object) -> None:
     # delete (but not disable) the drop target object.
     # use when control is destroyed.
     ...
+def is_valid_windows_filename(name:str) -> bool:
+    """
+    name: the filename to be checked
+    return: True if name is a valid Windows filename, False otherwise.
+    """
+    ...

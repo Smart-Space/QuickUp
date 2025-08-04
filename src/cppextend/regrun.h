@@ -43,3 +43,16 @@ bool have_value(const std::wstring value_name) {
     return have_value;
 }
 
+std::wstring invalid_chars[] = {L"\\", L"/", L":", L"*", L"?", L"\"", L"<", L">", L"|"};
+bool valid_windows_filename(const std::wstring filename) {
+    for (auto invalid_char : invalid_chars) {
+        if (filename.find(invalid_char) != std::wstring::npos) {
+            return false;
+        }
+    }
+    // 不以空格或.结尾
+    if (filename.back() == L' ' || filename.back() == L'.') {
+        return false;
+    }
+    return true;
+}
