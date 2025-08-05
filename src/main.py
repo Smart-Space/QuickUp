@@ -171,19 +171,29 @@ def if_taskEntry_empty(text):
     global original_text, loading, search_timer
     if loading:
         return
-    if search_timer is not None:
-        search_timer.cancel()
+    if search_timer:
+        root.after_cancel(search_timer)
+        search_timer = None
     loading = True
     if text == '' and original_text != '':
         search_tasks('')
     else:
-        root.after(700, lambda text=text: go_search_tasks(text))
+        search_timer = root.after(700, lambda text=text: go_search_tasks(text))
     original_text = text
     loading = False
 
 def go_search_tasks(text:str):
-    if taskVar.get() == text:
-        search_tasks(text, True)
+    search_tasks(text, True)
+
+def force_search_tasks(e):
+    global original_text, search_timer, loading
+    if search_timer:
+        root.after_cancel(search_timer)
+        search_timer = None
+    loading = True
+    original_text = taskEntry.get()
+    search_tasks(original_text)
+    loading = False
 
 
 root = tk.Tk()
@@ -234,7 +244,7 @@ else:
         uixml.loadxml(f.read())
 taskEntry = uixml.tags["taskEntry"][0]
 taskEntry.focus_set()
-taskEntry.bind("<Return>", lambda e: search_tasks(taskEntry.get()))
+taskEntry.bind("<Return>", force_search_tasks)
 taskVar = taskEntry.var
 taskVar.trace_add("write", lambda *args: if_taskEntry_empty(taskVar.get()))
 taskView = uixml.tags["taskView"][-2]# listview functions

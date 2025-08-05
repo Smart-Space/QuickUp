@@ -6,7 +6,7 @@
     <button2 icon="&#xE946;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['about_workspace']"></button2>
     <button2 icon="&#xED0E;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['create_workspace_lnk']"></button2>
 </line>
-<line y="50">
+<line y="40" x="-3">
     <listview width="480" height="650" num="1">taskView</listview>
 </line>
 </tinui>

@@ -50,13 +50,11 @@ class RunTask(Task):
             if task['type'] == 'cmd':
                 run_cmd(self.name, task['target'], task['args'], task['admin'], self.cwd, task.get('max', False), task.get('min', False))
             elif task['type'] == 'wcmd':
-                # run_wcmd(self.name, task['target'], task['args'], self.cwd)
                 t = Thread(target=self.__run_wcmd, args=(task['target'], task['args'], task['admin'], self.cwd, task.get('max', False), task.get('min', False)), name=task['target'])
                 t.daemon = self.deamon
                 t.start()
                 break
             elif task['type'] == 'cmds':
-                # run_cmds(self.name, task['cmds'], task['cmd'], task['wait'])
                 t = Thread(target=self.__run_cmds, args=(self.name, task['cmds'], task['cmd'], task['wait'], self.cwd), name=task['cmd'])
                 t.daemon = self.deamon
                 t.start()

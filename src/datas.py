@@ -9,14 +9,13 @@ QuickUp的共享数据模块
 **由于QuickUp的主要业务逻辑不涉及多线程，因此本模块不考虑线程安全**
 """
 import os
-import re
 
 from cppextend.QUmodule import quick_fuzz
 
 import config
 
 # 版本
-version = "3.6"
+version = "3.7"
 
 """
 操作函数：

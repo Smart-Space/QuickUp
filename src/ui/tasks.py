@@ -24,10 +24,13 @@ tasknames = []# 存放任务名称的列表
 theme = None
 themename = ''
 
+with open('./ui-asset/singletask.xml', 'r', encoding='utf-8') as f:
+    uixml_content = f.read()
+
 def initial_tasks_view(_taskView, _root):
     # taskView::BasicTinUI.listview
     # 初始化任务列表
-    global taskView, root, uixml_content, theme, themename, tasknames
+    global taskView, root, theme, themename, tasknames
     taskView = _taskView
     root = _root
     if config.settings['general']['theme'] == 'dark':
@@ -40,8 +43,6 @@ def initial_tasks_view(_taskView, _root):
     tasknames = sort_with_priority(datas.tasks_name.copy())
     for i in range(1, len(tasknames)):
         taskView.add()
-    with open('./ui-asset/singletask.xml', 'r', encoding='utf-8') as f:
-        uixml_content = f.read()
     i = 0
     for task in tasknames:
         ui, _, uixml, _ = taskView.getui(i)
@@ -65,8 +66,6 @@ def refresh_tasks_view():
     tasknames = sort_with_priority(now_tasks)
     for i in range(0, len(tasknames)):
         taskView.add()
-    with open('./ui-asset/singletask.xml', 'r', encoding='utf-8') as f:
-        uixml_content = f.read()
     i = 0
     for task in tasknames:
         ui, _, uixml, _ = taskView.getui(i)
