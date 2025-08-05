@@ -28,6 +28,9 @@ Licensed under the GPLv3 and LGPLv3 Licenses. (since 3.0 version)
 import tkinter as tk
 import sys
 import os
+# 设置程序所在目录为工作目录
+rootpath=sys.path[0]
+os.chdir(rootpath)
 import ctypes
 import signal
 import argparse
@@ -51,10 +54,6 @@ from runner.update import installerexe, auto_check_update, update_program, updat
 from runner import create_lnk, hotkey
 
 from cppextend.QUmodule import init_tray, remove_tray
-
-# 设置程序所在目录为工作目录
-rootpath=sys.path[0]
-os.chdir(rootpath)
 
 parser = argparse.ArgumentParser(description='QuickUp - a simple, fast, and easy to use applications starter kit.')
 parser.add_argument('-w', '--workspace', type=str, default='.', help='工作目录')
