@@ -4,7 +4,7 @@
     <title text="%TITLENAME%"></title>
 </line>
 <line x="475" y="40" lineanchor="e">
-    <button2 icon="&#xE724;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['run_task']"></button2>
+    <accentbutton icon="&#xE724;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['run_task']"></accentbutton>
     <button2 icon="&#xE70F;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['edit_task']"></button2>
     <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']"></button2>
 </line>
