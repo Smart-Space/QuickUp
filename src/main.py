@@ -101,7 +101,6 @@ init_tip()
 
 
 def close_root():
-    config.save_config()
     remove_tray()
     root.destroy()
 datas.root_callback = close_root

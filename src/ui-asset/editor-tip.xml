@@ -1,7 +1,7 @@
 <tinui>
 <!-- QuickUp Editor cmd part-->
 <line x='5' y='0'>
-    <textbox width='360' height='100' scrollbar="True">textbox</textbox>
+    <textbox width='355' height='94' scrollbar="True">textbox</textbox>
 </line>
 <line x='475' y='25' lineanchor='e'>
     <line>

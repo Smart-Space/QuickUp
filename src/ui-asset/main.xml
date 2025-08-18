@@ -7,6 +7,6 @@
     <button2 icon="&#xE946;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['about']"></button2>
 </line>
 <line y="40" x="-3">
-    <listview width="480" height="650" num="1">taskView</listview>
+    <listview width="480" height="650" num="0">taskView</listview>
 </line>
 </tinui>

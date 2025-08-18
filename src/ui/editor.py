@@ -752,7 +752,7 @@ class Editor(tk.Toplevel):
         if self.task != '':
             del task_editors[self.task]
             if self.flag == "NEW" and self.callback:
-                self.callback(self.task)
+                self.callback(self.task, True)
         self.uixml.clean()
         self.data.clear()
         self.tasks.clear()

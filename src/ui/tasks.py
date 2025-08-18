@@ -41,21 +41,8 @@ def initial_tasks_view(_taskView, _root):
         themename = 'light'
     datas.tasks_name_initial()# 读取任务列表
     tasknames = sort_with_priority(datas.tasks_name.copy())
-    for i in range(1, len(tasknames)):
-        taskView.add()
-    i = 0
     for task in tasknames:
-        ui, _, uixml, _ = taskView.getui(i)
-        del uixml.ui
-        uixml.ui = theme(ui)
-        taskuixml.append(uixml)
-        uixml.environment({
-            'run_task': lambda e, task=task: run_task(task),
-            'edit_task': lambda e, task=task: edit_task(task),
-            'delete_task': lambda e, task=task: delete_task_view(task),
-        })
-        uixml.loadxml(str.replace(uixml_content, '%TITLENAME%', task))
-        i += 1
+        add_task_view(task)
 
 def refresh_tasks_view():
     # 刷新任务列表
@@ -64,21 +51,8 @@ def refresh_tasks_view():
     taskView.clear()
     now_tasks = sorted(datas.tasks_name)
     tasknames = sort_with_priority(now_tasks)
-    for i in range(0, len(tasknames)):
-        taskView.add()
-    i = 0
     for task in tasknames:
-        ui, _, uixml, _ = taskView.getui(i)
-        del uixml.ui
-        uixml.ui = theme(ui)
-        taskuixml.append(uixml)
-        uixml.environment({
-            'run_task': lambda e, task=task: run_task(task),
-            'edit_task': lambda e, task=task: edit_task(task),
-            'delete_task': lambda e, task=task: delete_task_view(task),
-        })
-        uixml.loadxml(str.replace(uixml_content, '%TITLENAME%', task))
-        i += 1
+        add_task_view(task)
 
 def sort_with_priority(tasks:list):
     # 按优先级排序
@@ -113,10 +87,11 @@ def create_task(e):
     # 后端添加任务
     create_editor('', add_task_view, "NEW")
 
-def add_task_view(task:str):
+def add_task_view(task:str, add_back=False):
     # task::Task
     # 后端添加任务
-    datas.tasks_name_add(task)
+    if add_back:
+        datas.tasks_name_add(task)
     # 前端添加任务
     cui, _, cuixml, _ = taskView.add()
     del cuixml.ui
@@ -206,13 +181,4 @@ def search_tasks(keyword:str, silence=False):
         taskuixml.clear()
         tasknames = sort_with_priority(tasknames.copy())
         for task in tasknames:
-            cui, _, cuixml, _ = taskView.add()
-            del cuixml.ui
-            cuixml.ui = theme(cui)
-            taskuixml.append(cuixml)
-            cuixml.environment({
-                'run_task': lambda e, task=task: start_task(task),
-                'edit_task': lambda e, task=task: edit_task(task),
-                'delete_task': lambda e, task=task: delete_task_view(task),
-            })
-            cuixml.loadxml(str.replace(uixml_content, '%TITLENAME%', task))
+            add_task_view(task)
