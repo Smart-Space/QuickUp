@@ -160,9 +160,9 @@ QuickUp will register the startup application information `<quickup-path> -s` in
 
 ### Setting hot-key to raise QuickUp from system tray
 
- User can select function keys (at least one) in Control, Alt, Shift and with a character in English as a hot-key, to raise QuickUp from system tray.
+User can select function keys (at least one) in Control, Alt, Shift and with a character in English as a hot-key, to raise QuickUp from system tray.
 
-> It can only raise the root workspace main window.
+> It can only raise the root workspace main window. But when there are multiple workspaces, a selection window will appear for selection.
 
 ### QuickUp command line
 
@@ -183,6 +183,14 @@ User can refresh the view list or to open a task or a workspace folder.
 ## Shortcut
 
 In this page, user can see all shortcut keys that QuickUp supports.
+
+---
+
+# Workspace selection
+
+![](/assets/images/selector.png)
+
+When there are multiple workspaces and QuickUp is awakened using a hotkey, this window will be displayed for selection.
 
 ---
 

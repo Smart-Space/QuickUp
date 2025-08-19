@@ -14,6 +14,7 @@ Quickup C++ module
 #include "regrun.h"
 #include "shortcut.h"
 #include "ui.h"
+#include "hotkey.h"
 
 
 static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
@@ -167,6 +168,23 @@ static PyObject* is_valid_windows_filename(PyObject* self, PyObject* args) {
     return PyBool_FromLong(result);
 }
 
+static PyObject* start_hotkey(PyObject* self, PyObject* args) {
+    int fsmodifier;
+    int fskey;
+    PyObject* pycallback;
+    int flag = PyArg_ParseTuple(args, "iiO:create_hotkey", &fsmodifier, &fskey, &pycallback);
+    if (!flag) {
+        return NULL;
+    }
+    start_hotkey_listener(fsmodifier, fskey, pycallback);
+    return Py_None;
+}
+
+static PyObject* stop_hotkey(PyObject* self, PyObject* args) {
+    stop_hotkey_listener();
+    return Py_None;
+}
+
 
 static PyMethodDef QUModuleMethods[] = {
     {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(list:list, name:str, acc:int, num:int) -> list")},
@@ -179,6 +197,8 @@ static PyMethodDef QUModuleMethods[] = {
     {"enable_entry_drop", (PyCFunction)enable_entry_drop, METH_VARARGS, PyDoc_STR("enable_entry_drop(hwnd:int, callback:function) -> DropTarget")},
     {"disable_entry_drop", (PyCFunction)disable_entry_drop, METH_VARARGS, PyDoc_STR("disable_entry_drop(dt:DropTarget) -> None")},
     {"is_valid_windows_filename", (PyCFunction)is_valid_windows_filename, METH_VARARGS, PyDoc_STR("is_valid_windows_filename(filename:str) -> bool")},
+    {"start_hotkey", (PyCFunction)start_hotkey, METH_VARARGS, PyDoc_STR("start_hotkey(fsmodifier:int, fskey:int, callback:function) -> None")},
+    {"stop_hotkey", (PyCFunction)stop_hotkey, METH_VARARGS, PyDoc_STR("stop_hotkey() -> None")},
     {NULL, NULL, 0, NULL}
 };
 

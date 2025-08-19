@@ -1,7 +1,7 @@
 <tinui>
 <!--700 x 900-->
 <line x="0">
-    <entry width="350">taskEntry</entry>
+    <entry width="340">taskEntry</entry>
     <button2 icon="&#xE710;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['create_task']"></button2>
     <button2 icon="&#xE713;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['setting']">settingbutton</button2>
     <button2 icon="&#xE946;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['about']"></button2>

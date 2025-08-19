@@ -1,12 +1,12 @@
 <tinui>
 <!--700 x 900-->
 <line x="0">
-    <entry width="350">taskEntry</entry>
+    <entry width="340">taskEntry</entry>
     <button2 icon="&#xE710;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['create_task']"></button2>
     <button2 icon="&#xE946;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['about_workspace']"></button2>
     <button2 icon="&#xED0E;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['create_workspace_lnk']"></button2>
 </line>
 <line y="40" x="-3">
-    <listview width="480" height="650" num="1">taskView</listview>
+    <listview width="480" height="650" num="0">taskView</listview>
 </line>
 </tinui>

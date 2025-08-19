@@ -32,7 +32,9 @@ import os
 rootpath=sys.path[0]
 os.chdir(rootpath)
 import ctypes
+user32 = ctypes.windll.user32
 import signal
+from multiprocessing.shared_memory import ShareableList
 import argparse
 
 from tinui import BasicTinUI, TinUIXml
@@ -44,6 +46,7 @@ import ui.tasks as taskslib
 from ui.tasks import initial_tasks_view, create_task, search_tasks, refresh_tasks_view
 from ui.about import show_about
 from ui.setting import show_setting
+from ui.select import show_select
 import config
 from ui import editor
 from ui import utils
@@ -82,10 +85,10 @@ if args.task not in ('', None):
     sys.exit()
 
 thisName = "QuickUp" + workname
-hwnd = ctypes.windll.user32.FindWindowW(None, thisName)
+hwnd = user32.FindWindowW(None, thisName)
 if hwnd:
-    ctypes.windll.user32.ShowWindow(hwnd, 9)
-    ctypes.windll.user32.SetForegroundWindow(hwnd)
+    user32.ShowWindow(hwnd, 9)
+    user32.SetForegroundWindow(hwnd)
     sys.exit()
 
 def about_workspace(e):
@@ -103,28 +106,36 @@ init_tip()
 def close_root():
     remove_tray()
     root.destroy()
+    if id_index != -1:
+        shl[id_index] = 0
+        shl.shm.close()
 datas.root_callback = close_root
 
 def close_root_check():
     if config.settings['general']['closeToTray']:
         root.withdraw()
-        if workname == '':
-            hotkey.start_listen(show_from_tray)
     else:
         close_root()
 
 def show_from_tray():
-    root.deiconify()
-    root.attributes("-topmost", True)
-    root.update()
-    root.attributes("-topmost", False)
-    root.focus_set()
-    taskEntry.focus_set()
+    titles = []
+    winbuf = ctypes.create_unicode_buffer(256)
+    for i in range(10):
+        if shl[i] != 0:
+            user32.GetWindowTextW(shl[i], winbuf, 256)
+            titles.append((winbuf.value, shl[i]))
+    if len(titles) == 1:
+        root.deiconify()
+        root.attributes("-topmost", True)
+        root.update()
+        root.attributes("-topmost", False)
+        root.focus_set()
+        taskEntry.focus_set()
+    else:
+        show_select(titles)
 
 def show_window():
     root.deiconify()
-    if workname == '':
-        hotkey.pause_listen()
 
 def signal_handler(signal, frame):
     close_root()
@@ -219,6 +230,21 @@ root.update()
 if config.settings['general']['topMost']:
     root.attributes("-topmost", True)
 
+rootid = user32.GetParent(root.winfo_id())
+
+id_index = -1
+try:
+    shl = ShareableList(name='QuickUpSharedMemory')
+    for i in range(10):
+        if shl[i] == 0:
+            shl[i] = rootid
+            id_index = i
+            break
+except:
+    shl = ShareableList([0]*10, name='QuickUpSharedMemory')
+    shl[0] = rootid
+    id_index = 0
+
 ui = BasicTinUI(root)
 ui.pack(fill=tk.BOTH, expand=True)
 if config.settings['general']['theme'] == 'dark':
@@ -289,5 +315,8 @@ root.bind("<Up>", prev_task_view)
 root.bind("<Down>", next_task_view)
 
 root.bind("<<RunCmdError>>", show_task_error)
+
+if config.settings['general']['closeToTray'] and workname == '':
+    hotkey.start_listen(show_from_tray)
 
 root.mainloop()

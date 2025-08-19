@@ -157,9 +157,9 @@ QuickUp将在注册表`HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVers
 
 ### 热键
 
-设置至少一个功能案件和一个英文字母来从系统托盘唤醒QuickUp。
+设置至少一个功能按键和一个英文字母来从系统托盘唤醒QuickUp。
 
-> 只对主工作区有效
+> 只对主工作区有效，但是当存在多个工作区时，会出现选择窗口进行选择。
 
 ### 命令行支持
 
@@ -176,6 +176,14 @@ QuickUp将在注册表`HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVers
 ## 快捷键
 
 这个页面可以查看所有支持的快捷键。
+
+---
+
+# 工作区选择
+
+![](/assets/images/selector.png)
+
+当存在多个工作区，并且使用热键唤醒QuickUp时，将显示此窗口进行选择。
 
 ---
 
