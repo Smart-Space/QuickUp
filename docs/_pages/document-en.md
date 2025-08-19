@@ -190,7 +190,7 @@ In this page, user can see all shortcut keys that QuickUp supports.
 
 ![](/assets/images/selector.png)
 
-When there are multiple workspaces and QuickUp is awakened using a hotkey, this window will be displayed for selection.
+When there are multiple workspaces and QuickUp is awakened using a hotkey, this window will be displayed for selection. Currently, up to the first 10 workspaces are supported.
 
 ---
 

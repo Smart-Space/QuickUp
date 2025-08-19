@@ -183,7 +183,7 @@ QuickUp将在注册表`HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVers
 
 ![](/assets/images/selector.png)
 
-当存在多个工作区，并且使用热键唤醒QuickUp时，将显示此窗口进行选择。
+当存在多个工作区，并且使用热键唤醒QuickUp时，将显示此窗口进行选择。目前最多支持前10个工作区。
 
 ---
 

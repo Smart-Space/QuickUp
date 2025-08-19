@@ -34,6 +34,8 @@ root_error_message = None# 主窗口错误信息
 
 workspace = None# 工作区对象
 
+titles = []# 标题栏文本与窗口句柄
+
 
 # ==========以下为操作函数==========
 

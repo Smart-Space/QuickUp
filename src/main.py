@@ -118,13 +118,13 @@ def close_root_check():
         close_root()
 
 def show_from_tray():
-    titles = []
+    datas.titles.clear()
     winbuf = ctypes.create_unicode_buffer(256)
     for i in range(10):
         if shl[i] != 0:
             user32.GetWindowTextW(shl[i], winbuf, 256)
-            titles.append((winbuf.value, shl[i]))
-    if len(titles) == 1:
+            datas.titles.append((winbuf.value, shl[i]))
+    if datas.titles.__len__() == 1:
         root.deiconify()
         root.attributes("-topmost", True)
         root.update()
@@ -132,7 +132,8 @@ def show_from_tray():
         root.focus_set()
         taskEntry.focus_set()
     else:
-        show_select(titles)
+        root.after(0, show_select)
+        root.update()
 
 def show_window():
     root.deiconify()

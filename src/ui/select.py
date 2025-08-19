@@ -12,19 +12,18 @@ from tinui.theme.tinuilight import TinUILight
 
 from ui.utils import set_window_dark
 import config
+import datas
 
 root = None
-ui = None
 listview = None
 theme = None
-workspaces = []
 
 def close_select(e=None):
     root.withdraw()
 
 def load_titles():
     listview.clear()
-    for title in workspaces:
+    for title in datas.titles:
         cui, _, cuixml, _ = listview.add()
         del cuixml
         cuit = theme(cui)
@@ -42,17 +41,15 @@ def select_workspace(e):
     taskindex = listview.getsel()
     if taskindex == -1:
         return
-    hwnd = workspaces[taskindex][1]
+    hwnd = datas.titles[taskindex][1]
     user32.ShowWindow(hwnd, 9)
     user32.SetForegroundWindow(hwnd)
     close_select()
 
-def show_select(titles):
-    global root, ui, theme, listview, workspaces
-    workspaces = titles
+def show_select():
+    global root, theme, listview
     if root:
         root.deiconify()
-        root.update()
         load_titles()
         return
     root = tk.Toplevel()
@@ -82,11 +79,11 @@ def show_select(titles):
 
     listviewt = uit.add_listview((0,0), num=0)
     listview = listviewt[-2]
-    ep = ExpandPanel(ui, listviewt[-1])
+    ep = ExpandPanel(ui, listviewt[-1], padding=(0,0,0,-5))
     vp.add_child(ep, weight=1)
 
     hp = HorizonPanel(ui, spacing=10)
-    vp.add_child(hp, 50)
+    vp.add_child(hp, 30)
     btn1 = uit.add_accentbutton((0,0), "确定", command=select_workspace)[-1]
     btn2 = uit.add_button2((0,0), "取消", command=close_select)[-1]
     bep1 = ExpandPanel(ui, btn1)
@@ -95,7 +92,6 @@ def show_select(titles):
     hp.add_child(bep2, weight=1)
 
     vp.update_layout(5,5,495,495)
-    root.update()
 
     root.bind('<Down>', select_next)
     root.bind('<Up>', select_prev)

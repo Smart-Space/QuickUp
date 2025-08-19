@@ -23,13 +23,11 @@ void create_hotkey_listener(){
     while(running){
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)){
-            if (msg.message == WM_HOTKEY || msg.wParam == hotkey_id){
+            if (msg.message == WM_HOTKEY && msg.wParam == hotkey_id){
                 PyGILState_STATE gstate = PyGILState_Ensure();
                 PyObject_CallObject(callback, NULL);
                 PyGILState_Release(gstate);
             }
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
         }
     }
 }
