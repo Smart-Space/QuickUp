@@ -25,5 +25,13 @@
             <table data="self.datas['tdata3']"></table>
         </line>
     </line>
+    <line>
+        <line>
+            <title text="工作区选择界面"></title>
+        </line>
+        <line>
+            <table data="self.datas['tdata4']"></table>
+        </line>
+    </line>
 </line>
 </tinui>

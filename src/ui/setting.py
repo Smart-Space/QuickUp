@@ -391,7 +391,7 @@ tdata1 = (
     ('Ctrl+I','打开设置'),
     ('Ctrl+Q','退出主窗口'),
     ('Up/Down','选择任务'),
-    ('Shift+↲','运行任务'),
+    ('Shift+回车','运行任务'),
     ('Ctrl+E','编辑任务'),
 )
 
@@ -420,11 +420,18 @@ tdata3 = (
     ('Alt+I','添加备注'),
 )
 
+tdata4 = (
+    ('快捷键','说明'),
+    ('Up/Down','选择工作区'),
+    ('回车','确定工作区'),
+    ('Esc','取消选择'),
+)
+
 def init_shortcut():
     global scUI, scUIxml
     scUI = BasicTinUI(root, background="#f3f3f3")
     scUIxml = TinUIXml(theme(scUI))
-    scUIxml.datas.update({'tdata1': tdata1, 'tdata2': tdata2, 'tdata3': tdata3})
+    scUIxml.datas.update({'tdata1': tdata1, 'tdata2': tdata2, 'tdata3': tdata3, 'tdata4': tdata4})
     with open("./ui-asset/setting-shortcut.xml", "r", encoding="utf-8") as f:
         scUIxml.loadxml(f.read())
 

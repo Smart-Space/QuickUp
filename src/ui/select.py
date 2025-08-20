@@ -50,10 +50,11 @@ def show_select():
     global root, theme, listview
     if root:
         root.deiconify()
+        root.focus_force()
         load_titles()
         return
     root = tk.Toplevel()
-    root.title("QuickUp所有工作区")
+    root.title("选择一个QuickUp工作区")
     root.attributes("-topmost", True)
     width = 500
     height = 500
@@ -63,19 +64,23 @@ def show_select():
     root.protocol("WM_DELETE_WINDOW", close_select)
     root.iconbitmap('./logo.ico')
     root.resizable(False, False)
+    root.update_idletasks()
     if config.settings['general']['theme'] == 'dark':
         theme = TinUIDark
         set_window_dark(root)
     else:
         theme = TinUILight
     root.focus_force()
+    rootid = user32.GetParent(root.winfo_id())
+    windowlong = user32.GetWindowLongW(rootid, -16)
+    windowlong &= ~0x00080000
+    user32.SetWindowLongW(rootid, -16, windowlong)
 
     ui = BasicTinUI(root)
     ui.pack(fill=tk.BOTH, expand=True)
     uit = theme(ui)
 
     vp = VerticalPanel(ui)
-    vp.add_child(uit.add_paragraph((0,0),"选择一个QuickUp工作区"))
 
     listviewt = uit.add_listview((0,0), num=0)
     listview = listviewt[-2]

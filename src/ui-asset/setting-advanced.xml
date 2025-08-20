@@ -12,7 +12,7 @@
         <button text='关于QuickUp的开机启动' command='self.funcs["about_start_on_boot"]'></button>
     </line>
     <line pady="15" anchor='w' lineanchor='nw'>
-        <paragraph text='快速唤醒主窗口热键: '></paragraph>
+        <paragraph text='快速唤醒QuickUp热键: '></paragraph>
         <togglebutton text='Ctrl' command='self.funcs["toggle_hk_ctrl"]'>b1</togglebutton>
         <togglebutton text='Alt' command='self.funcs["toggle_hk_alt"]'>b2</togglebutton>
         <togglebutton text='Shift' command='self.funcs["toggle_hk_shift"]'>b3</togglebutton>
