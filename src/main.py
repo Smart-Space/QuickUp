@@ -122,8 +122,12 @@ def show_from_tray():
     winbuf = ctypes.create_unicode_buffer(256)
     for i in range(10):
         if shl[i] != 0:
-            user32.GetWindowTextW(shl[i], winbuf, 256)
-            datas.titles.append((winbuf.value, shl[i]))
+            res = user32.GetWindowTextW(shl[i], winbuf, 256)
+            if res == 0:
+                # 若因意外关闭，会残留窗口句柄
+                shl[i] = 0
+            else:
+                datas.titles.append((winbuf.value, shl[i]))
     if datas.titles.__len__() == 1:
         root.deiconify()
         root.attributes("-topmost", True)
