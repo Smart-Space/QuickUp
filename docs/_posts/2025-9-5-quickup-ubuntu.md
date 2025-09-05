@@ -1,6 +1,6 @@
 ---
 layout: post
-title QuickUp for Ubuntu
+title: QuickUp for Ubuntu
 published: True
 ---
 
