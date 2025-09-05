@@ -65,3 +65,8 @@ def start_hotkey(fsmodifier:int, fskey:int, callback:function) -> None:
 def stop_hotkey() -> None:
     # stop the hotkey.
     ...
+def detect_app_theme() -> str:
+    """
+    return: "dark" or "light" depending on the current Windows theme.
+    """
+    ...

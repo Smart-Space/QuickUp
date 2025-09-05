@@ -118,7 +118,7 @@ To make QuickUp work as you think, please restart all workspaces when you change
 
 ### Theme
 
-In QuickUp, you can set the appearance of it within light-mode or dark-mode. The last change will work after restarting QuickUp.
+In QuickUp, you can set the appearance of it within light-mode or dark-mode, or follow the system theme. The last change will work after restarting QuickUp.
 
 ### Searching threshold
 

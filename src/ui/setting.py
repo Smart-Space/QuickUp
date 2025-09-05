@@ -46,11 +46,13 @@ def init_general():
         gUIxml.loadxml(f.read().replace('%VERSION%', datas.version))
     
     themeradio = gUIxml.tags["themeradio"][-2]
-    nowtheme = config.settings['general']['theme']
+    nowtheme = config.theme_original
     if nowtheme == "light":
         themeradio.select(0)
-    else:
+    elif nowtheme == "dark":
         themeradio.select(1)
+    else:
+        themeradio.select(2)
     
     blurspin = gUIxml.tags["blurspin"][0]
     blurspin.delete(0, 'end')
@@ -153,9 +155,11 @@ def sel_theme(theme):
     # 切换主题
     if theme == "明亮":
         theme = "light"
-    else:
+    elif theme == "黑暗":
         theme = "dark"
-    config.settings['general']['theme'] = theme
+    else:
+        theme = "system"
+    config.theme_original = theme
     config.save_config()
 
 def sel_blur(blur):

@@ -161,3 +161,19 @@ private:
         return DefSubclassProc(hWnd, message, wParam, lParam);
     }
 };
+
+int detect_theme() {
+    HKEY hKey;
+    DWORD value = 1; // 默认明亮
+    DWORD size = sizeof(DWORD);
+    LONG result = RegOpenKeyExW(HKEY_CURRENT_USER,
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        0, KEY_READ, &hKey);
+    if (result == ERROR_SUCCESS) {
+        RegQueryValueExW(hKey, L"AppsUseLightTheme", nullptr, nullptr, (LPBYTE)&value, &size);
+        RegCloseKey(hKey);
+    } else {
+        return 1;
+    }
+    return value;
+}

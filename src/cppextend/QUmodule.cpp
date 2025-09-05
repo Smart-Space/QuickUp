@@ -185,6 +185,15 @@ static PyObject* stop_hotkey(PyObject* self, PyObject* args) {
     return Py_None;
 }
 
+static PyObject* detect_app_theme(PyObject* self, PyObject* args) {
+    int result = detect_theme();
+    if (result == 0) {
+        return PyUnicode_FromString("dark");
+    } else {
+        return PyUnicode_FromString("light");
+    }
+}
+
 
 static PyMethodDef QUModuleMethods[] = {
     {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(list:list, name:str, acc:int, num:int) -> list")},
@@ -199,6 +208,7 @@ static PyMethodDef QUModuleMethods[] = {
     {"is_valid_windows_filename", (PyCFunction)is_valid_windows_filename, METH_VARARGS, PyDoc_STR("is_valid_windows_filename(filename:str) -> bool")},
     {"start_hotkey", (PyCFunction)start_hotkey, METH_VARARGS, PyDoc_STR("start_hotkey(fsmodifier:int, fskey:int, callback:function) -> None")},
     {"stop_hotkey", (PyCFunction)stop_hotkey, METH_VARARGS, PyDoc_STR("stop_hotkey() -> None")},
+    {"detect_app_theme", (PyCFunction)detect_app_theme, METH_VARARGS, PyDoc_STR("detect_app_theme() -> str")},
     {NULL, NULL, 0, NULL}
 };
 

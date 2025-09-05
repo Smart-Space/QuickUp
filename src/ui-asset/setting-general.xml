@@ -5,7 +5,7 @@
             <paragraph text='样式 (重启软件后生效)'></paragraph>
         </line>
         <line>
-            <radiobox content="('明亮','黑暗')" command="self.funcs['sel_theme']">themeradio</radiobox>
+            <segmentbutton content="('明亮','黑暗','跟随系统')" command="self.funcs['sel_theme']">themeradio</segmentbutton>
         </line>
     </line>
     <line pady="15" padx="20">
