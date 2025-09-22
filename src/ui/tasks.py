@@ -92,6 +92,7 @@ def add_task_view(task:str, add_back=False):
     # 后端添加任务
     if add_back:
         datas.tasks_name_add(task)
+        tasknames.append(task)
     # 前端添加任务
     cui, _, cuixml, _ = taskView.add()
     del cuixml.ui

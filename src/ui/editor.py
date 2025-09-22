@@ -259,8 +259,8 @@ class WspEditor:
             d = Dialog(self.root, "error", themename)
             show_dialog(d, "无法打开", f"工作区 {workspace_name} 不存在", "msg", theme=themename)
             return
-        if datas.workspace != './tasks/':
-            workspace_name = datas.workspace[8:] + workspace_name
+        if datas.workname != '.':
+            workspace_name = datas.workname + '/' + workspace_name
         run_cmd('QuickUp', 'QuickUp.exe', f'-w "{workspace_name}"', False)
     
     def get(self):

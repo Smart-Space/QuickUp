@@ -333,13 +333,15 @@ def __select_storage(cid):
     nowselectedPart = []
     for id in cid:
         nowselectedPart.append(storageTree[-2].itemcget(storageTree[0][id][0], 'text'))
-    nowselected = './tasks/' + '/'.join(nowselectedPart) + '.json'
+    nowselected = datas.workspace + '/'.join(nowselectedPart) + '.json'
 
-def __get_storage(tasks_path='./tasks/'):
+def __get_storage(tasks_path=None):
     # 获取 ./tasks/ 目录下的所有文件，包括子文件夹
     tasks_list = []
     tasks_dir = []
     substring = '.json'
+    if not tasks_path:
+        tasks_path = datas.workspace
     # 主目录文件在最前面，子目录文件在后面
     for file in os.listdir(tasks_path):
         if os.path.isfile(os.path.join(tasks_path, file)):

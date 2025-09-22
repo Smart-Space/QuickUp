@@ -63,17 +63,21 @@ parser.add_argument('-w', '--workspace', type=str, default='.', help='工作目�
 parser.add_argument('-t', '--task', type=str, default='', help='运行任务')
 parser.add_argument('-s', '--silent', action='store_true', help='静默模式，不显示UI（仅可缩小化到托盘时可用）')
 args = parser.parse_args()
+datadir = os.path.expandvars("%APPDATA%") + '/QuickUp'
+if not os.path.exists(datadir):
+    os.makedirs(datadir)
 
 if args.workspace in ('', '.', None):
-    workspace = './tasks/'
+    workspace = datadir + '/tasks/'
     workname = ''
 else:
-    workspace = './tasks/' + args.workspace + '/'
+    workspace = datadir + '/tasks/' + args.workspace + '/'
     # 判断目录是否存在
     if not os.path.exists(workspace):
         sys.exit()
     workname = ' {' + args.workspace + '}'
 datas.workspace = workspace
+datas.workname = args.workspace
 
 if args.task not in ('', None):
     # 存在任务，则直接执行任务，然后退出

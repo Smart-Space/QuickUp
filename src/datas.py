@@ -15,7 +15,7 @@ from cppextend.QUmodule import quick_fuzz
 import config
 
 # 版本
-version = "3.12"
+version = "3.13"
 
 """
 操作函数：
@@ -33,6 +33,7 @@ root = None# 主窗口对象
 root_error_message = None# 主窗口错误信息
 
 workspace = None# 工作区对象
+workname = None# 工作区名称
 
 titles = []# 标题栏文本与窗口句柄
 

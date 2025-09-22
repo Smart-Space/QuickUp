@@ -4,6 +4,7 @@
 """
 import json
 import os
+datadir = os.path.expanduser("%APPDATA%\\QuickUp\\tasks\\")
 from threading import Thread
 from tinui.TinUIDialog import Dialog
 
@@ -67,10 +68,10 @@ class RunTask(Task):
                         d = Dialog(datas.root, 'error', config.settings['general']['theme'])
                         show_dialog(d, "错误", "未在当前任务空间内找到名为 {} 的工作区。".format(task['name']), "msg", config.settings['general']['theme'])
                     continue
-                if datas.workspace != './tasks/':
-                    workspace = datas.workspace[8:] + task['name']
-                else:
+                if datas.workname == '.':
                     workspace = task['name']
+                else:
+                    workspace = datas.workname + '/' + task['name']
                 run_cmd(self.name+'_wsp', "QuickUp.exe", f'-w "{workspace}"', False)
             elif task['type'] == 'tip':
                 run_tip(self.name, task['tip'], task['wait'], task['show'], task['top'])

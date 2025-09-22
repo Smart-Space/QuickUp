@@ -1,5 +1,7 @@
 # QuickUp
 
+<a href="https://apps.microsoft.com/detail/9NGHF8PDF0DL?referrer=appbadge&mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/> </a>
+
 一个简单、轻量、快速的Windows应用组启动器。
 
 详情见[介绍](https://quickup.smart-space.com.cn/)。
