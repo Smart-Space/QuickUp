@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <Python.h>
+#include <thread>
 
 #define WM_TRAYICON (WM_USER + 100)
 #define ID_SHOW 10
@@ -7,20 +8,32 @@
 #define ID_EXIT 12
 
 NOTIFYICONDATAW nid = {};
-PyObject* show_callback = nullptr;
 PyObject* about_callback = nullptr;
 PyObject* exit_callback = nullptr;
 
 HWND quickup_window;// QuickUp主窗口句柄
 HMENU hmenu;// 菜单句柄
 
+void ShowWindow() {
+    ShowWindow(quickup_window, SW_SHOW);
+    SetForegroundWindow(quickup_window);
+}
+void AboutWindow() {
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    PyObject_CallObject(about_callback, NULL);
+    PyGILState_Release(gstate);
+}
+void ExitWindow() {
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    PyObject_CallObject(exit_callback, NULL);
+    PyGILState_Release(gstate);
+}
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    UINT WM_TASKBARCREATED = RegisterWindowMessage(TEXT("TaskbarCreated"));
+    static UINT WM_TASKBARCREATED = RegisterWindowMessage(TEXT("TaskbarCreated"));
     if (message == WM_TRAYICON) {
-        PyGILState_STATE gstate = PyGILState_Ensure();
         switch (lParam) {
             case WM_LBUTTONDOWN:
-                PyObject_CallObject(show_callback, NULL);
+                ShowWindow();
                 break;
             case WM_RBUTTONDOWN:
                 // 获取鼠标坐标
@@ -28,20 +41,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 GetCursorPos(&pt);
                 SetForegroundWindow(hWnd);
                 if (IsWindowVisible(quickup_window) || IsIconic(quickup_window)) {
-                    PyObject_CallObject(show_callback, NULL);
+                    ShowWindow();
                 }
                 int res = TrackPopupMenu(hmenu, TPM_RETURNCMD, pt.x, pt.y, 0, hWnd, NULL);
                 if (res == ID_SHOW) {
-                    PyObject_CallObject(show_callback, NULL);
+                    ShowWindow();
                 } else if (res == ID_ABOUT) {
-                    PyObject_CallObject(about_callback, NULL);
+                    std::thread([]{ AboutWindow(); }).detach();
                 } else if (res == ID_EXIT) {
-                    PyObject_CallObject(exit_callback, NULL);
+                    ExitWindow();
                     PostQuitMessage(0);
                 }
                 break;
         }
-        PyGILState_Release(gstate);
     } else if (message == WM_TASKBARCREATED) {
         // 防止explora.exe重启后，原有的托盘图标消失
         Shell_NotifyIconW(NIM_ADD, &nid);
@@ -69,11 +81,9 @@ HWND create_hidden_window() {
     );
 }
 
-bool init_ui_tray(HWND quhwnd, const wchar_t* tooltip, PyObject* _show_callback, PyObject* _about_callback, PyObject* _exit_callback) {
-    Py_XINCREF(_show_callback);
+bool init_ui_tray(HWND quhwnd, const wchar_t* tooltip, PyObject* _about_callback, PyObject* _exit_callback) {
     Py_XINCREF(_about_callback);
     Py_XINCREF(_exit_callback);
-    show_callback = _show_callback;
     about_callback = _about_callback;
     exit_callback = _exit_callback;
 
@@ -118,10 +128,9 @@ void remove_ui_tray() {
     Shell_NotifyIconW(NIM_DELETE, &nid);
     ZeroMemory(&nid, sizeof(nid));
 
-    Py_XDECREF(show_callback);
     Py_XDECREF(about_callback);
     Py_XDECREF(exit_callback);
-    show_callback = about_callback = exit_callback = nullptr;
+    about_callback = exit_callback = nullptr;
 }
 
 

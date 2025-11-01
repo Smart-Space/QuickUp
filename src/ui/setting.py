@@ -124,6 +124,8 @@ def __update_failed(e):
 
 def check_update(e):
     # 检查更新
+    if datas.is_msix:
+        return
     url = "https://quickup.smart-space.com.cn/ver.txt"
     gUI.config(cursor="wait")
     gUI.update_idletasks()

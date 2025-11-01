@@ -33,6 +33,7 @@ rootpath=sys.path[0]
 os.chdir(rootpath)
 import ctypes
 user32 = ctypes.windll.user32
+kernel32 = ctypes.windll.kernel32
 import signal
 from multiprocessing.shared_memory import ShareableList
 import argparse
@@ -63,7 +64,14 @@ parser.add_argument('-w', '--workspace', type=str, default='.', help='工作目�
 parser.add_argument('-t', '--task', type=str, default='', help='运行任务')
 parser.add_argument('-s', '--silent', action='store_true', help='静默模式，不显示UI（仅可缩小化到托盘时可用）')
 args = parser.parse_args()
-datadir = os.path.expandvars("%APPDATA%") + '/QuickUp'
+
+# 使用GetCurrentPackageFullName获取当前程序包的全名
+rc = kernel32.GetCurrentPackageFullName(ctypes.byref(ctypes.c_uint32(0)), None)
+if rc == 15700:# ERROR_NOT_FOUND
+    datadir = rootpath# for general package
+else:
+    datadir = os.path.expandvars("%LOCALAPPDATA%") + '/QuickUp'# for msix package
+    datas.is_msix = True
 if not os.path.exists(datadir):
     os.makedirs(datadir)
 
@@ -138,13 +146,9 @@ def show_from_tray():
         root.update()
         root.attributes("-topmost", False)
         root.focus_set()
-        taskEntry.focus_set()
     else:
         root.after(0, show_select)
         root.update()
-
-def show_window():
-    root.deiconify()
 
 def signal_handler(signal, frame):
     close_root()
@@ -275,7 +279,7 @@ if thisName == "QuickUp":
 else:
     with open("./ui-asset/main-part.xml", "r", encoding="utf-8") as f:
         uixml.loadxml(f.read())
-taskEntry = uixml.tags["taskEntry"][0]
+taskEntry:tk.Entry = uixml.tags["taskEntry"][0]
 taskEntry.focus_set()
 taskEntry.bind("<Return>", force_search_tasks)
 taskVar = taskEntry.var
@@ -285,7 +289,7 @@ taskView = uixml.tags["taskView"][-2]# listview functions
 editor.init_editor()
 root.protocol("WM_DELETE_WINDOW", close_root_check)
 
-if config.settings['general']['checkUpdate']:
+if config.settings['general']['checkUpdate'] and not datas.is_msix:
     def __auto_update_available(e):
         # 自动更新提示
         update_program(root)
@@ -310,7 +314,7 @@ def regeometry(e):
         pass
 root.bind("<Visibility>", regeometry)
 
-init_tray(root.winfo_id(), thisName, show_window, show_about, close_root)
+init_tray(root.winfo_id(), thisName, show_about, close_root)
 
 initial_tasks_view(taskView, root)# 初始化任务列表
 
@@ -322,6 +326,7 @@ root.bind("<Shift-Return>", run_this_task)
 root.bind("<Control-e>", edit_this_task)
 root.bind("<Up>", prev_task_view)
 root.bind("<Down>", next_task_view)
+root.bind("<FocusIn>", lambda e: taskEntry.focus_set())
 
 root.bind("<<RunCmdError>>", show_task_error)
 

@@ -131,6 +131,7 @@ def delete_task_view(task:str):
                     if len(lines) != 0:
                         f.write('\n')
             index = tasknames.index(task)
+            tasknames.remove(task)
             del taskuixml[index]
             # 前端删除任务
             taskView.delete(index)

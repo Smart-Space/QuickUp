@@ -113,16 +113,15 @@ static PyObject* create_link(PyObject* self, PyObject* args) {
 static PyObject* init_tray(PyObject* self, PyObject* args) {
     int pyhwnd;
     PyObject* pytooltip;
-    PyObject* show_callback;
     PyObject* about_callback;
     PyObject* exit_callback;
-    int flag = PyArg_ParseTuple(args, "iOOOO:init_tray", &pyhwnd, &pytooltip, &show_callback, &about_callback, &exit_callback);
+    int flag = PyArg_ParseTuple(args, "iOOO:init_tray", &pyhwnd, &pytooltip, &about_callback, &exit_callback);
     if (!flag) {
         return NULL;
     }
     HWND hWnd = (HWND)pyhwnd;
     wchar_t* tooltip = PyUnicode_AsWideCharString(pytooltip, NULL);
-    if (init_ui_tray(hWnd, tooltip, show_callback, about_callback, exit_callback)) {
+    if (init_ui_tray(hWnd, tooltip, about_callback, exit_callback)) {
         return Py_BuildValue("i", 0);
     }
     return Py_BuildValue("i", -1);

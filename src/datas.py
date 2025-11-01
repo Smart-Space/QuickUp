@@ -15,7 +15,9 @@ from cppextend.QUmodule import quick_fuzz
 import config
 
 # 版本
-version = "3.13"
+version = "3.14"
+
+is_msix = False# 是否是MSIX安装包
 
 """
 操作函数：
