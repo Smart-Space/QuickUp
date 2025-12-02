@@ -26,6 +26,7 @@ static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
     if (!flag) {
         return NULL;
     }
+    setTargetChars((std::string)name);
     PyObject* result = PyList_New(0);
     int length = PyList_Size(list);
     int nownum = 0;
@@ -33,7 +34,7 @@ static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
         PyObject* item = PyList_GetItem(list, i);
         std::string itemstr = (std::string)PyUnicode_AsUTF8(item);
         std::transform(itemstr.begin(), itemstr.end(), itemstr.begin(), ::tolower);
-        int score = calculateSimilarity(name, itemstr);
+        int score = calculateSimilarity(itemstr);
         if (score >= acc) {
             PyList_Append(result, item);
             nownum++;

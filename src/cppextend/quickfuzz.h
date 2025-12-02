@@ -39,26 +39,40 @@ std::vector<uint32_t> utf8_to_codepoints(const std::string& str) {
 }
 
 int computeLCS(const std::vector<uint32_t>& a, const std::vector<uint32_t>& b) {
-    int m = a.size();
-    int n = b.size();
-    std::vector<std::vector<int>> dp(m + 1, std::vector<int>(n + 1, 0));
-    for (int i = 1; i <= m; ++i) {
-        for (int j = 1; j <= n; ++j) {
-            if (a[i-1] == b[j-1]) {
-                dp[i][j] = dp[i-1][j-1] + 1;
+    const std::vector<uint32_t>* shorter = &a;
+    const std::vector<uint32_t>* longer = &b;
+    if (a.size() > b.size()) {
+        shorter = &b;
+        longer = &a;
+    }
+    const int m = shorter->size();
+    const int n = longer->size();
+    std::vector<int> dp(m+1, 0);
+    for (int i = 1; i <= n; ++i) {
+        int prev_diag_val = 0;
+        for (int j = 1; j <= m; ++j) {
+            int temp = dp[j];
+            if (longer->at(i-1) == shorter->at(j-1)) {
+                dp[j] = prev_diag_val + 1;
             } else {
-                dp[i][j] = std::max(dp[i-1][j], dp[i][j-1]);
+                dp[j] = std::max(dp[j-1], dp[j]);
             }
+            prev_diag_val = temp;
         }
     }
-    return dp[m][n];
+    return dp[m];
 }
 
-int calculateSimilarity(const std::string& a, const std::string& b) {
-    std::vector<uint32_t> a_chars = utf8_to_codepoints(a);
+std::vector<uint32_t> target_chars;
+int target_len = 0;
+void setTargetChars(const std::string& str) {
+    target_chars = utf8_to_codepoints(str);
+    target_len = target_chars.size();
+}
+
+int calculateSimilarity(const std::string& b) {
     std::vector<uint32_t> b_chars = utf8_to_codepoints(b);
-    int a_len = a_chars.size();
-    if (a_len == 0) return 0;
-    int lcs_length = computeLCS(a_chars, b_chars);
-    return (lcs_length * 100) / a_len;
+    if (target_len == 0) return 0;
+    int lcs_length = computeLCS(target_chars, b_chars);
+    return (lcs_length * 100) / target_len;
 }
