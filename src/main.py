@@ -200,7 +200,7 @@ def if_taskEntry_empty(text):
     if text == '' and original_text != '':
         search_tasks('')
     else:
-        search_timer = root.after(700, lambda text=text: go_search_tasks(text))
+        search_timer = root.after(500, lambda text=text: go_search_tasks(text))
     original_text = text
     loading = False
 

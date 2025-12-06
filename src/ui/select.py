@@ -27,7 +27,10 @@ def load_titles():
         cui, _, cuixml, _ = listview.add()
         del cuixml
         cuit = theme(cui)
-        cuit.add_title((5,40), title[0], anchor='w')
+        titlename = title[0]
+        if titlename != "QuickUp":
+            titlename = titlename[9:-1]
+        cuit.add_title((5,40), titlename, anchor='w')
 
 def select_next(e):
     taskindex = listview.getsel()
