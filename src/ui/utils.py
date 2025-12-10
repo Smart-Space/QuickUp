@@ -42,12 +42,10 @@ def create_workspace_lnk(workspace):
     lnk_path = os.path.join(desk_path, f"{wsp_name}.lnk")
     create_link(quickup_path, cmd, lnk_path, workspace_icon_path)
 
-def create_task_lnk(workspace, task):
+def create_task_lnk(workname, task):
     # 创建任务快捷方式
-    if workspace == "./tasks/":
-        workspace = '.'
-    else:
-        workspace = workspace[8:-1]
-    cmd = f'-w "{workspace}" -t "{task}"'
+    if workname in ('', '.', None):
+        workname = '.'
+    cmd = f'-w "{workname}" -t "{task}"'
     lnk_path = os.path.join(desk_path, f"{task}.lnk")
     create_link(quickup_path, cmd, lnk_path, task_icon_path)

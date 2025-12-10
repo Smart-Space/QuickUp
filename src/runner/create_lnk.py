@@ -29,8 +29,8 @@ def create_task_lnk(root, task):
     if res:
         root.config(cursor="wait")
         root.update_idletasks()
-        workspace = datas.workspace
-        utils.create_task_lnk(workspace, task)
+        workname = datas.workname
+        utils.create_task_lnk(workname, task)
         root.config(cursor="")
         root.update_idletasks()
         d = Dialog(root, "info", theme)
