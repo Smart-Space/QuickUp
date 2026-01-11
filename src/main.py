@@ -31,9 +31,6 @@ import os
 # 设置程序所在目录为工作目录
 rootpath=sys.path[0]
 os.chdir(rootpath)
-import ctypes
-user32 = ctypes.windll.user32
-kernel32 = ctypes.windll.kernel32
 import signal
 from multiprocessing.shared_memory import ShareableList
 import argparse
@@ -57,7 +54,7 @@ from runner.runtip import init_tip
 from runner.update import installerexe, auto_check_update, update_program, update_QuickUp
 from runner import create_lnk, hotkey
 
-from cppextend.QUmodule import init_tray, remove_tray
+from cppextend.QUmodule import init_tray, remove_tray, get_parent, get_windowtext, priority_window, is_msix
 
 parser = argparse.ArgumentParser(description='QuickUp - a simple, fast, and easy to use applications starter kit.')
 parser.add_argument('-w', '--workspace', type=str, default='.', help='工作目录')
@@ -65,13 +62,12 @@ parser.add_argument('-t', '--task', type=str, default='', help='运行任务')
 parser.add_argument('-s', '--silent', action='store_true', help='静默模式，不显示UI（仅可缩小化到托盘时可用）')
 args = parser.parse_args()
 
-# 使用GetCurrentPackageFullName获取当前程序包的全名
-rc = kernel32.GetCurrentPackageFullName(ctypes.byref(ctypes.c_uint32(0)), None)
-if rc == 15700:# ERROR_NOT_FOUND
-    datadir = rootpath# for general package
-else:
+# 判断是否为msix安装包
+if is_msix():
     datadir = os.path.expandvars("%LOCALAPPDATA%") + '/QuickUp'# for msix package
     datas.is_msix = True
+else:
+    datadir = rootpath# for general package
 if not os.path.exists(datadir):
     os.makedirs(datadir)
 
@@ -97,10 +93,8 @@ if args.task not in ('', None):
     sys.exit()
 
 thisName = "QuickUp" + workname
-hwnd = user32.FindWindowW(None, thisName)
-if hwnd:
-    user32.ShowWindow(hwnd, 9)
-    user32.SetForegroundWindow(hwnd)
+# 已经打开
+if priority_window(thisName):
     sys.exit()
 
 def about_workspace(e):
@@ -131,15 +125,14 @@ def close_root_check():
 
 def show_from_tray():
     datas.titles.clear()
-    winbuf = ctypes.create_unicode_buffer(256)
     for i in range(10):
         if shl[i] != 0:
-            res = user32.GetWindowTextW(shl[i], winbuf, 256)
-            if res == 0:
-                # 若因意外关闭，会残留窗口句柄
-                shl[i] = 0
+            res = get_windowtext(shl[i])
+            if res:
+                datas.titles.append((res, shl[i]))
             else:
-                datas.titles.append((winbuf.value, shl[i]))
+                # 意外关闭
+                shl[i] = 0
     if datas.titles.__len__() == 1:
         root.deiconify()
         root.attributes("-topmost", True)
@@ -243,7 +236,7 @@ root.update()
 if config.settings['general']['topMost']:
     root.attributes("-topmost", True)
 
-rootid = user32.GetParent(root.winfo_id())
+rootid = get_parent(root.winfo_id())
 
 id_index = -1
 try:

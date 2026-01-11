@@ -4,8 +4,6 @@
 只有根工作区的QuickUp才会尝试监听热键，当获得大于一个窗口句柄的共享内存时，会弹出窗口选择对话框。
 """
 import tkinter as tk
-import ctypes
-user32 = ctypes.windll.user32
 from tinui import BasicTinUI, ExpandPanel, HorizonPanel, VerticalPanel
 from tinui.theme.tinuidark import TinUIDark
 from tinui.theme.tinuilight import TinUILight
@@ -13,6 +11,7 @@ from tinui.theme.tinuilight import TinUILight
 from ui.utils import set_window_dark
 import config
 import datas
+from cppextend.QUmodule import priority_window, window_no_icon
 
 root = None
 listview = None
@@ -45,8 +44,7 @@ def select_workspace(e):
     if taskindex == -1:
         return
     hwnd = datas.titles[taskindex][1]
-    user32.ShowWindow(hwnd, 9)
-    user32.SetForegroundWindow(hwnd)
+    priority_window(hwnd)
     close_select()
 
 def show_select():
@@ -74,10 +72,7 @@ def show_select():
     else:
         theme = TinUILight
     root.focus_force()
-    rootid = user32.GetParent(root.winfo_id())
-    windowlong = user32.GetWindowLongW(rootid, -16)
-    windowlong &= ~0x00080000
-    user32.SetWindowLongW(rootid, -16, windowlong)
+    window_no_icon(root.winfo_id())
 
     ui = BasicTinUI(root)
     ui.pack(fill=tk.BOTH, expand=True)

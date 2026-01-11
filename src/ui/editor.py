@@ -184,7 +184,7 @@ class CmdsEditor:
     
     def set_shell(self, cmd):
         # 设置shell类型
-        self.cmd = cmd
+        self.cmd = cmd if cmd == 'cmd' else 'powershell'
         self.contentChanged(None)
     
     def get(self):

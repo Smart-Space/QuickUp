@@ -3,21 +3,12 @@
 QuickUp UI Utils
 """
 import os
-from ctypes import windll, byref, c_int
 
-from cppextend.QUmodule import create_link
+from cppextend.QUmodule import create_link, set_window_dark as __set_dark
 
 
 def set_window_dark(root):
-    hwnd = windll.user32.GetParent(root.winfo_id())
-    if not hwnd:
-        raise Exception("无法获取窗口句柄")
-    windll.dwmapi.DwmSetWindowAttribute(
-        hwnd,
-        20,# DWMWA_USE_IMMERSIVE_DARK_MODE
-        byref(c_int(1)),  # 启用自定义颜色
-        4
-    )
+    __set_dark(root.winfo_id())
 
 def show_dialog(dialog, title, content, wtype="msg", theme="light", input=""):
     dialog.update_idletasks()

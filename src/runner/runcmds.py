@@ -2,11 +2,8 @@
 """
 指令多条命令
 """
-import subprocess
-import ctypes
-kernel32 = ctypes.windll.kernel32
-
 from runner import Task
+from cppextend.QUmodule import run_console_commands
 
 class RunCmds(Task):
     def __init__(self, name:str, cmds:list, cmd:str, wait:bool, cwd:str):
@@ -14,22 +11,10 @@ class RunCmds(Task):
         self.cmds = cmds
         self.cmd = cmd# cmd or powershell
         self.wait = wait
-        self.cwd = cwd if cwd != '' else None
+        self.cwd = cwd
 
     def run(self):
-        kernel32.AllocConsole()
-        p = subprocess.Popen(self.cmd, stdin=subprocess.PIPE, cwd=self.cwd, shell=True)
-        for cmd in self.cmds:
-            p.stdin.write(cmd.encode('utf-8'))
-            p.stdin.write(b'\n')
-            p.stdin.flush()
-        if self.wait:
-            p.communicate(b'exit\n')
-        else:
-            p.stdin.write(b'exit\n')
-            p.stdin.flush()
-            p.stdin.close()
-        kernel32.FreeConsole()
+        run_console_commands(self.cmd, self.cmds, self.cwd, self.wait)
 
 def run_cmds(name:str, cmds:list, cmd:str="cmd", wait:bool=True, cwd:str=None):
     task = RunCmds(name, cmds, cmd, wait, cwd)

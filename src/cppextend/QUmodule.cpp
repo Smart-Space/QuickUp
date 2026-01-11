@@ -16,6 +16,296 @@ Quickup C++ module
 #include "ui.h"
 #include "hotkey.h"
 
+#include <dwmapi.h>
+
+
+static PyObject* get_parent(PyObject* self, PyObject* args) {
+    long hwnd;
+    int flag = PyArg_ParseTuple(args, "i:get_parent", &hwnd);
+    if (!flag) {
+        return NULL;
+    }
+    HWND parent = GetParent((HWND)hwnd);
+    return Py_BuildValue("i", parent);
+}
+
+static PyObject* get_windowtext(PyObject* self, PyObject* args) {
+    long hwnd;
+    int flag = PyArg_ParseTuple(args, "i:get_windowtext", &hwnd);
+    if (!flag) {
+        return NULL;
+    }
+    if (!IsWindow((HWND)hwnd)) {
+        return Py_False;
+    }
+    int len = GetWindowTextLengthW((HWND)hwnd);
+    wchar_t* buffer = new wchar_t[len + 1];
+    GetWindowTextW((HWND)hwnd, buffer, len + 1);
+    PyObject* result = PyUnicode_FromWideChar(buffer, len);
+    delete[] buffer;
+    return result;
+}
+
+static PyObject* priority_window(PyObject* self, PyObject* args) {
+    PyObject* name;
+    int flag = PyArg_ParseTuple(args, "O:priority_window", &name);
+    if (!flag) {
+        return NULL;
+    }
+    HWND hwnd;
+    // 判断是str还是int
+    if (PyLong_Check(name)) { // int
+        hwnd = (HWND)PyLong_AsLong(name);
+    } else { // str
+        wchar_t* wname = PyUnicode_AsWideCharString(name, NULL);
+        hwnd = FindWindowW(nullptr, wname);
+        PyMem_Free(wname);
+    }
+    if (hwnd) {
+        ShowWindow(hwnd, SW_SHOW);
+        SetForegroundWindow(hwnd);
+        return Py_True;
+    }
+    return Py_False;
+}
+
+using FuncGetCurrentPackageFullName = LONG(WINAPI*)(UINT32*, PWSTR);
+static PyObject* is_msix(PyObject* self, PyObject* args) {
+    HMODULE hKernel32 = GetModuleHandleW(L"kernel32.dll");
+    auto pGetCurrentPackageFullName = (FuncGetCurrentPackageFullName)
+        GetProcAddress(hKernel32, "GetCurrentPackageFullName");
+    if (!pGetCurrentPackageFullName) {
+        return Py_False;
+    }
+    UINT32 len = 0;
+    LONG result = pGetCurrentPackageFullName(&len, nullptr);
+    if (result != ERROR_INSUFFICIENT_BUFFER) {
+        return Py_False;
+    }
+    return Py_True;
+}
+
+static PyObject* window_no_icon(PyObject* self, PyObject* args) {
+    long hwnd;
+    int flag = PyArg_ParseTuple(args, "i:window_no_icon", &hwnd);
+    if (!flag) {
+        return NULL;
+    }
+    HWND root = GetParent((HWND)hwnd);
+    LONG windowlong = GetWindowLongW(root, GWL_STYLE);
+    windowlong &= ~WS_SYSMENU;
+    SetWindowLongW(root, GWL_STYLE, windowlong);
+    return Py_None;
+}
+
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+static PyObject* set_window_dark(PyObject* self, PyObject* args) {
+    long hwnd;
+    int flag = PyArg_ParseTuple(args, "i:set_window_dark", &hwnd);
+    if (!flag) {
+        return NULL;
+    }
+    HWND root = GetParent((HWND)hwnd);
+    int dark = 1;
+    DwmSetWindowAttribute(
+        root,
+        DWMWA_USE_IMMERSIVE_DARK_MODE,
+        &dark,
+        sizeof(dark)
+    );
+    return Py_None;
+}
+
+static PyObject* shell_execute_wrapper(PyObject* self, PyObject* args) {
+    PyObject* cmd;
+    PyObject* args_str;
+    PyObject* cwd;
+    int maximize;
+    int minimize;
+    PyObject* operation;
+    // 按顺序解析参数: (cmd, args, cwd, maximize, minimize, operation)
+    if (!PyArg_ParseTuple(args, "OOOiiO:shell_execute_wrapper", &cmd, &args_str, &cwd, &maximize, &minimize, &operation)) {
+        return nullptr;
+    }
+    // 转换为wstring
+    wchar_t* wcmd = PyUnicode_AsWideCharString(cmd, NULL);
+    wchar_t* wargs_str = PyUnicode_AsWideCharString(args_str, NULL);
+    wchar_t* woperation = PyUnicode_AsWideCharString(operation, NULL);
+    wchar_t* wcwd = PyUnicode_AsWideCharString(cwd, NULL);
+    HWND hwnd = nullptr;
+    int show_cmd;
+    if (maximize) {
+        show_cmd = 3; // SW_MAXIMIZE
+    } else if (minimize) {
+        show_cmd = 2; // SW_MINIMIZE
+    } else {
+        show_cmd = 5; // SW_SHOW
+    }
+    HINSTANCE res = ShellExecuteW(hwnd, woperation, wcmd, wargs_str, wcwd, show_cmd);
+    std::wstring message = L"";
+    if ((INT_PTR)res <= 32) {
+        LPWSTR buffer = nullptr;
+        DWORD error_code = GetLastError();
+        DWORD len = FormatMessageW(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+            FORMAT_MESSAGE_FROM_SYSTEM | 
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            error_code,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPWSTR)&buffer,
+            0,
+            nullptr
+        );
+        if (len > 0 && buffer) {
+            message = buffer;
+            LocalFree(buffer);
+        }
+    }
+    PyMem_Free(wcmd);
+    PyMem_Free(wargs_str);
+    PyMem_Free(woperation);
+    PyMem_Free(wcwd);
+    return PyUnicode_FromWideChar(message.c_str(), message.length());
+}
+
+static PyObject* shell_execute_ex_wrapper(PyObject* self, PyObject* args) {
+    // 参数顺序: cmd, args, cwd, maximize, minimize, admin, name
+    PyObject* cmd_obj = nullptr;
+    PyObject* args_obj = nullptr;
+    PyObject* cwd_obj = nullptr;
+    int maximize = 0;
+    int minimize = 0;
+    int admin = 0;
+    PyObject* name_obj = nullptr;
+    if (!PyArg_ParseTuple(args, "OOOiiiO",
+                          &cmd_obj, &args_obj, &cwd_obj,
+                          &maximize, &minimize, &admin, &name_obj)) {
+        return nullptr;
+    }
+    wchar_t* wcmd = PyUnicode_AsWideCharString(cmd_obj, NULL);
+    wchar_t* wargs = PyUnicode_AsWideCharString(args_obj, NULL);
+    wchar_t* wcwd = PyUnicode_AsWideCharString(cwd_obj, NULL);
+    wchar_t* wname = PyUnicode_AsWideCharString(name_obj, NULL);
+    SHELLEXECUTEINFOW sei = { 0 };
+    sei.cbSize = sizeof(SHELLEXECUTEINFOW);
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+    sei.hwnd = nullptr;
+    sei.lpFile = wcmd;
+    sei.lpParameters = wargs;
+    sei.lpDirectory = wcwd;
+    sei.nShow = maximize ? SW_MAXIMIZE : (minimize ? SW_MINIMIZE : SW_SHOW);
+    sei.lpVerb = admin ? L"runas" : L"open";
+    std::wstring message = L"";
+    Py_BEGIN_ALLOW_THREADS
+    if (ShellExecuteExW(&sei)) {
+        WaitForSingleObject(sei.hProcess, INFINITE);
+        CloseHandle(sei.hProcess);
+    } else {
+        LPWSTR buffer = nullptr;
+        DWORD error_code = GetLastError();
+        DWORD len = FormatMessageW(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            error_code,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPWSTR)&buffer,
+            0,
+            nullptr
+        );
+        if (len > 0 && buffer) {
+            message = buffer;
+            LocalFree(buffer);
+        }
+    }
+    Py_END_ALLOW_THREADS
+    PyMem_Free(wcmd);
+    PyMem_Free(wargs);
+    PyMem_Free(wcwd);
+    PyMem_Free(wname);
+    return PyUnicode_FromWideChar(message.c_str(), message.length());
+}
+
+static PyObject* run_console_commands(PyObject* self, PyObject* args) {
+    // 参数顺序: cmd (str), cmds (list of str/bytes), cwd (str or None), wait (bool)
+    PyObject* cmd_obj;
+    PyObject* cmds_list;
+    PyObject* cwd_obj;
+    int wait_flag = 0;
+    if (!PyArg_ParseTuple(args, "OOOi", &cmd_obj, &cmds_list, &cwd_obj, &wait_flag)) {
+        return nullptr;
+    }
+    wchar_t* cmd_str = PyUnicode_AsWideCharString(cmd_obj, nullptr);
+    wchar_t* cwd_str = PyUnicode_AsWideCharString(cwd_obj, nullptr);
+    std::vector<std::string> cmds_strings;
+    std::string item_str;
+    for (Py_ssize_t i = 0; i < PyList_Size(cmds_list); ++i) {
+        PyObject* item = PyList_GetItem(cmds_list, i);
+        item_str = (std::string)PyUnicode_AsUTF8(item);
+        item_str += "\n";
+        cmds_strings.push_back(item_str);
+    }
+    Py_BEGIN_ALLOW_THREADS
+    AllocConsole();
+    SECURITY_ATTRIBUTES sa = { sizeof(sa), nullptr, TRUE };
+    HANDLE hStdinRead = nullptr, hStdinWrite = nullptr;
+    if (!CreatePipe(&hStdinRead, &hStdinWrite, &sa, 0)) {
+        FreeConsole();
+        PyMem_Free(cmd_str);
+        PyMem_Free(cwd_str);
+        return nullptr;
+    }
+    // 设置子进程 STARTUPINFO
+    STARTUPINFOW si = {0};
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESTDHANDLES;
+    si.hStdInput = hStdinRead;
+    si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+    si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+    PROCESS_INFORMATION pi = {0};
+    if (cwd_str[0] == '\0') {
+        cwd_str = nullptr;
+    }
+    // 启动进程
+    CreateProcessW(
+        nullptr,                    // lpApplicationName
+        cmd_str,                    // lpCommandLine
+        nullptr,                    // lpProcessAttributes
+        nullptr,                    // lpThreadAttributes
+        TRUE,                       // bInheritHandles
+        0,                          // dwCreationFlags
+        nullptr,                    // lpEnvironment
+        cwd_str,                    // lpCurrentDirectory
+        &si,
+        &pi
+    );
+    CloseHandle(hStdinRead);
+    hStdinRead = nullptr;
+    // 向子进程 stdin 写入命令
+    DWORD written;
+    for (auto cmd : cmds_strings) {
+        WriteFile(hStdinWrite, cmd.c_str(), (DWORD)cmd.size(), &written, nullptr);
+    }
+    std::string exit_cmd = "exit\n";
+    WriteFile(hStdinWrite, exit_cmd.c_str(), (DWORD)exit_cmd.size(), &written, nullptr);
+    CloseHandle(hStdinWrite);
+    // 等待或不等待
+    if (wait_flag) {
+        WaitForSingleObject(pi.hProcess, INFINITE);
+    }
+    // 清理
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+    FreeConsole();
+    Py_END_ALLOW_THREADS
+    PyMem_Free(cmd_str);
+    PyMem_Free(cwd_str);
+    Py_RETURN_NONE;
+}
 
 static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
     PyObject* list;
@@ -112,7 +402,7 @@ static PyObject* create_link(PyObject* self, PyObject* args) {
 }
 
 static PyObject* init_tray(PyObject* self, PyObject* args) {
-    int pyhwnd;
+    long pyhwnd;
     PyObject* pytooltip;
     PyObject* about_callback;
     PyObject* exit_callback;
@@ -196,6 +486,15 @@ static PyObject* detect_app_theme(PyObject* self, PyObject* args) {
 
 
 static PyMethodDef QUModuleMethods[] = {
+    {"get_parent", (PyCFunction)get_parent, METH_VARARGS, PyDoc_STR("get_parent(hwnd:int) -> int")},
+    {"get_windowtext", (PyCFunction)get_windowtext, METH_VARARGS, PyDoc_STR("get_windowtext(hwnd:int) -> str")},
+    {"priority_window", (PyCFunction)priority_window, METH_VARARGS, PyDoc_STR("priority_window(name:str|int) -> bool")},
+    {"is_msix", (PyCFunction)is_msix, METH_VARARGS, PyDoc_STR("is_msix() -> bool")},
+    {"window_no_icon", (PyCFunction)window_no_icon, METH_VARARGS, PyDoc_STR("window_no_icon(hwnd:int) -> None")},
+    {"set_window_dark", (PyCFunction)set_window_dark, METH_VARARGS, PyDoc_STR("set_window_dark(hwnd:int) -> None")},
+    {"shell_execute_wrapper", (PyCFunction)shell_execute_wrapper, METH_VARARGS, PyDoc_STR("shell_execute_wrapper(cmd:str, args:str, cwd:str, maximize:int, minimize:int, operation:str) -> str")},
+    {"shell_execute_ex_wrapper", (PyCFunction)shell_execute_ex_wrapper, METH_VARARGS, PyDoc_STR("shell_execute_ex_wrapper(cmd:str, args:str, cwd:str, maximize:int, minimize:int, admin:int, name:str) -> str")},
+    {"run_console_commands", (PyCFunction)run_console_commands, METH_VARARGS, PyDoc_STR("run_console_commands(cmd:str, cmds:list, cwd:str, wait:bool) -> None")},
     {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(list:list, name:str, acc:int, num:int) -> list")},
     {"register_start", (PyCFunction)register_start, METH_VARARGS, PyDoc_STR("register_start(value:str, path:str) -> int")},
     {"unregister_start", (PyCFunction)unregister_start, METH_VARARGS, PyDoc_STR("unregister_start(value:str) -> int")},

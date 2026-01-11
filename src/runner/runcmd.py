@@ -2,17 +2,16 @@
 """
 执行命令行命令
 """
-import ctypes
-
 from runner import Task
 import config
 import datas
+from cppextend.QUmodule import shell_execute_wrapper
 
 class RunCmd(Task):
     def __init__(self, name:str, cmd:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
         super().__init__(name, 'cmd')
         self.admin = admin
-        self.cwd = cwd if cwd != '' else None
+        self.cwd = cwd
         if cmd.startswith('"') and cmd.endswith('"'):
             # 去除引号
             cmd = cmd[1:-1]
@@ -30,28 +29,15 @@ class RunCmd(Task):
         else:
             # 管理员权限
             operation = "runas"
-        hwnd = None
-        file = self.cmd
-        params = self.args
-        directory = self.cwd if self.cwd else None
-        if self.maximize:
-            show_cmd = 3
-        elif self.minimize:
-            show_cmd = 2
-        else:
-            show_cmd = 5
-        res = ctypes.windll.shell32.ShellExecuteW(hwnd, operation, file, params, directory, show_cmd)
-        if res <= 32:
+        res = shell_execute_wrapper(self.cmd, self.args, self.cwd, self.maximize, self.minimize, operation)
+        if res:
             # 出错
-            error_msg = ctypes.FormatError()
             datas.root_error_message = f"任务: {self.name}\n\n"\
             f"目标: {self.cmd}\n\n"\
             f"参数: {self.args}\n\n"\
-            f"错误: {error_msg}"
+            f"错误: {res.strip()}"
             if datas.root:
                 datas.root.event_generate('<<RunCmdError>>')
-            # else:
-            #     print(datas.root_error_message)
 
 def run_cmd(name:str, cmd:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
     task = RunCmd(name, cmd, args, admin, cwd, maximize, minimize)
