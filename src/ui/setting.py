@@ -334,7 +334,7 @@ def __select_storage(cid):
     global nowselected
     nowselectedPart = []
     for id in cid:
-        nowselectedPart.append(storageTree[-2].itemcget(storageTree[0][id][0], 'text'))
+        nowselectedPart.append(storageTree[2].itemcget(storageTree[0][id][0], 'text'))
     nowselected = datas.workspace + '/'.join(nowselectedPart) + '.json'
 
 def __get_storage(tasks_path=None):
