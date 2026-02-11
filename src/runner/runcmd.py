@@ -2,6 +2,8 @@
 """
 执行命令行命令
 """
+import os
+
 from runner import Task
 import config
 import datas
@@ -11,13 +13,16 @@ class RunCmd(Task):
     def __init__(self, name:str, cmd:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
         super().__init__(name, 'cmd')
         self.admin = admin
-        self.cwd = cwd
-        if cmd.startswith('"') and cmd.endswith('"'):
-            # 去除引号
-            cmd = cmd[1:-1]
         # 对于非系统或PATH环境变量软件，建议使用路径全称避免文档、卷、路径名错误
-        # 毕竟都写成快捷启动方式了，在创建任务的时候耐心点没什么问题吧
-        self.cmd = cmd
+        # 毕竟都写成快捷启动方式了，在创建任务的时候耐心点没什么问题吧😏
+        self.cmd = cmd.strip('"')
+        if cwd == '':
+            if os.path.isfile(self.cmd):
+                self.cwd = os.path.dirname(self.cmd)
+            else:
+                self.cwd = ''
+        else:
+            self.cwd = cwd
         self.args = args
         self.maximize = maximize
         self.minimize = minimize
