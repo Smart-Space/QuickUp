@@ -13,6 +13,7 @@ settings = {
         'theme': 'light',# light dark system
         'patternRank': 75,
         'maxSearchCount': 5,
+        'showHidden': False,
         'topMost': False,
         'checkUpdate': True,
         'closeToTray': True,
@@ -22,6 +23,7 @@ settings = {
         'disAdmin': False,
         'autoSave': False,
         'callUp': [0x0001, 0x51],
+        'zoneRetryTimes': 20,
     },
     'storage': {}
 }

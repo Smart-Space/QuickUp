@@ -20,6 +20,12 @@
         <back linew='0' uids="('b1', 'b2', 'b3', 'hkentry')"></back>
         <button text='应用' command='self.funcs["apply_hk"]'></button>
     </line>
+    <line pady="15" anchor='w' lineanchor='nw'>
+        <paragraph text='窗口排列重试次数：'></paragraph>
+        <entry width='40'>snapretryentry</entry>
+        <button text='应用' command='self.funcs["apply_snap_retry"]'></button>
+        <paragraph text='（一次耗费约0.1秒）'></paragraph>
+    </line>
     <line pady="15">
         <paragraph text='复制QuickUp路径到环境变量，方便命令行中使用QuickUp'></paragraph>
     </line>

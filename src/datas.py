@@ -10,12 +10,12 @@ QuickUp的共享数据模块
 """
 import os
 
-from cppextend.QUmodule import quick_fuzz
+from cppextend.QUmodule import quick_fuzz, worker_size
 
 import config
 
 # 版本
-version = "3.17"
+version = "4.0"
 
 is_msix = False# 是否是MSIX安装包
 
@@ -39,22 +39,26 @@ workname = None# 工作区名称
 
 titles = []# 标题栏文本与窗口句柄
 
+worker_area = worker_size()# 屏幕可用区域
 
 # ==========以下为操作函数==========
 
 def tasks_name_initial():
+    # 初始化tasks_name
     # 从./tasks/*.json获取文件名列表，添加到tasks_name
-    # 按文本字典排序tasks_name
     # 如果没有./tasks文件夹，则创建
-    global tasks_name, all_tasks_name
     if not os.path.exists(workspace):
         os.mkdir(workspace)
+    __load_tasks_name()
+
+def __load_tasks_name():
+    # 按文本字典排序tasks_name
+    global tasks_name, all_tasks_name
+    tasks_name.clear()
     for f in os.listdir(workspace):
-        if f.endswith(".json") and not f.endswith("[x].json"):
+        if f.endswith(".json") and (not f.endswith("[x].json") or config.settings['general']['showHidden']):
             # task-name[x].json可以看作是QuickUp的彩蛋
-            # QuickUp不提供软件中隐藏任务的功能
             # 用户可以自己在文件名中末尾添加[x]来隐藏任务
-            # 该过滤功能仅在每次QuickUp启动时有效，也就是只出现这里
             tasks_name.append(f[:-5])
     tasks_name = sorted(tasks_name)
     all_tasks_name = tasks_name.copy()

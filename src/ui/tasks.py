@@ -7,6 +7,7 @@ QuickUp的任务列表视图，有两种显示模式：
 import os
 import json
 
+from tinui import BasicTinUI
 from tinui.TinUIDialog import Dialog
 from tinui.theme.tinuidark import TinUIDark
 from tinui.theme.tinuilight import TinUILight
@@ -23,6 +24,7 @@ taskuixml = []# 存放子元素uixml的列表
 tasknames = []# 存放任务名称的列表
 theme = None
 themename = ''
+progress_colors = {} # 存放进展信息颜色的字典
 
 with open('./ui-asset/singletask.xml', 'r', encoding='utf-8') as f:
     uixml_content = f.read()
@@ -36,9 +38,17 @@ def initial_tasks_view(_taskView, _root):
     if config.settings['general']['theme'] == 'dark':
         theme = TinUIDark
         themename = 'dark'
+        progress_colors['text'] = '#ffffff'
+        progress_colors['running'] = '#4cc2ff'
+        progress_colors['success'] = '#6ccb5f'
+        progress_colors['error'] = '#ff99a4'
     else:
         theme = TinUILight
         themename = 'light'
+        progress_colors['text'] = '#1b1b1b'
+        progress_colors['running'] = '#0078d4'
+        progress_colors['success'] = '#0f7b0f'
+        progress_colors['error'] = '#c42b1c'
     datas.tasks_name_initial()# 读取任务列表
     tasknames = sort_with_priority(datas.tasks_name.copy())
     for task in tasknames:
@@ -49,6 +59,7 @@ def refresh_tasks_view():
     global tasknames
     taskuixml.clear()
     taskView.clear()
+    datas.__load_tasks_name()
     now_tasks = sorted(datas.tasks_name)
     tasknames = sort_with_priority(now_tasks)
     for task in tasknames:
@@ -99,7 +110,7 @@ def add_task_view(task:str, add_back=False):
     cuixml.ui = theme(cui)
     taskuixml.append(cuixml)
     cuixml.environment({
-        'run_task': lambda e, task=task: start_task(task),
+        'run_task': lambda e, task=task: start_task(e.widget, task),
         'edit_task': lambda e, task=task: edit_task(task),
         'delete_task': lambda e, task=task: delete_task_view(task),
     })
@@ -138,9 +149,48 @@ def delete_task_view(task:str):
         datas.tasks_name_delete(task)
         os.remove(datas.workspace + task + '.json')
 
-def start_task(task:str):
+def __draw_task_progress(ui:BasicTinUI):
+    back = ui._BasicTinUI__ui_polygon(((360,25),(470,55)), fill=ui.cget('background'), outline=ui.cget('background'), width=9)
+    icon = ui.add_paragraph((360, 40), anchor='w', text='\uF16A', font='{Segoe Fluent Icons} 16', fg=progress_colors['running'])
+    info = ui.add_paragraph((430, 40), anchor='center', text='', font='{Segoe UI} 12', fg=progress_colors['text'])
+    return back, icon, info
+
+def start_task(ui:BasicTinUI, task:str):
     # task::Task
-    run_task(task)
+    # 以下仅为UI交互效果改进，仍可以通过快捷键进行控制
+    task_total = 0
+    back, icon, info = __draw_task_progress(ui)
+    def __clean():
+        nonlocal back, icon, info
+        ui.delete(back)
+        ui.delete(icon)
+        ui.delete(info)
+        back = icon = info = None
+    def __callback(status, val=1):
+        nonlocal task_total, back, icon, info
+        match status:
+            case 'running':
+                ui.itemconfig(icon, text='\uF16A', fill=progress_colors['running'])
+                ui.itemconfig(info, text=f'{val}/{task_total}')
+            case 'success':
+                ui.itemconfig(icon, text='\uE930', fill=progress_colors['success'])
+                if val == task_total:
+                    ui.after(200, __clean)
+            case 'error':
+                ui.itemconfig(icon, text='\uEA39', fill=progress_colors['error'])
+                if val == task_total:
+                    ui.after(200, __clean)
+            case 'set':
+                task_total = val
+                ui.itemconfig(info, text=f'0/{task_total}')
+        ui.update_idletasks()
+    def callback(status, val=1):
+        if status == 'running':
+            ui.after(200, __callback, status, val)
+        else:
+            __callback(status, val)
+
+    run_task(task, callback=callback)
 
 def edit_task(task:str):
     # task::Task

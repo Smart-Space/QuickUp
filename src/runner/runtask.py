@@ -19,7 +19,7 @@ from ui.utils import show_dialog
 
 class RunTask(Task):
 
-    def __init__(self, name:str, cwd:str='', deamon:bool=True):
+    def __init__(self, name:str, cwd:str='', deamon:bool=True, callback=None):
         super().__init__(name, "task")
         filename = datas.workspace + name + '.json'
         if not os.path.exists(filename):
@@ -36,9 +36,23 @@ class RunTask(Task):
                 self.cwd = cwd
             self.tasks = json_data['tasks']
         self.deamon = deamon
+        # callback为完成一个任务条目的回调函数
+        # def callback(state:str, val=...)
+        # state为任务状态，包括：running、success、error、set
+        self.callback = callback
+        self.callback_count = 0
+        self.__call_back("set", len(self.tasks))
     
-    def __run_wcmd(self, target:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False):
-        run_wcmd(self.name, target, args, admin, cwd, maximize, minimize)
+    def __call_back(self, state:str, val=1):
+        if self.callback:
+            self.callback(state, val)
+    
+    def __run_wcmd(self, target:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False, pos:list=[], zone_round:bool=False):
+        res = run_wcmd(self.name, target, args, admin, cwd, maximize, minimize, pos, zone_round)
+        if res:
+            self.__call_back("success", self.callback_count)
+        else:
+            self.__call_back("error", self.callback_count)
         self.run()
     
     def __run_cmds(self, name:str, cmds:list, cmd:str, wait:bool, cwd:str=''):
@@ -48,10 +62,16 @@ class RunTask(Task):
     def run(self):
         while self.tasks:
             task = self.tasks.pop(0)
+            self.__call_back("running", self.callback_count+1)
+            self.callback_count += 1
             if task['type'] == 'cmd':
-                run_cmd(self.name, task['target'], task['args'], task['admin'], self.cwd, task.get('max', False), task.get('min', False))
+                res = run_cmd(self.name, task['target'], task['args'], task['admin'], self.cwd, task.get('max', False), task.get('min', False), task.get('pos', []), task.get('zone_round', False))
+                if  res:
+                    self.__call_back("success", self.callback_count)
+                else:
+                    self.__call_back("error", self.callback_count)
             elif task['type'] == 'wcmd':
-                t = Thread(target=self.__run_wcmd, args=(task['target'], task['args'], task['admin'], self.cwd, task.get('max', False), task.get('min', False)), name=task['target'])
+                t = Thread(target=self.__run_wcmd, name=task['target'], args=(task['target'], task['args'], task['admin'], self.cwd, task.get('max', False), task.get('min', False), task.get('pos', []), task.get('zone_round', False)))
                 t.daemon = self.deamon
                 t.start()
                 break
@@ -67,15 +87,17 @@ class RunTask(Task):
                     if datas.root:
                         d = Dialog(datas.root, 'error', config.settings['general']['theme'])
                         show_dialog(d, "错误", "未在当前任务空间内找到名为 {} 的工作区。".format(task['name']), "msg", config.settings['general']['theme'])
+                    self.__call_back("error", self.callback_count)
                     continue
                 if datas.workname == '.':
                     workspace = task['name']
                 else:
                     workspace = datas.workname + '/' + task['name']
                 run_cmd(self.name+'_wsp', "QuickUp.exe", f'-w "{workspace}"', False)
+                self.__call_back(False, "success", self.callback_count)
             elif task['type'] == 'tip':
                 run_tip(self.name, task['tip'], task['wait'], task['show'], task['top'])
 
-def run_task(name:str, deamon:bool=True):
-    task = RunTask(name, deamon=deamon)
+def run_task(name:str, deamon:bool=True, callback=None):
+    task = RunTask(name, deamon=deamon, callback=callback)
     task.run()

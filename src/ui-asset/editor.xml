@@ -2,7 +2,8 @@
 <!-- QuickUp Editor -->
 <line x="0">
     <line>
-        <entry width="342">entry</entry>
+        <entry width="302">entry</entry>
+        <togglebutton text="&#xE7B3;" font="{Segoe Fluent Icons} 16" command="self.funcs['if_hide_task']">hidebutton</togglebutton>
         <toolbutton icon="&#xE74E;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['save_task']"></toolbutton>
         <toolbutton icon="&#xE724;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['run_task']"></toolbutton>
         <toolbutton icon="&#xE8B7;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['set_cwd']"></toolbutton>

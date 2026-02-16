@@ -54,7 +54,7 @@ from runner.runtip import init_tip
 from runner.update import installerexe, auto_check_update, update_program, update_QuickUp
 from runner import create_lnk, hotkey
 
-from cppextend.QUmodule import init_tray, remove_tray, get_parent, get_windowtext, priority_window, is_msix
+from cppextend.QUmodule import init_tray, remove_tray, get_parent, get_windowtext, priority_window, is_msix, start_window_hook, stop_window_hook
 
 parser = argparse.ArgumentParser(description='QuickUp - a simple, fast, and easy to use applications starter kit.')
 parser.add_argument('-w', '--workspace', type=str, default='.', help='工作目录')
@@ -111,6 +111,7 @@ init_tip()
 
 def close_root():
     remove_tray()
+    stop_window_hook()
     root.destroy()
     if id_index != -1:
         shl[id_index] = 0
@@ -325,5 +326,6 @@ root.bind("<<RunCmdError>>", show_task_error)
 
 if config.settings['general']['closeToTray'] and workname == '':
     hotkey.start_listen(show_from_tray)
+start_window_hook()
 
 root.mainloop()

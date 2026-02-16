@@ -24,18 +24,7 @@ def window_no_icon(hwnd:int) -> None:
 def set_window_dark(hwnd:int) -> None:
     # set dark mode
     ...
-def shell_execute_wrapper(cmd:str, args:str, cwd:str, maximize:int, minimize:int, operation:str) -> str:
-    """
-    cmd: the command to be executed
-    args: the arguments to be passed to the command
-    cwd: the working directory for the command
-    maximize: 1 to maximize the window, 0 to not maximize
-    minimize: 1 to minimize the window, 0 to not minimize
-    operation: the operation to be performed
-    return: the return error information if the operation fails, or an empty string otherwise.
-    """
-    ...
-def shell_execute_ex_wrapper(cmd:str, args:str, cwd:str, maximize:int, minimize:int, admin:int, name:str) -> str:
+def shell_execute_ex_wrapper(cmd:str, args:str, cwd:str, maximize:int, minimize:int, admin:int, wait:int, pos:list, zone_round:bool) -> str:
     """
     cmd: the command to be executed
     args: the arguments to be passed to the command
@@ -43,7 +32,9 @@ def shell_execute_ex_wrapper(cmd:str, args:str, cwd:str, maximize:int, minimize:
     maximize: 1 to maximize the window, 0 to not maximize
     minimize: 1 to minimize the window, 0 to not minimize
     admin: 1 to run the command as an administrator, 0 to not run as an administrator
-    name: the name of the window to be created
+    wait: 1 to wait for the command to finish, 0 to run in the background
+    pos: window rect (x,y,w,h). Just try to move the window to this position.
+    zone_round: whether to save round corners for the window in zone.
     return: the return error information if the operation fails, or an empty string otherwise.
     """
     ...
@@ -124,5 +115,21 @@ def stop_hotkey() -> None:
 def detect_app_theme() -> str:
     """
     return: "dark" or "light" depending on the current Windows theme.
+    """
+    ...
+def worker_size() -> tuple:
+    """
+    return: the size of the screen worker area.
+    """
+    ...
+def start_window_hook() -> None:
+    # start the window hook.
+    ...
+def stop_window_hook() -> None:
+    # stop the window hook.
+    ...
+def zone_try_times(times:int) -> None:
+    """
+    设置QuickUp-snap的尝试次数
     """
     ...

@@ -13,7 +13,7 @@ from tinui.TinUIDialog import Dialog
 from tinui.theme.tinuidark import TinUIDark
 from tinui.theme.tinuilight import TinUILight
 
-from cppextend.QUmodule import register_start, unregister_start, have_start_value
+from cppextend.QUmodule import register_start, unregister_start, have_start_value, zone_try_times
 
 import config
 import datas
@@ -27,11 +27,12 @@ root = None
 theme = None
 lastUI = None
 
-# 常规设置
+# ==========常规设置==========
 first_check_topmost = True
 first_check_update = True
+first_check_showhidden = True
 def init_general():
-    global gUI, first_check_topmost, first_check_update
+    global gUI, first_check_topmost, first_check_update, first_check_showhidden
     gUI = BasicTinUI(root, background="#f3f3f3")
     gUI.place(x=0, y=60, width=600, height=540)
     gUIxml = TinUIXml(theme(gUI))
@@ -41,7 +42,8 @@ def init_general():
     gUIxml.datas.update({'blur_rank': blur_rank})
     gUIxml.funcs.update({'sel_theme': sel_theme, 'sel_blur': sel_blur, 'check_update': check_update,
                          "set_topmost": set_topmost, "auto_check_update": s_auto_check_update,
-                         "sel_exit_mode": sel_exit_mode, 'sel_msc': sel_msc})
+                         "sel_exit_mode": sel_exit_mode, 'sel_msc': sel_msc,
+                         "show_hidden": set_show_hidden})
     with open("./ui-asset/setting-general.xml", "r", encoding="utf-8") as f:
         gUIxml.loadxml(f.read().replace('%VERSION%', datas.version))
     
@@ -68,6 +70,12 @@ def init_general():
         tmcheck.on()
     else:
         first_check_topmost = False
+    
+    hiddencheck = gUIxml.tags["hiddencheck"][-2]
+    if config.settings['general']['showHidden']:
+        hiddencheck.on()
+    else:
+        first_check_showhidden = False
 
     updatecheck = gUIxml.tags["updatecheck"][-2]
     if config.settings['general']['checkUpdate']:
@@ -176,8 +184,17 @@ def sel_msc(msc):
     config.settings['general']['maxSearchCount'] = int(msc)
     config.save_config()
 
+def set_show_hidden(tag):
+    # 显示隐藏文件
+    global first_check_showhidden
+    if first_check_showhidden:
+        first_check_showhidden = False
+        return
+    config.settings['general']['showHidden'] = tag
+    config.save_config()
 
-# 高级设置
+
+# ==========高级设置==========
 first_dis_admin = True
 first_auto_save = True
 HK_CTRL = 0x0002
@@ -186,14 +203,15 @@ HK_SHIFT = 0x0004
 HK_Modifiers = []
 HK_VK = 0x51 # 'Q'
 def init_advanced():
-    global aUI, first_dis_admin, first_auto_save, hkentry
+    global aUI, first_dis_admin, first_auto_save, hkentry, snapretryentry
     aUI = BasicTinUI(root, background="#f3f3f3")
     aUIxml = TinUIXml(theme(aUI))
     aUIxml.funcs.update({'dis_admin': dis_admin, 'start_on_boot': start_on_boot,
                          'about_start_on_boot': about_start_on_boot, 'auto_save': auto_save,
                          'copy_path': copy_path, 'open_cmd_args': open_cmd_args,
                          'toggle_hk_ctrl': toggle_hk_ctrl, 'toggle_hk_alt': toggle_hk_alt,
-                         'toggle_hk_shift': toggle_hk_shift, 'apply_hk': apply_hk})
+                         'toggle_hk_shift': toggle_hk_shift, 'apply_hk': apply_hk,
+                         'apply_snap_retry': apply_snap_retry})
     with open("./ui-asset/setting-advanced.xml", "r", encoding="utf-8") as f:
         aUIxml.loadxml(f.read())
     checkbox = aUIxml.tags["check"][-2]
@@ -201,15 +219,18 @@ def init_advanced():
     if config.settings['advanced']['runWhenStart']:
         checkbox.on()
     admincheck = aUIxml.tags["admincheck"][-2]
+
     if config.settings['advanced']['disAdmin']:
         admincheck.on()
     else:
         first_dis_admin = False
+
     autosaveonoff = aUIxml.tags["autosaveonoff"][-2]
     if config.settings['advanced']['autoSave']:
         autosaveonoff.on()
     else:
         first_auto_save = False
+
     modifier_code = config.settings['advanced']['callUp'][0]
     if modifier_code & HK_CTRL:
         aUIxml.tags['b1'][-2].on()
@@ -219,6 +240,9 @@ def init_advanced():
         aUIxml.tags['b3'][-2].on()
     hkentry = aUIxml.tags["hkentry"][0]
     hkentry.insert(0, chr(config.settings['advanced']['callUp'][1]).upper())
+
+    snapretryentry = aUIxml.tags["snapretryentry"][0]
+    snapretryentry.insert(0, str(config.settings['advanced']['zoneRetryTimes']))
 
 def auto_save(flag):
     # 自动保存
@@ -314,8 +338,19 @@ def apply_hk(e):
     config.settings['advanced']['callUp'] = (modifers, HK_VK)
     config.save_config()
 
+def apply_snap_retry(e):
+    # 重试布局次数
+    res = snapretryentry.get()
+    if res.isdigit() and int(res) >= 0:
+        config.settings['advanced']['zoneRetryTimes'] = int(res)
+        config.save_config()
+        zone_try_times(int(res))
+    else:
+        d = Dialog(root, "error", config.settings['general']['theme'])
+        show_dialog(d, "错误", "重试次数需要为正整数", "msg", config.settings['general']['theme'])
 
-# 存储设置
+
+# ==========存储设置==========
 storageTree = None
 nowselected = None
 storageContent = None

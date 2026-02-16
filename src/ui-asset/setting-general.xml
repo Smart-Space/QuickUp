@@ -24,6 +24,9 @@
         </line>
     </line>
     <line pady="15">
+        <checkbutton text='显示隐藏任务' command="self.funcs['show_hidden']">hiddencheck</checkbutton>
+    </line>
+    <line pady="15">
         <checkbutton text="置顶QuickUp" command="self.funcs['set_topmost']">topmostcheck</checkbutton>
     </line>
     <line pady="15">

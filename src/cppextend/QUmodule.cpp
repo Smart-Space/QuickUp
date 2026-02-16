@@ -15,6 +15,7 @@ Quickup C++ module
 #include "shortcut.h"
 #include "ui.h"
 #include "hotkey.h"
+#include "zone.h"
 
 #include <dwmapi.h>
 
@@ -118,77 +119,25 @@ static PyObject* set_window_dark(PyObject* self, PyObject* args) {
     return Py_None;
 }
 
-static PyObject* shell_execute_wrapper(PyObject* self, PyObject* args) {
-    PyObject* cmd;
-    PyObject* args_str;
-    PyObject* cwd;
-    int maximize;
-    int minimize;
-    PyObject* operation;
-    // 按顺序解析参数: (cmd, args, cwd, maximize, minimize, operation)
-    if (!PyArg_ParseTuple(args, "OOOiiO:shell_execute_wrapper", &cmd, &args_str, &cwd, &maximize, &minimize, &operation)) {
-        return nullptr;
-    }
-    // 转换为wstring
-    wchar_t* wcmd = PyUnicode_AsWideCharString(cmd, NULL);
-    wchar_t* wargs_str = PyUnicode_AsWideCharString(args_str, NULL);
-    wchar_t* woperation = PyUnicode_AsWideCharString(operation, NULL);
-    wchar_t* wcwd = PyUnicode_AsWideCharString(cwd, NULL);
-    HWND hwnd = nullptr;
-    int show_cmd;
-    if (maximize) {
-        show_cmd = 3; // SW_MAXIMIZE
-    } else if (minimize) {
-        show_cmd = 2; // SW_MINIMIZE
-    } else {
-        show_cmd = 5; // SW_SHOW
-    }
-    HINSTANCE res = ShellExecuteW(hwnd, woperation, wcmd, wargs_str, wcwd, show_cmd);
-    std::wstring message = L"";
-    if ((INT_PTR)res <= 32) {
-        LPWSTR buffer = nullptr;
-        DWORD error_code = GetLastError();
-        DWORD len = FormatMessageW(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-            FORMAT_MESSAGE_FROM_SYSTEM | 
-            FORMAT_MESSAGE_IGNORE_INSERTS,
-            nullptr,
-            error_code,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPWSTR)&buffer,
-            0,
-            nullptr
-        );
-        if (len > 0 && buffer) {
-            message = buffer;
-            LocalFree(buffer);
-        }
-    }
-    PyMem_Free(wcmd);
-    PyMem_Free(wargs_str);
-    PyMem_Free(woperation);
-    PyMem_Free(wcwd);
-    return PyUnicode_FromWideChar(message.c_str(), message.length());
-}
-
 static PyObject* shell_execute_ex_wrapper(PyObject* self, PyObject* args) {
-    // 参数顺序: cmd, args, cwd, maximize, minimize, admin, name
+    // 参数顺序: cmd, args, cwd, maximize, minimize, admin, wait, pos
     PyObject* cmd_obj = nullptr;
     PyObject* args_obj = nullptr;
     PyObject* cwd_obj = nullptr;
     int maximize = 0;
     int minimize = 0;
     int admin = 0;
-    PyObject* name_obj = nullptr;
-    if (!PyArg_ParseTuple(args, "OOOiiiO",
+    int wait = 0;
+    PyObject* pos = nullptr;
+    bool zone_round = false;
+    if (!PyArg_ParseTuple(args, "OOOiiiiOp",
                           &cmd_obj, &args_obj, &cwd_obj,
-                          &maximize, &minimize, &admin, &name_obj)) {
+                          &maximize, &minimize, &admin, &wait, &pos, &zone_round)) {
         return nullptr;
     }
     wchar_t* wcmd = PyUnicode_AsWideCharString(cmd_obj, NULL);
     wchar_t* wargs = PyUnicode_AsWideCharString(args_obj, NULL);
     wchar_t* wcwd = PyUnicode_AsWideCharString(cwd_obj, NULL);
-    wchar_t* wname = PyUnicode_AsWideCharString(name_obj, NULL);
     SHELLEXECUTEINFOW sei = { 0 };
     sei.cbSize = sizeof(SHELLEXECUTEINFOW);
     sei.fMask = SEE_MASK_NOCLOSEPROCESS;
@@ -199,10 +148,27 @@ static PyObject* shell_execute_ex_wrapper(PyObject* self, PyObject* args) {
     sei.nShow = maximize ? SW_MAXIMIZE : (minimize ? SW_MINIMIZE : SW_SHOW);
     sei.lpVerb = admin ? L"runas" : L"open";
     std::wstring message = L"";
+    std::vector<int> pos_vec;
+    pos_vec.reserve(4);
+    if (PyList_Size(pos)) {
+        int x = PyLong_AsInt(PyList_GET_ITEM(pos, 0));
+        int y = PyLong_AsInt(PyList_GET_ITEM(pos, 1));
+        int w = PyLong_AsInt(PyList_GET_ITEM(pos, 2));
+        int h = PyLong_AsInt(PyList_GET_ITEM(pos, 3));
+        pos_vec.push_back(x);
+        pos_vec.push_back(y);
+        pos_vec.push_back(w);
+        pos_vec.push_back(h);
+    }
     Py_BEGIN_ALLOW_THREADS
+    auto launchTime = std::chrono::steady_clock::now();
     if (ShellExecuteExW(&sei)) {
-        WaitForSingleObject(sei.hProcess, INFINITE);
-        CloseHandle(sei.hProcess);
+        if (pos_vec.size() == 4) {
+            modify_window_position(sei, wcmd, launchTime, pos_vec[0], pos_vec[1], pos_vec[2], pos_vec[3], zone_round);
+        }
+        if (wait) {
+            WaitForSingleObject(sei.hProcess, INFINITE);
+        }
     } else {
         LPWSTR buffer = nullptr;
         DWORD error_code = GetLastError();
@@ -222,11 +188,11 @@ static PyObject* shell_execute_ex_wrapper(PyObject* self, PyObject* args) {
             LocalFree(buffer);
         }
     }
+    CloseHandle(sei.hProcess);
     Py_END_ALLOW_THREADS
     PyMem_Free(wcmd);
     PyMem_Free(wargs);
     PyMem_Free(wcwd);
-    PyMem_Free(wname);
     return PyUnicode_FromWideChar(message.c_str(), message.length());
 }
 
@@ -484,6 +450,35 @@ static PyObject* detect_app_theme(PyObject* self, PyObject* args) {
     }
 }
 
+static PyObject* worker_size(PyObject* self, PyObject* args) {
+    auto [top, left, bottom, right] = get_worker_size();
+    return Py_BuildValue("iiii", top, left, bottom, right);
+}
+
+static PyObject* start_window_hook(PyObject* self, PyObject* args) {
+    Py_BEGIN_ALLOW_THREADS
+    WindowMonitor::Start();
+    Py_END_ALLOW_THREADS
+    return Py_None;
+}
+
+static PyObject* stop_window_hook(PyObject* self, PyObject* args) {
+    Py_BEGIN_ALLOW_THREADS
+    WindowMonitor::Stop();
+    Py_END_ALLOW_THREADS
+    return Py_None;
+}
+
+static PyObject* zone_try_times(PyObject* self, PyObject* args) {
+    int times;
+    int flag = PyArg_ParseTuple(args, "i:zone_try_times", &times);
+    if (!flag) {
+        return NULL;
+    }
+    set_zone_try_times(times);
+    return Py_None;
+}
+
 
 static PyMethodDef QUModuleMethods[] = {
     {"get_parent", (PyCFunction)get_parent, METH_VARARGS, PyDoc_STR("get_parent(hwnd:int) -> int")},
@@ -492,8 +487,7 @@ static PyMethodDef QUModuleMethods[] = {
     {"is_msix", (PyCFunction)is_msix, METH_VARARGS, PyDoc_STR("is_msix() -> bool")},
     {"window_no_icon", (PyCFunction)window_no_icon, METH_VARARGS, PyDoc_STR("window_no_icon(hwnd:int) -> None")},
     {"set_window_dark", (PyCFunction)set_window_dark, METH_VARARGS, PyDoc_STR("set_window_dark(hwnd:int) -> None")},
-    {"shell_execute_wrapper", (PyCFunction)shell_execute_wrapper, METH_VARARGS, PyDoc_STR("shell_execute_wrapper(cmd:str, args:str, cwd:str, maximize:int, minimize:int, operation:str) -> str")},
-    {"shell_execute_ex_wrapper", (PyCFunction)shell_execute_ex_wrapper, METH_VARARGS, PyDoc_STR("shell_execute_ex_wrapper(cmd:str, args:str, cwd:str, maximize:int, minimize:int, admin:int, name:str) -> str")},
+    {"shell_execute_ex_wrapper", (PyCFunction)shell_execute_ex_wrapper, METH_VARARGS, PyDoc_STR("shell_execute_ex_wrapper(cmd:str, args:str, cwd:str, maximize:int, minimize:int, admin:int, wait:int, pos:list, zone_round:bool) -> str")},
     {"run_console_commands", (PyCFunction)run_console_commands, METH_VARARGS, PyDoc_STR("run_console_commands(cmd:str, cmds:list, cwd:str, wait:bool) -> None")},
     {"quick_fuzz", (PyCFunction)quick_fuzz, METH_VARARGS, PyDoc_STR("quick_fuzz(list:list, name:str, acc:int, num:int) -> list")},
     {"register_start", (PyCFunction)register_start, METH_VARARGS, PyDoc_STR("register_start(value:str, path:str) -> int")},
@@ -508,6 +502,10 @@ static PyMethodDef QUModuleMethods[] = {
     {"start_hotkey", (PyCFunction)start_hotkey, METH_VARARGS, PyDoc_STR("start_hotkey(fsmodifier:int, fskey:int, callback:function) -> None")},
     {"stop_hotkey", (PyCFunction)stop_hotkey, METH_VARARGS, PyDoc_STR("stop_hotkey() -> None")},
     {"detect_app_theme", (PyCFunction)detect_app_theme, METH_VARARGS, PyDoc_STR("detect_app_theme() -> str")},
+    {"worker_size", (PyCFunction)worker_size, METH_VARARGS, PyDoc_STR("worker_size() -> tuple")},
+    {"start_window_hook", (PyCFunction)start_window_hook, METH_VARARGS, PyDoc_STR("start_window_hook() -> None")},
+    {"stop_window_hook", (PyCFunction)stop_window_hook, METH_VARARGS, PyDoc_STR("stop_window_hook() -> None")},
+    {"zone_try_times", (PyCFunction)zone_try_times, METH_VARARGS, PyDoc_STR("zone_try_times(times:int) -> None")},
     {NULL, NULL, 0, NULL}
 };
 

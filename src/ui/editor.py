@@ -7,6 +7,7 @@ import subprocess
 import json
 import tkinter as tk
 from typing import Union
+from webbrowser import open as webopen
 from tinui import BasicTinUI, TinUIXml
 from tinui.TinUIDialog import Dialog
 from tinui.theme.tinuidark import TinUIDark
@@ -22,13 +23,41 @@ from cppextend.QUmodule import enable_entry_drop, disable_entry_drop, is_valid_w
 
 
 def init_editor():
-    global theme, themename
+    global theme, themename, screen_rects, screen_info
     if config.settings['general']['theme'] == 'dark':
         theme = TinUIDark
         themename = 'dark'
     else:
         theme = TinUILight
         themename = 'light'
+    left, top, right, bottom = datas.worker_area
+    screen_rects = {} # (x,y,w,h)
+    screen_rects['lrs'] = (
+        # 左右平分
+        (left, top, (right-left)//2, bottom),
+        ((left+right)//2, top, (right-left)//2, bottom)
+    )
+    screen_rects['lcrs'] = (
+        # 左中右平分
+        (left, top, (right-left)//3, bottom),
+        ((left+right)//3, top, (right-left)//3, bottom),
+        ((left+right)*2//3, top, (right-left)//3, bottom)
+    )
+    screen_rects['lr'] = (
+        # 左大左小，右大右小
+        (left, top, (right-left)*2//3, bottom),
+        (left, top, (right-left)//3, bottom),
+        ((left+right)//3, top, (right-left)*2//3, bottom),
+        ((left+right)*2//3, top, (right-left)//3, bottom)
+    )
+    screen_rects['quad'] = (
+        # 四角布局
+        (left, top, (right-left)//2, (bottom-top)//2),
+        ((left+right)//2, top, (right-left)//2, (bottom-top)//2),
+        (left, (top+bottom)//2, (right-left)//2, (bottom-top)//2),
+        ((left+right)//2, (top+bottom)//2, (right-left)//2, (bottom-top)//2)
+    )
+    screen_info = '屏幕可用区域 '+', '.join(str(x) for x in datas.worker_area)
 
 
 task_editors = dict()# 任务编辑器字典，用于存储所有任务编辑器实例
@@ -37,18 +66,22 @@ task_editors = dict()# 任务编辑器字典，用于存储所有任务编辑器
 class CmdEditor:
     # 命令编辑器
 
-    def __init__(self, uixml:TinUIXml, editor):
+    def __init__(self, uixml:TinUIXml, ui:BasicTinUI, editor):
         self.uixml = uixml
+        self.ui = ui
         self.type = 'cmd'
         self.target = ''
         self.args = ''
         self.admin = False
         self.runMAX = False
         self.runMIN = False
+        self.pos = []
+        self.zone_round = False
         self.contentChanged = None
         self.editor = editor
+        self.zone_set_ui:BasicTinUI = None
     
-    def init(self, target:str="", args:str="", admin:bool=False, wait:bool=False, runMAX:bool=False, runMIN:bool=False):
+    def init(self, target:str="", args:str="", admin:bool=False, wait:bool=False, runMAX:bool=False, runMIN:bool=False, pos:list=[], zone_round:bool=False):
         # 初始化ui接管
         self.targetEntry = self.uixml.tags['targetEntry'][0]
         self.argsEntry = self.uixml.tags['argsEntry'][0]
@@ -61,6 +94,7 @@ class CmdEditor:
             'run_as_admin': lambda tag, task=self: self.editor.cmd_run_as_admin(task, tag),
             'run_max': self.run_max,
             'run_min': self.run_min,
+            'open_zone_set': self.open_zone_set
         })
         with open('./ui-asset/editor-cmd-flyout.xml', 'r', encoding='utf-8') as f:
             flyoutuixml.loadxml(f.read())
@@ -82,6 +116,8 @@ class CmdEditor:
         self.target = target
         self.args = args
         self.admin = admin
+        self.pos = pos
+        self.zone_round = zone_round
         self.targetEntry.insert(0, target)
         dt = enable_entry_drop(self.targetEntry.winfo_id(), self.target_drop)
         self.targetEntry.bind('<Destroy>', lambda e: disable_entry_drop(dt))
@@ -107,6 +143,99 @@ class CmdEditor:
         self.runMIN = tag
         self.contentChanged(None)
     
+    def open_zone_set(self, _):
+        self.zone_set_ui = BasicTinUI(self.ui.master)
+        self.zone_set_ui.pack(fill='both', expand=True)
+        zone_set_ui_xml = TinUIXml(theme(self.zone_set_ui))
+        zone_set_ui_xml.environment({
+            'about-zone': self.about_zone_set,
+            'delete': self.delete_zone_set,
+            'save': self.save_zone_set,
+            'close': self.close_zone_set,
+            'lrs-l': None,
+            'lrs-r': None,
+            'lcrs-l': None,
+            'lcrs-c': None,
+            'lcrs-r': None,
+            'lr-lb': None,
+            'lr-ls': None,
+            'lr-rb': None,
+            'lr-rs': None,
+            'quad-lt': None,
+            'quad-rt': None,
+            'quad-lb': None,
+            'quad-rb': None,
+            'keep-round': None,
+        })
+        with open('./ui-asset/zoneset.xml', 'r', encoding='utf-8') as f:
+            xml = f.read().replace("%SCREENINFO%", screen_info)
+            zone_set_ui_xml.loadxml(xml)
+        self.zoneroundcheck = zone_set_ui_xml.tags['zoneroundcheck'][-2]
+        if self.zone_round:
+            self.zoneroundcheck.on()
+        appentry:tk.Entry = zone_set_ui_xml.tags['appentry'][0]
+        appentry.insert(0, self.targetEntry.get())
+        appentry.config(state='readonly', readonlybackground=appentry.cget('background'))
+        self.zone_set_ui.xentry = zone_set_ui_xml.tags['xentry'][0]
+        self.zone_set_ui.yentry = zone_set_ui_xml.tags['yentry'][0]
+        self.zone_set_ui.wentry = zone_set_ui_xml.tags['wentry'][0]
+        self.zone_set_ui.hentry = zone_set_ui_xml.tags['hentry'][0]
+        zone_set_ui_xml.funcs.update({
+            'lrs-l': lambda _:self.__set_rect(*screen_rects['lrs'][0]),
+            'lrs-r': lambda _:self.__set_rect(*screen_rects['lrs'][1]),
+            'lcrs-l': lambda _:self.__set_rect(*screen_rects['lcrs'][0]),
+            'lcrs-c': lambda _:self.__set_rect(*screen_rects['lcrs'][1]),
+            'lcrs-r': lambda _:self.__set_rect(*screen_rects['lcrs'][2]),
+            'lr-lb': lambda _:self.__set_rect(*screen_rects['lr'][0]),
+            'lr-ls': lambda _:self.__set_rect(*screen_rects['lr'][1]),
+            'lr-rb': lambda _:self.__set_rect(*screen_rects['lr'][2]),
+            'lr-rs': lambda _:self.__set_rect(*screen_rects['lr'][3]),
+            'quad-lt': lambda _:self.__set_rect(*screen_rects['quad'][0]),
+            'quad-rt': lambda _:self.__set_rect(*screen_rects['quad'][1]),
+            'quad-lb': lambda _:self.__set_rect(*screen_rects['quad'][2]),
+            'quad-rb': lambda _:self.__set_rect(*screen_rects['quad'][3]),
+            'keep-round': self.keep_zone_round
+        })
+        if self.pos:
+            self.zone_set_ui.xentry.insert(0, str(self.pos[0]))
+            self.zone_set_ui.yentry.insert(0, str(self.pos[1]))
+            self.zone_set_ui.wentry.insert(0, str(self.pos[2]))
+            self.zone_set_ui.hentry.insert(0, str(self.pos[3]))
+    
+    def about_zone_set(self, _):
+        webopen('https://quickup.smart-space.com.cn/QuickUp-zone/')
+
+    def delete_zone_set(self, _):
+        self.pos = ()
+        self.contentChanged(None)
+        self.close_zone_set(None)
+
+    def save_zone_set(self, _):
+        x_str = self.zone_set_ui.xentry.get()
+        y_str = self.zone_set_ui.yentry.get()
+        w_str = self.zone_set_ui.wentry.get()
+        h_str = self.zone_set_ui.hentry.get()
+        if x_str.isdigit() and y_str.isdigit() and w_str.isdigit() and h_str.isdigit():
+            x = int(x_str)
+            y = int(y_str)
+            w = int(w_str)
+            h = int(h_str)
+            self.pos = (x, y, w, h)
+        else:
+            d = Dialog(self.editor, "error", themename)
+            show_dialog(d, "错误", "位置参数必须为数字", "msg", theme=themename)
+            return
+        self.contentChanged(None)
+        self.close_zone_set(None)
+    
+    def close_zone_set(self, _):
+        self.zone_set_ui.destroy()
+        self.zone_set_ui = None
+    
+    def keep_zone_round(self, tag):
+        self.zone_round = tag
+        self.contentChanged(None)
+    
     def target_drop(self, file):
         # 目标文件拖拽
         if os.path.isfile(file):
@@ -117,6 +246,16 @@ class CmdEditor:
             self.targetEntry.delete(0, 'end')
             self.targetEntry.insert(0, f'shell:AppsFolder\\{file}')
     
+    def __set_rect(self, x, y, w, h):
+        self.zone_set_ui.xentry.delete(0, 'end')
+        self.zone_set_ui.yentry.delete(0, 'end')
+        self.zone_set_ui.wentry.delete(0, 'end')
+        self.zone_set_ui.hentry.delete(0, 'end')
+        self.zone_set_ui.xentry.insert(0, str(x))
+        self.zone_set_ui.yentry.insert(0, str(y))
+        self.zone_set_ui.wentry.insert(0, str(w))
+        self.zone_set_ui.hentry.insert(0, str(h))
+
     def get(self):
         # 获取命令数据
         self.target = self.targetEntry.get()
@@ -128,6 +267,8 @@ class CmdEditor:
             "admin": self.admin,
             "max": self.runMAX,
             "min": self.runMIN,
+            "pos": self.pos,
+            "zone_round": self.zone_round,
         }
 
 
@@ -353,6 +494,7 @@ class Editor(tk.Toplevel):
         self.data = {"name": task, "cwd": "", "tasks": [], "rate": False}
         self.tasks = []# 任务列表，模拟listview增删
         self.saved = True# 是否已保存
+        self.hidden = False# 是否隐藏
 
         width = 500
         height = 600
@@ -380,6 +522,7 @@ class Editor(tk.Toplevel):
             'create_task_lnk': self.create_task_lnk,
             'open_local': self.open_local,
             'set_priority': self.set_priority,
+            'if_hide_task': None,
         })
         with open('./ui-asset/editor.xml', 'r', encoding='utf-8') as f:
             self.uixml.loadxml(f.read())
@@ -389,6 +532,15 @@ class Editor(tk.Toplevel):
         self.view = self.uixml.tags['view'][-2]
         _, ratingbarBack, self.ratingbar, _ = self.uixml.tags['ratingbar']
         self.ui.itemconfig(ratingbarBack, outline='#f3f3f3' if themename == 'light' else '#202020')
+
+        hidebuttons = self.uixml.tags['hidebutton']
+        self.hidebutton = hidebuttons[-2]
+        self.hidebutton_icon = hidebuttons[0]
+        if self.task.endswith('[x]'):
+            self.hidebutton.on()
+            self.ui.itemconfig(self.hidebutton_icon, text='\uED1A')
+            self.hidden = True
+        self.uixml.funcs.update({'if_hide_task': self.if_hide_task})
 
         self.entry.insert(0, task)
         self.entry.var.trace_add('write', self.contentChanged)
@@ -452,9 +604,9 @@ class Editor(tk.Toplevel):
                 self.ratingbar.setrate(1)
         for one in self.data['tasks']:
             if one['type'] == 'cmd':
-                self.add_task_cmd(None, one['target'], one['args'], one['admin'], False, one.get('max', False), one.get('min', False))
+                self.add_task_cmd(None, one['target'], one['args'], one['admin'], False, one.get('max', False), one.get('min', False), one.get('pos', ()), one.get('zone_round', False))
             elif one['type'] == 'wcmd':
-                self.add_task_cmd(None, one['target'], one['args'], one['admin'], True, one.get('max', False), one.get('min', False))
+                self.add_task_cmd(None, one['target'], one['args'], one['admin'], True, one.get('max', False), one.get('min', False), one.get('pos', ()), one.get('zone_round', False))
             elif one['type'] == 'cmds':
                 self.add_task_cmds(None, one['cmds'], one['cmd'], one['wait'])
             elif one['type'] == 'task':
@@ -548,6 +700,16 @@ class Editor(tk.Toplevel):
                     if len(lines) != 0:
                         f.write('\n')
             self.original_rate = self.data['rate']
+        # 是否隐藏任务
+        if self.task.endswith('[x]'):
+            if not self.hidden:
+                self.hidden = True
+                self.hidebutton.on()
+        else:
+            if self.hidden:
+                self.hidden = False
+                self.hidebutton.off()
+        
         self.saved = True
         self.renew_title()
         return True
@@ -587,6 +749,21 @@ class Editor(tk.Toplevel):
             return
         subprocess.Popen(f'explorer /select,"{os.path.join(datas.workspace, self.task + ".json").replace('/', '\\')}"')
 
+    def if_hide_task(self, tag):
+        name = self.entry.get()
+        if tag:
+            self.ui.itemconfig(self.hidebutton_icon, text='\uED1A')
+            if not name.endswith('[x]'):
+                self.entry.delete(0, 'end')
+                self.entry.insert(0, name+'[x]')
+        else:
+            self.ui.itemconfig(self.hidebutton_icon, text='\uE7B3')
+            if name.endswith('[x]'):
+                self.entry.delete(0, 'end')
+                self.entry.insert(0, name[:-3])
+        self.hidden = tag
+        self.contentChanged(None)
+
     def set_priority(self, num):
         # 设置优先级
         if num == 1 and self.data['rate'] == True:
@@ -608,20 +785,20 @@ class Editor(tk.Toplevel):
             self.saved = False
             self.renew_title()
     
-    def add_task_cmd(self, e, target:str="", args:str="", admin:bool=False, wait:bool=False, runmax:bool=False, runmin:bool=False):
+    def add_task_cmd(self, e, target:str="", args:str="", admin:bool=False, wait:bool=False, runmax:bool=False, runmin:bool=False, pos:list=[], zone_round:bool=False):
         # 添加命令任务
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
         uixml.ui = theme(ui)
-        task = CmdEditor(uixml, self)
+        task = CmdEditor(uixml, ui, self)
         uixml.environment({
             'delete_task': lambda e, task=task: self.delete_task(task),
         })
         uixml.loadxml(self.cmdxml)
         task.contentChanged = self.contentChanged
-        task.init(target, args, admin, wait, runmax, runmin)
+        task.init(target, args, admin, wait, runmax, runmin, pos, zone_round)
         targetEntry = uixml.tags['targetEntry'][0]
         argsEntry = uixml.tags['argsEntry'][0]
         targetEntry.var.trace_add('write', self.contentChanged)
