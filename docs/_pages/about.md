@@ -13,27 +13,56 @@ QuickUp is a simple and lightweight tool that helps you start working, studying 
 ## 特性/Features
 
 - 一次打开多个应用、运行多个命令、子任务、子QuickUp工作区。
+  
   Launch multiple applications, commands, sub-tasks or sub-workspaces at once.
+  
 - 在一个任务中任意定义要打开的应用或命令。
+  
   Create custom groups of applications or commands in one task.
+  
 - 可等待一个命令结束后再继续执行任务。
+  
   The task can be continued after a command is completed.
+  
 - 自定义工作区组。
+  
   Save and load custom groups.
+  
 - 模糊查找任务。
+  
   Search for tasks.
+  
 - 自定义置顶任务组。
+  
   Customize the order of the starred groups.
+  
 - 可选择QuickUp外观（明亮或黑暗）。
+  
   Customize the appearance (light/dark) of the QuickUp window.
+  
 - 可设置开机自启动。
+  
   Run QuickUp when Windows starts.
+  
 - 多层工作区嵌套。
+  
   Provide levels of workspaces to manage.
+  
 - 提供多行命令行以及提示文本（备注文本）。
+  
   Provide command line and content of tips support to use.
+  
 - QuickUp可以被关闭到系统托盘，并通过自定义热键唤醒。
+  
   QuickUp can be turned off to the system tray and awakened by a custom hotkey.
+  
+- 提供隐藏任务。
+
+  Provide hidden tasks
+
+- 可尝试调整运行任务应用的窗口位置和尺寸。
+
+  Try adjusting the position and size of the window from the task application is running.
 
 ……
 

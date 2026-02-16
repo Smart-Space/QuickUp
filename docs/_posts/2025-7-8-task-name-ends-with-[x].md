@@ -14,8 +14,10 @@ published: True
 - 快捷方式中使用上方命令行指令
 
 > QuickUp的任务列表只在启动时扫描任务工作区目录，此后所有操作均应当在QuickUp中进行，包括将`task-name`改名为`task-name[x]`。你可以通过QuickUp的`设置-存储-刷新`查看实际工作目录中的变化。
+>
+> **在QuickUp-4.0中，正式启用对隐藏任务的支持。**
 
-隐藏任务是一个很好的功能，但QuickUp不计划在应用中支持任务的隐藏与显示的切换，重命名只是让这个任务在下次启动之后开始隐藏，而非立刻隐藏。用户需要手动将一个隐藏任务改为QuickUp任务列表中会显示的任务名。
+隐藏任务是一个很好的功能，~~但QuickUp不计划在应用中支持任务的隐藏与显示的切换，重命名只是让这个任务在下次启动之后开始隐藏，而非立刻隐藏。用户需要手动将一个隐藏任务改为QuickUp任务列表中会显示的任务名。~~
 
 这是**彩蛋**。
 
@@ -32,7 +34,9 @@ You can still run it through the following methods:
 - Use the command-line instruction above in the shortcut
 
 > The task list of QuickUp only scans the task workspace directory at startup. All subsequent operations should be carried out in QuickUp, including renaming `task-name` to `task-name [x]`. You can view the changes in the actual working directory through QuickUp's `Settings - Store - Refresh`.
+>
+> **In QuickUp-4.0, support for hidden tasks is officially enabled.**
 
-Hiding tasks is a great feature, but QuickUp does not plan to support the switching between hiding and showing tasks in the application. Renaming only makes the task start to hide after the next startup, rather than immediately hiding it. Users need to manually change a hidden task to the task name that will be displayed in the QuickUp task list.
+Hiding tasks is a great feature, ~~but QuickUp does not plan to support the switching between hiding and showing tasks in the application. Renaming only makes the task start to hide after the next startup, rather than immediately hiding it. Users need to manually change a hidden task to the task name that will be displayed in the QuickUp task list.~~
 
 This is an **Easter egg**.
