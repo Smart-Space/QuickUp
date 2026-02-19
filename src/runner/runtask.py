@@ -82,6 +82,7 @@ class RunTask(Task):
                 break
             elif task['type'] == 'task':
                 RunTask(task['task'], self.cwd, self.deamon).run()
+                self.__call_back("success", self.callback_count)
             elif task['type'] == 'wsp':
                 if task['name'] == '' or os.path.exists(datas.workspace + task['name']) == False:
                     if datas.root:
@@ -97,6 +98,7 @@ class RunTask(Task):
                 self.__call_back(False, "success", self.callback_count)
             elif task['type'] == 'tip':
                 run_tip(self.name, task['tip'], task['wait'], task['show'], task['top'])
+                self.__call_back("success", self.callback_count)
 
 def run_task(name:str, deamon:bool=True, callback=None):
     task = RunTask(name, deamon=deamon, callback=callback)

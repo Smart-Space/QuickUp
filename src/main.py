@@ -97,7 +97,7 @@ thisName = "QuickUp" + workname
 if priority_window(thisName):
     sys.exit()
 
-def about_workspace(e):
+def about_workspace(_):
     d = Dialog(root, "info", config.settings['general']['theme'])
     utils.show_dialog(d, "关于工作区", "当前工作区：" + args.workspace, "msg", config.settings['general']['theme'])
 
@@ -149,30 +149,58 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def run_this_task(e):
+def run_this_task(_):
     # 运行选中的任务
     taskindex = taskView.getsel()
     if taskindex != -1:
         run_task(taskslib.tasknames[taskindex])
 
-def edit_this_task(e):
+def edit_this_task(_):
     # 编辑选中的任务
     taskindex = taskView.getsel()
     if taskindex != -1:
         taskslib.edit_task(taskslib.tasknames[taskindex])
 
-def next_task_view(e):
+def next_task_view(_):
     # 选中下一个任务
     taskindex = taskView.getsel()
     taskView.select(taskindex+1)
 
-def prev_task_view(e):
+def prev_task_view(_):
     # 选中上一个任务
     taskindex = taskView.getsel()
     taskView.select(taskindex-1)
 
+def pageup_task_view(_):
+    # 向上翻页
+    taskindex = taskView.getsel()
+    if taskindex >= 8:
+        taskindex -= 8
+    else:
+        taskindex = 0
+    taskView.select(taskindex)
 
-def show_task_error(e):
+def pagedown_task_view(_):
+    # 向下翻页
+    taskindex = taskView.getsel()
+    allnum = taskView.getitems().__len__()
+    if taskindex < allnum-8:
+        taskindex += 8
+    else:
+        taskindex = allnum-1
+    taskView.select(taskindex)
+
+def home_task_view(_):
+    # 选中第一个任务
+    taskView.select(0)
+
+def end_task_view(_):
+    # 选中最后一个任务
+    allnum = taskView.getitems().__len__()
+    taskView.select(allnum-1)
+
+
+def show_task_error(_):
     # 显示任务执行错误
     d = Dialog(root, "error", config.settings['general']['theme'])
     utils.show_dialog(d, f"任务执行错误", datas.root_error_message, "msg", config.settings['general']['theme'])
@@ -321,6 +349,10 @@ root.bind("<Control-e>", edit_this_task)
 root.bind("<Up>", prev_task_view)
 root.bind("<Down>", next_task_view)
 root.bind("<FocusIn>", lambda e: taskEntry.focus_set())
+root.bind("<Prior>", pageup_task_view)
+root.bind("<Next>", pagedown_task_view)
+root.bind("<Home>", home_task_view)
+root.bind("<End>", end_task_view)
 
 root.bind("<<RunCmdError>>", show_task_error)
 

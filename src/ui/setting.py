@@ -436,6 +436,8 @@ tdata1 = (
     ('Up/Down','选择任务'),
     ('Shift+回车','运行任务'),
     ('Ctrl+E','编辑任务'),
+    ('PageUp\nPageDown','向上翻页\n向下翻页'),
+    ('Home\nEnd','第一个任务\n最后一个任务')
 )
 
 tdata2 = (

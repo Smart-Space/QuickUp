@@ -392,7 +392,7 @@ static PyObject* remove_tray(PyObject* self, PyObject* args) {
 static PyObject* enable_entry_drop(PyObject* self, PyObject* args) {
     long long pyhwnd;
     PyObject* pycallback;
-    int flag = PyArg_ParseTuple(args, "iO:enable_entry_drop", &pyhwnd, &pycallback);
+    int flag = PyArg_ParseTuple(args, "LO:enable_entry_drop", &pyhwnd, &pycallback);
     if (!flag) {
         return NULL;
     }
@@ -410,6 +410,7 @@ static PyObject* disable_entry_drop(PyObject* self, PyObject* args) {
     }
     DropTarget* dt = (DropTarget*)PyCapsule_GetPointer(pydt, NULL);
     delete dt;
+    Py_DecRef(pydt);
     return Py_None;
 }
 

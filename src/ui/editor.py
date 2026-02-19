@@ -3,11 +3,18 @@
 QuickUp的任务编辑器模块
 """
 import os
+# from sys import getrefcount
+# def tick(something):
+#     print(getrefcount(something))
+# from gc import get_referrers
+# def who(something):
+#     print(get_referrers(something))
 import subprocess
 import json
 import tkinter as tk
 from typing import Union
 from webbrowser import open as webopen
+from weakref import ref, ReferenceType
 from tinui import BasicTinUI, TinUIXml
 from tinui.TinUIDialog import Dialog
 from tinui.theme.tinuidark import TinUIDark
@@ -91,7 +98,7 @@ class CmdEditor:
         flyoutuixml.ui = theme(self.flyoutui)
         flyoutuixml.funcs.update({
             'if_wait': self.change_wait_state,
-            'run_as_admin': lambda tag, task=self: self.editor.cmd_run_as_admin(task, tag),
+            'run_as_admin': None,
             'run_max': self.run_max,
             'run_min': self.run_min,
             'open_zone_set': self.open_zone_set
@@ -107,6 +114,8 @@ class CmdEditor:
             self.checkbox.on()
         else:
             self.checkbox.off()
+        flyoutuixml.funcs.update({'run_as_admin': self.run_as_admin})
+        self.flyoutuixml = flyoutuixml
         if wait:
             self.wbutton.on()
         if runMAX:
@@ -119,9 +128,22 @@ class CmdEditor:
         self.pos = pos
         self.zone_round = zone_round
         self.targetEntry.insert(0, target)
-        dt = enable_entry_drop(self.targetEntry.winfo_id(), self.target_drop)
-        self.targetEntry.bind('<Destroy>', lambda e: disable_entry_drop(dt))
+        self.dt = enable_entry_drop(self.targetEntry.winfo_id(), self.target_drop)
+        self.targetEntry.bind('<Destroy>', self.on_destroy)
         self.argsEntry.insert(0, args)
+    
+    def on_destroy(self, _):
+        disable_entry_drop(self.dt)
+        del self.dt
+        self.targetEntry.unbind('<Destroy>')
+        self.uixml.clean()
+        self.flyoutuixml.clean()
+        for attr in ('targetEntry', 'argsEntry', 'flyoutui', 'flyoutuixml', 'checkbox', 'wbutton', 'wbuttont', 'maxcheckbox', 'mincheckbox'):
+            delattr(self, attr)
+    
+    def run_as_admin(self, tag):
+        self.admin = tag
+        self.contentChanged(None)
     
     def change_wait_state(self, flag):
         # 单线/并行切换
@@ -307,6 +329,13 @@ class CmdsEditor:
         self.textbox.edit_modified(False)
         self.textbox.update()
         self.textbox.bind('<<Modified>>', self.textContentChanged)
+        self.textbox.bind('<Destroy>', self.on_destroy)
+    
+    def on_destroy(self, _):
+        self.textbox.unbind('<<Modified>>')
+        self.uixml.clean()
+        for attr in ('textbox', 'radiobox', 'wbutton', 'wbuttont'):
+            delattr(self, attr)
     
     def textContentChanged(self, e):
         # 文本内容变化
@@ -448,6 +477,13 @@ class TipEditor:
         self.textbox.edit_modified(False)
         self.textbox.update()
         self.textbox.bind('<<Modified>>', self.textContentChanged)
+        self.textbox.bind('<Destroy>', self.on_destroy)
+    
+    def on_destroy(self, _):
+        self.textbox.unbind('<<Modified>>')
+        self.uixml.clean()
+        for attr in ('textbox', 'wbutton', 'wbuttont', 'tipcheckbox', 'topcheckbox'):
+            delattr(self, attr)
     
     def textContentChanged(self, e):
         # 文本内容变化
@@ -785,7 +821,7 @@ class Editor(tk.Toplevel):
             self.saved = False
             self.renew_title()
     
-    def add_task_cmd(self, e, target:str="", args:str="", admin:bool=False, wait:bool=False, runmax:bool=False, runmin:bool=False, pos:list=[], zone_round:bool=False):
+    def add_task_cmd(self, _, target:str="", args:str="", admin:bool=False, wait:bool=False, runmax:bool=False, runmin:bool=False, pos:list=[], zone_round:bool=False):
         # 添加命令任务
         self.saved = False
         self.renew_title()
@@ -794,7 +830,7 @@ class Editor(tk.Toplevel):
         uixml.ui = theme(ui)
         task = CmdEditor(uixml, ui, self)
         uixml.environment({
-            'delete_task': lambda e, task=task: self.delete_task(task),
+            'delete_task': lambda _, task=ref(task): self.delete_task(task),
         })
         uixml.loadxml(self.cmdxml)
         task.contentChanged = self.contentChanged
@@ -805,7 +841,7 @@ class Editor(tk.Toplevel):
         argsEntry.var.trace_add('write', self.contentChanged)
         self.tasks.append(task)
     
-    def add_task_cmds(self, e, cmds:list=[], cmd:str='cmd', wait:bool=False):
+    def add_task_cmds(self, _, cmds:list=[], cmd:str='cmd', wait:bool=False):
         # 添加命令行任务
         self.saved = False
         self.renew_title()
@@ -814,7 +850,7 @@ class Editor(tk.Toplevel):
         uixml.ui = theme(ui)
         task = CmdsEditor(uixml)
         uixml.environment({
-            'delete_task': lambda e, task=task: self.delete_task(task),
+            'delete_task': lambda _, task=ref(task): self.delete_task(task),
             'if_wait': None,
             'set_shell': None,
         })
@@ -823,7 +859,7 @@ class Editor(tk.Toplevel):
         task.init(cmds, cmd, wait)
         self.tasks.append(task)
     
-    def add_task_task(self, e, stask:str=""):
+    def add_task_task(self, _, stask:str=""):
         # 添加子任务
         self.saved = False
         self.renew_title()
@@ -834,7 +870,7 @@ class Editor(tk.Toplevel):
         task.root = self
         uixml.environment({
             'edit_task': None,
-            'delete_task': lambda e, task=task: self.delete_task(task),
+            'delete_task': lambda _, task=ref(task): self.delete_task(task),
         })
         uixml.loadxml(self.taskxml)
         task.init(stask)
@@ -842,7 +878,7 @@ class Editor(tk.Toplevel):
         taskEntry.var.trace_add('write', self.contentChanged)
         self.tasks.append(task)
     
-    def add_workspace(self, e, name:str=""):
+    def add_workspace(self, _, name:str=""):
         # 添加工作区组
         if name == '':
             d = Dialog(self, "input", themename)
@@ -865,7 +901,7 @@ class Editor(tk.Toplevel):
         task.root = self
         uixml.environment({
             'open_quickup': None,
-            'delete_task': lambda e, task=task: self.delete_task(task),
+            'delete_task': lambda _, task=ref(task): self.delete_task(task),
         })
         uixml.loadxml(self.wspxml)
         task.init(name)
@@ -882,7 +918,7 @@ class Editor(tk.Toplevel):
         uixml.ui = theme(ui)
         task = TipEditor(uixml)
         uixml.environment({
-            'delete_task': lambda e, task=task: self.delete_task(task),
+            'delete_task': lambda e, task=ref(task): self.delete_task(task),
             'if_wait': None,
             'show_tip': None,
             'top_tip': None,
@@ -892,19 +928,14 @@ class Editor(tk.Toplevel):
         task.init(tip, wait, show, top)
         self.tasks.append(task)
 
-    def delete_task(self, task:Union[CmdEditor, TaskEditor]):
+    def delete_task(self, _task:ReferenceType[Union[CmdEditor, TaskEditor]]):
         # 删除任务
+        task = _task()
         self.saved = False
         self.renew_title()
         index = self.tasks.index(task)
         self.view.delete(index)
         self.tasks.remove(task)
-    
-    def cmd_run_as_admin(self, task:CmdEditor, tag:bool):
-        # 命令行任务是否启用管理员权限
-        self.saved = False
-        self.renew_title()
-        task.admin = tag
     
     def close(self):
         # 关闭编辑器

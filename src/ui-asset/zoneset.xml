@@ -1,0 +1,86 @@
+<tinui>
+<line padx="30" anchor='w' lineanchor='nw'>
+    <title text="设置窗口布局" size="2"></title>
+    <button text="&#xE897;" font="{Segoe Fluent Icons} 14" command="self.funcs['about-zone']"></button>
+    <checkbutton text="保留圆角" command="self.funcs['keep-round']">zoneroundcheck</checkbutton>
+</line>
+<line pady="30">
+    <entry width="430">appentry</entry>
+</line>
+<line anchor="w" pady="30">
+    <paragraph text="左侧:"></paragraph>
+    <entry width="160">xentry</entry>
+    <paragraph text="上侧:"></paragraph>
+    <entry width="160">yentry</entry>
+</line>
+<line anchor="w" pady="20">
+    <paragraph text="宽度:"></paragraph>
+    <entry width="160">wentry</entry>
+    <paragraph text="高度:"></paragraph>
+    <entry width="160">hentry</entry>
+</line>
+<line x='240' anchor='w' lineanchor='n'>
+    <separate width='190'></separate>
+    <paragraph text="预设位置"></paragraph>
+    <separate width='190'></separate>
+</line>
+<line anchor="w" lineanchor="nw" padx="20">
+    <line>
+        <paragraph text="左右平分"></paragraph>
+        <line padx='2'>
+            <button text="     &#x000A;     " command="self.funcs['lrs-l']"></button>
+        <button text="     &#x000A;     " command="self.funcs['lrs-r']"></button>
+        </line>
+    </line>
+    <back></back>
+    <line x='280'>
+        <paragraph text="左中右分"></paragraph>
+        <line padx='2'>
+            <button text="   &#x000A;   " command="self.funcs['lcrs-l']"></button>
+            <button text="   &#x000A;   " command="self.funcs['lcrs-c']"></button>
+            <button text="   &#x000A;   " command="self.funcs['lcrs-r']"></button>
+        </line>
+    </line>
+</line>
+<line anchor="w" lineanchor="nw" padx="20">
+    <line>
+        <paragraph text="左右布局"></paragraph>
+        <line padx='10'>
+            <line padx='2'>
+                <button text="      &#x000A;      " command="self.funcs['lr-lb']"></button>
+                <button text="   &#x000A;   " command="self.funcs['lr-rs']"></button>
+            </line>
+            <back></back>
+            <line padx='2'>
+                <button text="   &#x000A;   " command="self.funcs['lr-ls']"></button>
+                <button text="      &#x000A;      " command="self.funcs['lr-rb']"></button>
+            </line>
+        </line>
+    </line>
+    <back></back>
+    <line x='280'>
+        <paragraph text="四角布局"></paragraph>
+        <line lineanchor='w' pady='2'>
+            <line padx='2' anchor='nw'>
+                <button text="     " command="self.funcs['quad-lt']"></button>
+                <button text="     " command="self.funcs['quad-rt']"></button>
+            </line>
+            <line padx='2' anchor='nw'>
+                <button text="     " command="self.funcs['quad-lb']"></button>
+                <button text="     " command="self.funcs['quad-rb']"></button>
+            </line>
+        </line>
+    </line>
+</line>
+<line x='240' anchor='w' lineanchor='n'>
+    <separate width='470'></separate>
+</line>
+<line>
+    <paragraph text="%SCREENINFO%"></paragraph>
+</line>
+<line y="495" x="480" lineanchor="se">
+    <warningbutton icon="&#xE75C;" text="" command="self.funcs['delete']" font="{Segoe Fluent Icons} 16" minwidth="80"></warningbutton>
+    <accentbutton icon="&#xE8FB;" text="" command="self.funcs['save']" font="{Segoe Fluent Icons} 16" minwidth="80"></accentbutton>
+    <button2 icon="&#xE711;" text="" command="self.funcs['close']" font="{Segoe Fluent Icons} 16" minwidth="80"></button2>
+</line>
+</tinui>

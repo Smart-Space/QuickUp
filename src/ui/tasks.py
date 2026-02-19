@@ -5,6 +5,12 @@ QuickUp的任务列表视图，有两种显示模式：
 2. 任务列表不为空时，每个元素显示singletask.xml界面
 """
 import os
+# from sys import getrefcount
+# def tick(something):
+#     print(getrefcount(something))
+# from gc import get_referrers
+# def who(something):
+#     print(get_referrers(something))
 import json
 
 from tinui import BasicTinUI
@@ -57,8 +63,7 @@ def initial_tasks_view(_taskView, _root):
 def refresh_tasks_view():
     # 刷新任务列表
     global tasknames
-    taskuixml.clear()
-    taskView.clear()
+    __clear_all_tasks_ui()
     datas.__load_tasks_name()
     now_tasks = sorted(datas.tasks_name)
     tasknames = sort_with_priority(now_tasks)
@@ -110,9 +115,9 @@ def add_task_view(task:str, add_back=False):
     cuixml.ui = theme(cui)
     taskuixml.append(cuixml)
     cuixml.environment({
-        'run_task': lambda e, task=task: start_task(e.widget, task),
-        'edit_task': lambda e, task=task: edit_task(task),
-        'delete_task': lambda e, task=task: delete_task_view(task),
+        'run_task': lambda _, task=task: start_task(cui, task),
+        'edit_task': lambda _, task=task: edit_task(task),
+        'delete_task': lambda _, task=task: delete_task_view(task),
     })
     cuixml.loadxml(str.replace(uixml_content, '%TITLENAME%', task))
 
@@ -229,8 +234,13 @@ def search_tasks(keyword:str, silence=False):
             d = Dialog(root, 'info', themename)
             show_dialog(d, '没有找到相关任务', f'未找到关于<{keyword}>的任务', "msg", themename)
     else:
-        taskView.clear()
-        taskuixml.clear()
+        __clear_all_tasks_ui()
         tasknames = sort_with_priority(tasknames.copy())
         for task in tasknames:
             add_task_view(task)
+
+def __clear_all_tasks_ui():
+    # 清空所有任务(UI only)
+    taskView.clear()
+    taskuixml.clear()
+    

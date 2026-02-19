@@ -15,7 +15,7 @@ from cppextend.QUmodule import quick_fuzz, worker_size
 import config
 
 # 版本
-version = "4.0"
+version = "4.1"
 
 is_msix = False# 是否是MSIX安装包
 

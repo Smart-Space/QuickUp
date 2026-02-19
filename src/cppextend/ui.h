@@ -143,6 +143,9 @@ public:
     ~DropTarget() {
         Py_DECREF(callback);
         callback = nullptr;
+        RemoveWindowSubclass(hwnd, StaticDropProc, 0);
+        DragAcceptFiles(hwnd, FALSE);
+        hwnd = nullptr;
     }
 
     void enable_drop() {
