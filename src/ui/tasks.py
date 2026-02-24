@@ -107,7 +107,13 @@ def add_task_view(task:str, add_back=False):
     # task::Task
     # 后端添加任务
     if add_back:
-        datas.tasks_name_add(task)
+        if task in tasknames:
+            return
+        if task not in datas.all_tasks_name:
+            datas.tasks_name_add(task)
+        else:
+            if task not in datas.tasks_name:
+                datas.tasks_name.append(task)
         tasknames.append(task)
     # 前端添加任务
     cui, _, cuixml, _ = taskView.add()

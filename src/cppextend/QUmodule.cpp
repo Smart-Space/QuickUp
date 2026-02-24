@@ -275,22 +275,26 @@ static PyObject* run_console_commands(PyObject* self, PyObject* args) {
 
 static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
     PyObject* list;
-    char* name;
+    PyObject* name_obj;
     int acc;
     int num;
-    int flag = PyArg_ParseTuple(args, "Osii:quick_fuzz_list", &list, &name, &acc, &num);
+    int flag = PyArg_ParseTuple(args, "OOii:quick_fuzz_list", &list, &name_obj, &acc, &num);
     if (!flag) {
         return NULL;
     }
-    setTargetChars((std::string)name);
+    Py_ssize_t name_len;
+    const char* name = PyUnicode_AsUTF8AndSize(name_obj, &name_len);
+    setTargetChars(name, name_len, acc);
     PyObject* result = PyList_New(0);
     int length = PyList_Size(list);
     int nownum = 0;
+    // 需要说明的是，并不全是取前面最相似的几个，而是按顺序取到前面达到阈值的几个
+    // 这是故意设计的
     for (int i = 0; i < length; i++) {
         PyObject* item = PyList_GetItem(list, i);
-        std::string itemstr = (std::string)PyUnicode_AsUTF8(item);
-        std::transform(itemstr.begin(), itemstr.end(), itemstr.begin(), ::tolower);
-        int score = calculateSimilarity(itemstr);
+        Py_ssize_t item_len;
+        const char* itemstr = PyUnicode_AsUTF8AndSize(item, &item_len);
+        int score = calculateSimilarity(itemstr, item_len);
         if (score >= acc) {
             PyList_Append(result, item);
             nownum++;

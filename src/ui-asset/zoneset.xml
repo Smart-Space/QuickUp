@@ -24,36 +24,36 @@
     <paragraph text="预设位置"></paragraph>
     <separate width='190'></separate>
 </line>
-<line anchor="w" lineanchor="nw" padx="20">
+<line anchor="w" lineanchor="nw" padx="10">
     <line>
         <paragraph text="左右平分"></paragraph>
         <line padx='2'>
-            <button text="     &#x000A;     " command="self.funcs['lrs-l']"></button>
-        <button text="     &#x000A;     " command="self.funcs['lrs-r']"></button>
+            <button text="      &#x000A;      " command="self.funcs['lrs-l']"></button>
+            <button text="      &#x000A;      " command="self.funcs['lrs-r']"></button>
         </line>
     </line>
     <back></back>
     <line x='280'>
         <paragraph text="左中右分"></paragraph>
         <line padx='2'>
-            <button text="   &#x000A;   " command="self.funcs['lcrs-l']"></button>
-            <button text="   &#x000A;   " command="self.funcs['lcrs-c']"></button>
-            <button text="   &#x000A;   " command="self.funcs['lcrs-r']"></button>
+            <button text="    &#x000A;    " command="self.funcs['lcrs-l']"></button>
+            <button text="    &#x000A;    " command="self.funcs['lcrs-c']"></button>
+            <button text="    &#x000A;    " command="self.funcs['lcrs-r']"></button>
         </line>
     </line>
 </line>
-<line anchor="w" lineanchor="nw" padx="20">
+<line anchor="w" lineanchor="nw" padx="10">
     <line>
         <paragraph text="左右布局"></paragraph>
-        <line padx='10'>
+        <line padx='5'>
             <line padx='2'>
-                <button text="      &#x000A;      " command="self.funcs['lr-lb']"></button>
-                <button text="   &#x000A;   " command="self.funcs['lr-rs']"></button>
+                <button text="        &#x000A;        " command="self.funcs['lr-lb']"></button>
+                <button text="    &#x000A;    " command="self.funcs['lr-rs']"></button>
             </line>
             <back></back>
             <line padx='2'>
-                <button text="   &#x000A;   " command="self.funcs['lr-ls']"></button>
-                <button text="      &#x000A;      " command="self.funcs['lr-rb']"></button>
+                <button text="    &#x000A;    " command="self.funcs['lr-ls']"></button>
+                <button text="        &#x000A;        " command="self.funcs['lr-rb']"></button>
             </line>
         </line>
     </line>
@@ -62,12 +62,12 @@
         <paragraph text="四角布局"></paragraph>
         <line lineanchor='w' pady='2'>
             <line padx='2' anchor='nw'>
-                <button text="     " command="self.funcs['quad-lt']"></button>
-                <button text="     " command="self.funcs['quad-rt']"></button>
+                <button text="       " command="self.funcs['quad-lt']"></button>
+                <button text="       " command="self.funcs['quad-rt']"></button>
             </line>
             <line padx='2' anchor='nw'>
-                <button text="     " command="self.funcs['quad-lb']"></button>
-                <button text="     " command="self.funcs['quad-rb']"></button>
+                <button text="       " command="self.funcs['quad-lb']"></button>
+                <button text="       " command="self.funcs['quad-rb']"></button>
             </line>
         </line>
     </line>
