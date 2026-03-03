@@ -53,6 +53,33 @@ namespace WindowMonitor {
 
     const size_t MAX_RECENT_WINDOWS = 30;
 
+    // 判断是否为候选主窗口（过滤掉启动小窗、工具窗等）
+    bool IsCandidateMainWindow(HWND hwnd) {
+        if (!IsWindow(hwnd) || !IsWindowVisible(hwnd)) {
+            return false;
+        }
+
+        LONG style = GetWindowLong(hwnd, GWL_STYLE);
+        LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+        // 必须有标题栏
+        if (!(style & WS_CAPTION)) {
+            return false;
+        }
+
+        // 过滤工具窗口/浮动小窗
+        if (exStyle & WS_EX_TOOLWINDOW) {
+            return false;
+        }
+
+        // 只保留可最大化/可调整大小的典型主窗口
+        if ((style & WS_SIZEBOX) == 0 && (style & WS_MAXIMIZEBOX) == 0) {
+            return false;
+        }
+
+        return true;
+    }
+
     // WinEvent 回调函数
     void CALLBACK WinEventProc(
         HWINEVENTHOOK hWinEventHook,
@@ -73,14 +100,13 @@ namespace WindowMonitor {
             return;
         }
 
-        // 过滤掉明显的非主窗口 (例如没有所有者的弹出窗口)
+        // 过滤掉明显的非主窗口 (例如有所有者的弹出窗口)
         if (GetWindow(hwnd, GW_OWNER) != NULL) {
             return;
         }
 
-        // 跳过不含标题栏的某些阴影或辅助窗口
-        long style = GetWindowLong(hwnd, GWL_STYLE);
-        if (!(style & WS_CAPTION)) {
+        // 进一步过滤（只保留典型主窗口，排除启动小窗等）
+        if (!IsCandidateMainWindow(hwnd)) {
             return;
         }
 
