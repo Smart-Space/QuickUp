@@ -110,12 +110,15 @@ static PyObject* set_window_dark(PyObject* self, PyObject* args) {
     }
     HWND root = GetParent((HWND)hwnd);
     int dark = 1;
-    DwmSetWindowAttribute(
+    HRESULT hr = DwmSetWindowAttribute(
         root,
         DWMWA_USE_IMMERSIVE_DARK_MODE,
         &dark,
         sizeof(dark)
     );
+    if (hr == E_NOTIMPL) {
+        return Py_None;
+    }
     return Py_None;
 }
 

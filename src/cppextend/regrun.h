@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <iostream>
 
 bool set_startup_registry(const std::wstring value_name, const std::wstring app_path) {
     HKEY hKey;

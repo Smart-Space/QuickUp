@@ -108,7 +108,7 @@ bool modify_window_position(
         SmoothMoveWindow(targetHwnd, x, y, width, height, zone_round);
         WindowMonitor::RemoveHandledWindow(targetHwnd);// 处理完毕，从列表中移除
     } else {
-        std::wcerr << L"Timeout: Window not found." << std::endl;
+        // std::wcerr << L"Timeout: Window not found." << std::endl;
     }
 
     return true;
