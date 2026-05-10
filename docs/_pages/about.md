@@ -63,6 +63,14 @@ QuickUp is a simple and lightweight tool that helps you start working, studying 
 - 可尝试调整运行任务应用的窗口位置和尺寸。
 
   Try adjusting the position and size of the window from the task application is running.
+  
+- 为任务添加标签。
+
+  Add tags to tasks.
+
+- 记录当前已打开的应用窗口并写入任务。
+
+- Record the currently open application window and add to the task.
 
 ……
 

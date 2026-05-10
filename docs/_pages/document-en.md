@@ -10,10 +10,10 @@ permalink: /document-en/
 
 The top bar of main window:
 
-- task-search-entry: enter the name of the task to search for similar tasks. The fuzzy search algorithm in this part is the Longest Common Subsequence Algorithm, implemented by `./cppextend/quickfuzz.h `.
+- task-search-entry: enter the name of the task to search for similar tasks. The fuzzy search algorithm in this part is implemented by `./cppextend/quickfuzz.h `.
 - add-button: click it to show a new-task editor window. Then you can create a new task throw this it.
+- label-button: open the label management window.
 - setting-button: click it to show setting window of QuickUp.
-- about-button: click it to show some information about QuickUp.
 
 The tasks-list-view of main window:
 
@@ -94,6 +94,10 @@ The top bar of editor window:
     - threading-mode: as default, to show this tip with a sub-thread. Turn on to wait until the window is closed.
     - show-button: click to show this tip in a window, or nothing will happen.
     - top-button: whether to top the tip information window.
+    
+  - record: record the location and status of the currently open application window and write into task.
+  
+- labels-bar: add several existing tags to the task.
 
 > Any action of edit will change the status of editor window into "unsaved". In this status, the window can't be closed until user chooses whether to save it or not.
 >
@@ -191,6 +195,14 @@ In this page, user can see all shortcut keys that QuickUp supports.
 ![](/assets/images/selector.png)
 
 When there are multiple workspaces and QuickUp is awakened using a hotkey, this window will be displayed for selection. Currently, up to the first 10 workspaces are supported.
+
+---
+
+# Labels Management
+
+![](/assets/images/labelsmng.png)
+
+On the left side, all existing labels are displayed, which can be deleted or modified; on the right side, all tasks associated with the corresponding labels are listed. At the bottom, you can use the refresh or add label buttons.
 
 ---
 
