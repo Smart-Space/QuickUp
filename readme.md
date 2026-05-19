@@ -7,6 +7,8 @@
 详情见[介绍](https://quickup.smart-space.com.cn/)。
 
 > 虽然提供了微软应用商店下载方式，但仍然建议从“发布”页面获取安装包。
+>
+> 建议Windows10及以上的系统。
 
 ---
 
@@ -15,3 +17,5 @@ QuickUp is a simple and lightweight tool that helps you start working, studying 
 For detailed see [QuickUp's website](https://quickup.smart-space.com.cn/).
 
 > Although the Microsoft Store download method is provided, it is still recommended to obtain the installation package from the "release" page.
+>
+> Windows10+ is recommended.

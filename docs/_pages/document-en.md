@@ -10,7 +10,7 @@ permalink: /document-en/
 
 The top bar of main window:
 
-- task-search-entry: enter the name of the task to search for similar tasks. The fuzzy search algorithm in this part is implemented by `./cppextend/quickfuzz.h `.
+- task-search-entry: enter the name of the task to search for similar tasks. The fuzzy search algorithm in this part is implemented by `./cppextend/quickfuzz.h `. Enter `|` instead of keywords to search for tag tasks.
 - add-button: click it to show a new-task editor window. Then you can create a new task throw this it.
 - label-button: open the label management window.
 - setting-button: click it to show setting window of QuickUp.
