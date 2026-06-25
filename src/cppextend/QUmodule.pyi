@@ -133,3 +133,24 @@ def zone_try_times(times:int) -> None:
     设置QuickUp-snap的尝试次数
     """
     ...
+def set_dpi_aware() -> float:
+    """
+    Set the process to be DPI aware, and return the current DPI scaling factor.
+    """
+    ...
+def get_work_apps() -> list:
+    """
+    Get a list of all running applications.
+    """
+    ...
+def check_admin() -> bool:
+    """
+    Check if the current process is running with administrator privileges.
+    return: True if running as administrator, False otherwise.
+    """
+    ...
+def set_border_color(color:str) -> None:
+    """
+    Set the border color of the window.
+    """
+    ...

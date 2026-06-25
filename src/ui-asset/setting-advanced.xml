@@ -12,13 +12,16 @@
         <button text='关于QuickUp的开机启动' command='self.funcs["about_start_on_boot"]'></button>
     </line>
     <line pady="15" anchor='w' lineanchor='nw'>
+        <checkbutton text='管理员身份开机计划' command='self.funcs["start_on_admin"]'>adminstartcheck</checkbutton>
+        <button text='关于QuickUp的管理员身份开机计划' command='self.funcs["about_start_on_admin"]'></button>
+    </line>
+    <line pady="15" anchor='w' lineanchor='nw'>
         <paragraph text='快速唤醒QuickUp热键: '></paragraph>
         <togglebutton text='Ctrl' command='self.funcs["toggle_hk_ctrl"]'>b1</togglebutton>
         <togglebutton text='Alt' command='self.funcs["toggle_hk_alt"]'>b2</togglebutton>
         <togglebutton text='Shift' command='self.funcs["toggle_hk_shift"]'>b3</togglebutton>
         <entry width='20'>hkentry</entry>
         <back linew='0' uids="('b1', 'b2', 'b3', 'hkentry')"></back>
-        <button text='应用' command='self.funcs["apply_hk"]'></button>
     </line>
     <line pady="15" anchor='w' lineanchor='nw'>
         <paragraph text='窗口排列重试次数：'></paragraph>
@@ -27,7 +30,7 @@
         <paragraph text='（一次耗费约0.1秒）'></paragraph>
     </line>
     <line pady="15">
-        <paragraph text='复制QuickUp路径到环境变量，方便命令行中使用QuickUp'></paragraph>
+        <paragraph width='500' text='复制QuickUp路径到环境变量，方便命令行中使用QuickUp'></paragraph>
     </line>
     <line pady="15">
         <button2 text='复制QuickUp路径' command='self.funcs["copy_path"]'></button2>

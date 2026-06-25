@@ -1,19 +1,22 @@
 <tinui>
 <!-- QuickUp Editor -->
 <line x="0">
-    <line>
+    <line padx="5">
         <entry width="302">entry</entry>
         <togglebutton text="&#xE7B3;" font="{Segoe Fluent Icons} 16" command="self.funcs['if_hide_task']">hidebutton</togglebutton>
-        <toolbutton icon="&#xE74E;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['save_task']"></toolbutton>
-        <toolbutton icon="&#xE724;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['run_task']"></toolbutton>
-        <toolbutton icon="&#xE8B7;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['set_cwd']"></toolbutton>
+        <line x='495' padx='5' anchor="w" lineanchor='ne'>
+            <toolbutton icon="&#xE74E;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['save_task']"></toolbutton>
+            <toolbutton icon="&#xE724;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['run_task']"></toolbutton>
+            <toolbutton icon="&#xE8B7;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['set_cwd']"></toolbutton>
+        </line>
     </line>
-    <line padx="15" x="5" anchor="w" lineanchor="nw">
+    <line padx="5" x="5" anchor="w" lineanchor="nw">
         <button2 text="命令" command="self.funcs['add_task_cmd']"></button2>
         <button2 text="命令集" command="self.funcs['add_task_cmds']"></button2>
         <button2 text="子任务" command="self.funcs['add_task_task']"></button2>
-        <button2 text="工作区组" command="self.funcs['add_workspace']"></button2>
-        <button2 text="备注" command="self.funcs['add_tip']"></button2>
+        <button2 text="工作区" command="self.funcs['add_workspace']"></button2>
+        <button2 text="" icon='&#xE70B;' font="{Segoe Fluent Icons} 16" command="self.funcs['add_tip']"></button2>
+        <button2 text="" icon='&#xE7C8;' font="{Segoe Fluent Icons} 16" command="self.funcs['record_apps']"></button2>
         <line x='495' padx='5' lineanchor='e'>
             <ratingbar num='1' size='16' command="self.funcs['set_priority']">ratingbar</ratingbar>
             <toolbutton icon="&#xE8DA;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['open_local']"></toolbutton>
@@ -21,7 +24,10 @@
         </line>
     </line>
 </line>
+<line pady="-10">
+    <labels command="self.funcs['add_label']">labels</labels>
+</line>
 <line x="-3">
-    <listview width="480" height="500" num="0" linew="100">view</listview>
+    <listview width="480" height="500" num="0" linew="100" command="self.funcs['select_task']">view</listview>
 </line>
 </tinui>

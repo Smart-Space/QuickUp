@@ -1,7 +1,7 @@
 <tinui>
 <!-- QuickUp Editor workspace part-->
-<line y="15">
-    <paragraph text="工作区组（填写已经存在的区组的名称）"></paragraph>
+<line y="15" pady="5">
+    <paragraph width='430' text="工作区组（填写已经存在的区组的名称）"></paragraph>
 </line>
 <line>
     <entry width="430">wspEntry</entry>

@@ -5,10 +5,11 @@
         <line>
             <paragraph text="作者：Smart-Space"></paragraph>
         </line>
-        <line padx="10">
+        <line padx="10" anchor='w' lineanchor='nw'>
             <paragraph text="发布页面"></paragraph>
             <link text="GitHub" url="https://github.com/Smart-Space/QuickUp/releases/"></link>
             <link text="Gitee" url="https://gitee.com/captorking/QuickUp/releases/"></link>
+            <button2 text="更新日志" command='self.funcs["open_log"]'></button2>
         </line>
         <line padx="10">
             <button text="访问QuickUp网站" command='self.funcs["open_url"]'></button>

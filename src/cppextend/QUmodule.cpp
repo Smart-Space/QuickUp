@@ -20,19 +20,25 @@ Quickup C++ module
 #include <dwmapi.h>
 
 
+static PyObject* set_dpi_aware(PyObject* self, PyObject* args) {
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    float scale = GetDpiForSystem() / 96.0f;
+    return PyFloat_FromDouble(scale);
+}
+
 static PyObject* get_parent(PyObject* self, PyObject* args) {
-    long hwnd;
-    int flag = PyArg_ParseTuple(args, "i:get_parent", &hwnd);
+    unsigned long long hwnd;
+    int flag = PyArg_ParseTuple(args, "K:get_parent", &hwnd);
     if (!flag) {
         return NULL;
     }
     HWND parent = GetParent((HWND)hwnd);
-    return Py_BuildValue("i", parent);
+    return PyLong_FromVoidPtr(parent);
 }
 
 static PyObject* get_windowtext(PyObject* self, PyObject* args) {
-    long hwnd;
-    int flag = PyArg_ParseTuple(args, "i:get_windowtext", &hwnd);
+    unsigned long long hwnd;
+    int flag = PyArg_ParseTuple(args, "K:get_windowtext", &hwnd);
     if (!flag) {
         return NULL;
     }
@@ -56,7 +62,7 @@ static PyObject* priority_window(PyObject* self, PyObject* args) {
     HWND hwnd;
     // 判断是str还是int
     if (PyLong_Check(name)) { // int
-        hwnd = (HWND)PyLong_AsLong(name);
+        hwnd = (HWND)PyLong_AsVoidPtr(name);
     } else { // str
         wchar_t* wname = PyUnicode_AsWideCharString(name, NULL);
         hwnd = FindWindowW(nullptr, wname);
@@ -87,8 +93,8 @@ static PyObject* is_msix(PyObject* self, PyObject* args) {
 }
 
 static PyObject* window_no_icon(PyObject* self, PyObject* args) {
-    long hwnd;
-    int flag = PyArg_ParseTuple(args, "i:window_no_icon", &hwnd);
+    unsigned long long hwnd;
+    int flag = PyArg_ParseTuple(args, "K:window_no_icon", &hwnd);
     if (!flag) {
         return NULL;
     }
@@ -103,8 +109,8 @@ static PyObject* window_no_icon(PyObject* self, PyObject* args) {
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
 static PyObject* set_window_dark(PyObject* self, PyObject* args) {
-    long hwnd;
-    int flag = PyArg_ParseTuple(args, "i:set_window_dark", &hwnd);
+    unsigned long long hwnd;
+    int flag = PyArg_ParseTuple(args, "K:set_window_dark", &hwnd);
     if (!flag) {
         return NULL;
     }
@@ -276,6 +282,12 @@ static PyObject* run_console_commands(PyObject* self, PyObject* args) {
     Py_RETURN_NONE;
 }
 
+struct FuzzCandidate {
+    PyObject* item;
+    int score;
+    Py_ssize_t length;
+    int index;
+};
 static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
     PyObject* list;
     PyObject* name_obj;
@@ -290,20 +302,28 @@ static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
     setTargetChars(name, name_len, acc);
     PyObject* result = PyList_New(0);
     int length = PyList_Size(list);
-    int nownum = 0;
-    // 需要说明的是，并不全是取前面最相似的几个，而是按顺序取到前面达到阈值的几个
-    // 这是故意设计的
+    std::vector<FuzzCandidate> candidates;
+    candidates.reserve(length);
     for (int i = 0; i < length; i++) {
         PyObject* item = PyList_GetItem(list, i);
         Py_ssize_t item_len;
         const char* itemstr = PyUnicode_AsUTF8AndSize(item, &item_len);
         int score = calculateSimilarity(itemstr, item_len);
         if (score >= acc) {
-            PyList_Append(result, item);
-            nownum++;
-            if (nownum >= num) {
-                break;
-            }
+            candidates.push_back({item, score, item_len, i});
+        }
+    }
+    std::sort(candidates.begin(), candidates.end(), [](const FuzzCandidate& a, const FuzzCandidate& b) {
+        if (a.score != b.score) return a.score > b.score;
+        if (a.length != b.length) return a.length < b.length;
+        return a.index < b.index;
+    });
+    int nownum = 0;
+    for (const auto& cand : candidates) {
+        PyList_Append(result, cand.item);
+        nownum++;
+        if (nownum >= num) {
+            break;
         }
     }
     return result;
@@ -375,11 +395,11 @@ static PyObject* create_link(PyObject* self, PyObject* args) {
 }
 
 static PyObject* init_tray(PyObject* self, PyObject* args) {
-    long pyhwnd;
+    unsigned long long pyhwnd;
     PyObject* pytooltip;
     PyObject* about_callback;
     PyObject* exit_callback;
-    int flag = PyArg_ParseTuple(args, "iOOO:init_tray", &pyhwnd, &pytooltip, &about_callback, &exit_callback);
+    int flag = PyArg_ParseTuple(args, "KOOO:init_tray", &pyhwnd, &pytooltip, &about_callback, &exit_callback);
     if (!flag) {
         return NULL;
     }
@@ -458,9 +478,30 @@ static PyObject* detect_app_theme(PyObject* self, PyObject* args) {
     }
 }
 
+static PyObject* set_border_color(PyObject* self, PyObject* args) {
+    int dark;
+    PyObject* pycolor = Py_None;
+    if (!PyArg_ParseTuple(args, "i|O:set_border_color", &dark, &pycolor)) {
+        return NULL;
+    }
+    if (pycolor == Py_None) {
+        COLORREF color = DWMWA_COLOR_DEFAULT;
+        apply_border_color(color);
+    } else {
+        const char* hex_str = PyUnicode_AsUTF8(pycolor);
+        if (!hex_str || hex_str[0] != '#' || strlen(hex_str) != 7) {
+            return NULL;
+        }
+        unsigned long rgb = strtoul(hex_str + 1, NULL, 16);
+        COLORREF color = RGB((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+        apply_border_color(color);
+    }
+    Py_RETURN_NONE;
+}
+
 static PyObject* worker_size(PyObject* self, PyObject* args) {
-    auto [top, left, bottom, right] = get_worker_size();
-    return Py_BuildValue("iiii", top, left, bottom, right);
+    auto [left, top, right, bottom] = get_worker_size();
+    return Py_BuildValue("iiii", left, top, right, bottom);
 }
 
 static PyObject* start_window_hook(PyObject* self, PyObject* args) {
@@ -488,7 +529,40 @@ static PyObject* zone_try_times(PyObject* self, PyObject* args) {
 }
 
 
+std::string WStringToUtf8(const std::wstring& wstr) {
+    if (wstr.empty()) return "";
+    int size = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    if (size <= 1) return "";
+    std::string str(size - 1, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &str[0], size, nullptr, nullptr);
+    return str;
+}
+
+static PyObject* get_work_apps(PyObject* self, PyObject* args) {
+    auto windows = WindowMonitor::GetAllMainWindowSnapshots();
+    PyObject* result = PyList_New(0);
+    for (const auto& w : windows) {
+        PyObject* item = Py_BuildValue("{s:O,s:O,s:(iiii),s:i,s:i,s:i}",
+            "processName", PyUnicode_FromWideChar(w.processName.c_str(), -1),
+            "commandArgs", PyUnicode_FromWideChar(w.commandArgs.c_str(), -1),
+            "realRect", w.realRect.top, w.realRect.left, w.realRect.bottom, w.realRect.right,
+            "isMinimized", w.isMinimized,
+            "isMaximized", w.isMaximized,
+            "isRoundCorner", w.isRoundCorner
+        );
+        PyList_Append(result, item);
+    }
+    return result;
+}
+
+static PyObject* check_admin(PyObject* self, PyObject* args) {
+    bool isAdmin = is_admin();
+    return PyBool_FromLong(isAdmin);
+}
+
+
 static PyMethodDef QUModuleMethods[] = {
+    {"set_dpi_aware", (PyCFunction)set_dpi_aware, METH_NOARGS, PyDoc_STR("set_dpi_aware() -> float")},
     {"get_parent", (PyCFunction)get_parent, METH_VARARGS, PyDoc_STR("get_parent(hwnd:int) -> int")},
     {"get_windowtext", (PyCFunction)get_windowtext, METH_VARARGS, PyDoc_STR("get_windowtext(hwnd:int) -> str")},
     {"priority_window", (PyCFunction)priority_window, METH_VARARGS, PyDoc_STR("priority_window(name:str|int) -> bool")},
@@ -510,10 +584,13 @@ static PyMethodDef QUModuleMethods[] = {
     {"start_hotkey", (PyCFunction)start_hotkey, METH_VARARGS, PyDoc_STR("start_hotkey(fsmodifier:int, fskey:int, callback:function) -> None")},
     {"stop_hotkey", (PyCFunction)stop_hotkey, METH_VARARGS, PyDoc_STR("stop_hotkey() -> None")},
     {"detect_app_theme", (PyCFunction)detect_app_theme, METH_VARARGS, PyDoc_STR("detect_app_theme() -> str")},
+    {"set_border_color", (PyCFunction)set_border_color, METH_VARARGS, PyDoc_STR("set_border_color(dark:int, color:str=None) -> None")},
     {"worker_size", (PyCFunction)worker_size, METH_VARARGS, PyDoc_STR("worker_size() -> tuple")},
     {"start_window_hook", (PyCFunction)start_window_hook, METH_VARARGS, PyDoc_STR("start_window_hook() -> None")},
     {"stop_window_hook", (PyCFunction)stop_window_hook, METH_VARARGS, PyDoc_STR("stop_window_hook() -> None")},
     {"zone_try_times", (PyCFunction)zone_try_times, METH_VARARGS, PyDoc_STR("zone_try_times(times:int) -> None")},
+    {"get_work_apps", (PyCFunction)get_work_apps, METH_VARARGS, PyDoc_STR("get_work_apps() -> list")},
+    {"check_admin", (PyCFunction)check_admin, METH_VARARGS, PyDoc_STR("check_admin() -> bool")},
     {NULL, NULL, 0, NULL}
 };
 

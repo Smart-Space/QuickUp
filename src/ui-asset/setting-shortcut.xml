@@ -1,36 +1,36 @@
 <tinui>
 <line>
     <line>
-        <line>
+        <line pady='5'>
             <title text="主界面"></title>
         </line>
         <line>
-            <table data="self.datas['tdata1']"></table>
+            <table minwidth='100' data="self.datas['tdata1']"></table>
         </line>
     </line>
     <line>
-        <line>
-            <title text="设置界面"></title>
+        <line pady='5'>
+            <title text="设置界面(默认)"></title>
         </line>
         <line>
-            <table data="self.datas['tdata2']"></table>
+            <table minwidth='100' data="self.datas['tdata2']"></table>
         </line>
     </line>
     <back></back>
     <line>
-        <line>
-            <title text="编辑界面"></title>
+        <line pady='5'>
+            <title text="编辑界面(默认)"></title>
         </line>
         <line>
-            <table data="self.datas['tdata3']"></table>
+            <table minwidth='100' data="self.datas['tdata3']"></table>
         </line>
     </line>
     <line>
-        <line>
-            <title text="工作区选择界面"></title>
+        <line pady='5'>
+            <title text="工作区选择界面(默认)"></title>
         </line>
         <line>
-            <table data="self.datas['tdata4']"></table>
+            <table minwidth='100' data="self.datas['tdata4']"></table>
         </line>
     </line>
 </line>

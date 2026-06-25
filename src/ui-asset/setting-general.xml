@@ -1,23 +1,47 @@
 <tinui>
-<line pady="20">
-    <line pady="15">
+<line>
+    <line x="200" y="10" pady="10">
         <line>
-            <paragraph text='样式 (重启软件后生效)'></paragraph>
+            <paragraph text="作者：Smart-Space"></paragraph>
+            <paragraph text="发布页面"></paragraph>
+            <link text="GitHub" url="https://github.com/Smart-Space/QuickUp/releases/"></link>
+            <link text="Gitee" url="https://gitee.com/captorking/QuickUp/releases/"></link>
+        </line>
+        <line padx="10">
+            <button text="访问QuickUp网站" command='self.funcs["open_url"]'></button>
+            <button text="查看QuickUp说明文档" command='self.funcs["open_doc"]'></button>
         </line>
         <line>
+            <paragraph width="590" text="copyright © 2024-present QuickUp"></paragraph>
+        </line>
+    </line>
+</line>
+<line x="25" y="5">
+    <image width="100" height="100" state="uniform" imgfile="./logo-small.png"></image>
+</line>
+
+<line pady="20" y='150'>
+    <line pady="15">
+        <line pady='10'>
+            <paragraph text='样式 (重启软件后生效)'></paragraph>
+        </line>
+        <line anchor="w" lineanchor="nw">
             <segmentbutton content="('明亮','黑暗','跟随系统')" command="self.funcs['sel_theme']">themeradio</segmentbutton>
+            <button text='提示色' command="self.funcs['sel_accent_color']"></button>
+            <label text="   " bg="" outline="">accentcolorbutton</label>
+            <checkbutton text='用于边框' command="self.funcs['set_border_color']">accentbordercheck</checkbutton>
         </line>
     </line>
     <line pady="15" padx="20">
-        <line>
-            <paragraph text='模糊搜索阈值 (%)'></paragraph>
+        <line pady='10'>
+            <paragraph text='模糊搜索阈值 (%)' width='300'></paragraph>
         </line>
         <line>
             <spinbox width="60" data="self.datas['blur_rank']" command="self.funcs['sel_blur']">blurspin</spinbox>
         </line>
         <back></back>
-        <line>
-            <paragraph text='最大结果数 (0为无限制 | 可选范围:0-10)'></paragraph>
+        <line pady='10'>
+            <paragraph text='最大结果数 (0为无限制 | 可选范围:0-10)' width='300'></paragraph>
         </line>
         <line>
             <spinbox width="60" data="['10','9','8','7','6','5','4','3','2','1','0']" command="self.funcs['sel_msc']">mscspin</spinbox>
@@ -26,23 +50,25 @@
     <line pady="15">
         <checkbutton text='显示隐藏任务' command="self.funcs['show_hidden']">hiddencheck</checkbutton>
     </line>
-    <line pady="15">
+    <line pady="25">
         <checkbutton text="置顶QuickUp" command="self.funcs['set_topmost']">topmostcheck</checkbutton>
     </line>
+    <line pady="15" padx="20" anchor='w'>
+        <paragraph text='窗口透明度'></paragraph>
+        <!-- transparencyscale 1-数值/20 为透明度 -->
+        <scalebar width="100" data="[0,1,2,3,4,5,7,8,9,10]" command="self.funcs['sel_transparency']">transparencyscale</scalebar>
+    </line>
     <line pady="15">
-        <line>
+        <line pady='10'>
             <paragraph text='关闭窗口时'></paragraph>
-        </line>
-        <line>
             <radiobox content="('退出应用','缩小到托盘')" command="self.funcs['sel_exit_mode']">exitradio</radiobox>
         </line>
     </line>
     <line pady="15">
-        <line anchor="w" lineanchor="nw">
+        <line anchor="w" lineanchor="nw" pady='10'>
             <paragraph text='当前版本：%VERSION%'></paragraph>
             <button text="查看更新" command="self.funcs['check_update']"></button>
-        </line>
-        <line>
+            <button2 text="更新日志" command='self.funcs["open_log"]'></button2>
             <checkbutton text="自动检查更新" command="self.funcs['auto_check_update']">updatecheck</checkbutton>
         </line>
     </line>

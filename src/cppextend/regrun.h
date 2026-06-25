@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <string>
 
 bool set_startup_registry(const std::wstring value_name, const std::wstring app_path) {
     HKEY hKey;
@@ -54,4 +55,15 @@ bool valid_windows_filename(const std::wstring filename) {
         return false;
     }
     return true;
+}
+
+bool is_admin() {
+    BOOL is_admin = FALSE;
+    PSID admin_group = NULL;
+    SID_IDENTIFIER_AUTHORITY nt_authority = SECURITY_NT_AUTHORITY;
+    if (AllocateAndInitializeSid(&nt_authority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &admin_group)) {
+        CheckTokenMembership(NULL, admin_group, &is_admin);
+        FreeSid(admin_group);
+    }
+    return is_admin;
 }

@@ -28,8 +28,9 @@ Licensed under the GPLv3 and LGPLv3 Licenses. (since 3.0 version)
 import tkinter as tk
 import sys
 import os
+import shutil
 # 设置程序所在目录为工作目录
-rootpath=sys.path[0]
+rootpath = os.path.dirname(os.path.abspath(__file__))
 os.chdir(rootpath)
 import signal
 from multiprocessing.shared_memory import ShareableList
@@ -49,12 +50,17 @@ import config
 from ui import editor
 from ui import utils
 import datas
+from labels import labelsmng
+from labels.labelsui import init_labels_ui, show_labels_window, hide_labels_window
 from runner.runtask import run_task
 from runner.runtip import init_tip
 from runner.update import installerexe, auto_check_update, update_program, update_QuickUp
 from runner import create_lnk, hotkey
 
-from cppextend.QUmodule import init_tray, remove_tray, get_parent, get_windowtext, priority_window, is_msix, start_window_hook, stop_window_hook
+from cppextend.QUmodule import init_tray, remove_tray, get_parent, get_windowtext, priority_window, is_msix, start_window_hook, stop_window_hook, set_dpi_aware, set_border_color
+datas.scale_factor = scale_factor = set_dpi_aware()
+Dialog.set_scale(scale_factor)
+# datas.scale_factor = scale_factor = 1.0
 
 parser = argparse.ArgumentParser(description='QuickUp - a simple, fast, and easy to use applications starter kit.')
 parser.add_argument('-w', '--workspace', type=str, default='.', help='工作目录')
@@ -64,12 +70,24 @@ args = parser.parse_args()
 
 # 判断是否为msix安装包
 if is_msix():
-    datadir = os.path.expandvars("%LOCALAPPDATA%") + '/QuickUp'# for msix package
+    legacy_tasks = os.path.expandvars("%LOCALAPPDATA%/QuickUp/tasks/")
     datas.is_msix = True
 else:
-    datadir = rootpath# for general package
+    legacy_tasks = rootpath + '/tasks'
+
+datadir = os.path.expandvars("%APPDATA%") + '/QuickUp'
+new_tasks = datadir + '/tasks'
 if not os.path.exists(datadir):
     os.makedirs(datadir)
+if not os.path.exists(new_tasks):
+    os.makedirs(new_tasks)
+if os.path.exists(legacy_tasks):
+    # 已经存在的旧版任务数据，复制到新的任务目录并删除
+    try:
+        shutil.copytree(legacy_tasks, new_tasks, dirs_exist_ok=True)
+        shutil.rmtree(legacy_tasks)
+    except:
+        pass
 
 if args.workspace in ('', '.', None):
     workspace = datadir + '/tasks/'
@@ -97,21 +115,23 @@ thisName = "QuickUp" + workname
 if priority_window(thisName):
     sys.exit()
 
-def about_workspace(_):
-    d = Dialog(root, "info", config.settings['general']['theme'])
-    utils.show_dialog(d, "关于工作区", "当前工作区：" + args.workspace, "msg", config.settings['general']['theme'])
-
 
 if os.path.exists(installerexe):
     os.remove(installerexe)
 
 config.init_config()
 init_tip()
+labelsmng.load_labels()
 
 
 def close_root():
     remove_tray()
     stop_window_hook()
+    if 'taskVar' in globals() and 'task_entry_trace' in globals():
+        try:
+            taskVar.trace_remove('write', task_entry_trace)
+        except:
+            pass
     root.destroy()
     if id_index != -1:
         shl[id_index] = 0
@@ -124,7 +144,9 @@ def close_root_check():
     else:
         close_root()
 
+send_show_from_tray = False
 def show_from_tray():
+    global send_show_from_tray
     datas.titles.clear()
     for i in range(10):
         if shl[i] != 0:
@@ -135,14 +157,28 @@ def show_from_tray():
                 # 意外关闭
                 shl[i] = 0
     if datas.titles.__len__() == 1:
-        root.deiconify()
+        # 窗口是否已经正常显示
+        if root.state() != "normal":
+            root.deiconify()
+        # 是否已经在最前
+        if root.focus_get() == taskEntry:
+            send_show_from_tray = False
+            return
         root.attributes("-topmost", True)
-        root.update()
         root.attributes("-topmost", False)
-        root.focus_set()
+        taskEntry.focus_force()
+        root.update()
     else:
         root.after(0, show_select)
         root.update()
+    send_show_from_tray = False
+
+def request_show_from_tray():
+    global send_show_from_tray
+    if send_show_from_tray:
+        return
+    send_show_from_tray = True
+    root.after(50, show_from_tray)
 
 def signal_handler(signal, frame):
     close_root()
@@ -220,13 +256,13 @@ def if_taskEntry_empty(text):
         search_timer = None
     loading = True
     if text == '' and original_text != '':
-        search_tasks('')
+        search_timer = root.after(100, go_search_tasks)
     else:
         search_timer = root.after(500, lambda text=text: go_search_tasks(text))
     original_text = text
     loading = False
 
-def go_search_tasks(text:str):
+def go_search_tasks(text:str=''):
     search_tasks(text, True)
 
 def force_search_tasks(e):
@@ -243,11 +279,11 @@ def force_search_tasks(e):
 root = tk.Tk()
 datas.root = root
 
-width = 500
-height = 700
+width = int(500 * datas.scale_factor)
+height = int(700 * datas.scale_factor)
 screenwidth = root.winfo_screenwidth()
 screenheight = root.winfo_screenheight()
-geometry = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2 - 50)
+geometry = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2 - int(50 * datas.scale_factor))
 root.geometry(geometry)
 if args.silent and config.settings['general']['closeToTray']:
     # 静默模式，不显示UI，最小化到托盘
@@ -264,6 +300,7 @@ root.resizable(False, False)
 root.update()
 if config.settings['general']['topMost']:
     root.attributes("-topmost", True)
+root.attributes("-alpha", round(1-config.settings['general']['transparency']/20, 2))
 
 rootid = get_parent(root.winfo_id())
 
@@ -281,18 +318,35 @@ except:
     id_index = 0
 
 ui = BasicTinUI(root)
+ui.set_scale(datas.scale_factor)
 ui.pack(fill=tk.BOTH, expand=True)
 if config.settings['general']['theme'] == 'dark':
     utils.set_window_dark(root)
-    theme = TinUIDark(ui)
+    theme = TinUIDark(ui, accent=config.settings['general']['accentColorD'])
 else:
-    theme = TinUILight(ui)
+    theme = TinUILight(ui, accent=config.settings['general']['accentColorL'])
+
+labels_ui = None
+
+def close_labels_view():
+    ui.pack(fill=tk.BOTH, expand=True)
+    if 'taskEntry' in globals():
+        taskEntry.focus_set()
+
+def open_label_window(_=None):
+    global labels_ui
+    if labels_ui is None:
+        labels_ui = init_labels_ui(root, close_callback=close_labels_view)
+    ui.pack_forget()
+    show_labels_window()
+
+def close_labels_window(_=None):
+    hide_labels_window()
 uixml = TinUIXml(theme)
 uixml.environment({
     'create_task': create_task,
     'setting': show_setting,
-    'about': show_about,
-    'about_workspace': about_workspace,
+    'open_label_window': open_label_window,
     'create_workspace_lnk': lambda e: create_lnk.create_workspace_lnk(root, args.workspace),
 })
 if thisName == "QuickUp":
@@ -305,7 +359,7 @@ taskEntry:tk.Entry = uixml.tags["taskEntry"][0]
 taskEntry.focus_set()
 taskEntry.bind("<Return>", force_search_tasks)
 taskVar = taskEntry.var
-taskVar.trace_add("write", lambda *args: if_taskEntry_empty(taskVar.get()))
+task_entry_trace = taskVar.trace_add("write", lambda *args: if_taskEntry_empty(taskVar.get()))
 taskView = uixml.tags["taskView"][-2]# listview functions
 
 editor.init_editor()
@@ -329,7 +383,7 @@ if config.settings['general']['checkUpdate'] and not datas.is_msix:
 def regeometry(e):
     # 应对从最小化到恢复正常
     root.unbind("<Visibility>")
-    root.geometry('500x700')
+    root.geometry(f'{int(500 * datas.scale_factor)}x{int(700 * datas.scale_factor)}')
     try:
         root.bind("<Visibility>", regeometry)
     except:
@@ -337,6 +391,13 @@ def regeometry(e):
 root.bind("<Visibility>", regeometry)
 
 init_tray(root.winfo_id(), thisName, show_about, close_root)
+
+if config.settings['general'].get('accentBorder', False):
+    __theme = config.settings['general']['theme']
+    if __theme == 'light':
+        set_border_color(False, config.settings['general']['accentColorL'])
+    else:
+        set_border_color(True, config.settings['general']['accentColorD'])
 
 initial_tasks_view(taskView, root)# 初始化任务列表
 
@@ -357,7 +418,7 @@ root.bind("<End>", end_task_view)
 root.bind("<<RunCmdError>>", show_task_error)
 
 if config.settings['general']['closeToTray'] and workname == '':
-    hotkey.start_listen(show_from_tray)
+    hotkey.start_listen(request_show_from_tray)
 start_window_hook()
 
 root.mainloop()

@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <dwmapi.h>
 #include <Python.h>
 #include <thread>
 
@@ -188,4 +189,22 @@ int detect_theme() {
         return 1;
     }
     return value;
+}
+
+#ifndef DWMWA_BORDER_COLOR
+#define DWMWA_BORDER_COLOR 34
+#endif
+
+#ifndef DWMWA_COLOR_DEFAULT
+#define DWMWA_COLOR_DEFAULT 0xFFFFFFFE
+#endif
+
+void apply_border_color(COLORREF color) {
+    if (!quickup_window) return;
+    DwmSetWindowAttribute(
+        quickup_window,
+        DWMWA_BORDER_COLOR,
+        &color,
+        sizeof(color)
+    );
 }

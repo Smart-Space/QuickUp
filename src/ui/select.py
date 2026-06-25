@@ -8,7 +8,7 @@ from tinui import BasicTinUI, ExpandPanel, HorizonPanel, VerticalPanel
 from tinui.theme.tinuidark import TinUIDark
 from tinui.theme.tinuilight import TinUILight
 
-from ui.utils import set_window_dark
+from ui.utils import set_window_dark, bind_shortcuts
 import config
 import datas
 from cppextend.QUmodule import priority_window, window_no_icon
@@ -16,6 +16,7 @@ from cppextend.QUmodule import priority_window, window_no_icon
 root = None
 listview = None
 theme = None
+accent_color = None
 
 def close_select(e=None):
     root.withdraw()
@@ -25,11 +26,11 @@ def load_titles():
     for title in datas.titles:
         cui, _, cuixml, _ = listview.add()
         del cuixml
-        cuit = theme(cui)
+        cuit = theme(cui, accent=accent_color)
         titlename = title[0]
         if titlename != "QuickUp":
             titlename = titlename[9:-1]
-        cuit.add_title((5,40), titlename, anchor='w')
+        cuit.add_title((endx, endy), titlename, anchor='w')
 
 def select_next(e):
     taskindex = listview.getsel()
@@ -48,19 +49,21 @@ def select_workspace(e):
     close_select()
 
 def show_select():
-    global root, theme, listview
+    global root, theme, listview, endx, endy, accent_color
     if root:
         root.deiconify()
         root.focus_force()
         load_titles()
         return
+    endx = int(5*datas.scale_factor)
+    endy = int(40*datas.scale_factor)
     root = tk.Toplevel()
     root.title("选择一个QuickUp工作区")
     root.attributes("-topmost", True)
-    width = 500
-    height = 500
+    width = int(500*datas.scale_factor)
+    height = int(500*datas.scale_factor)
     x = (root.winfo_screenwidth() - width) / 2
-    y = (root.winfo_screenheight() - height) / 2 - 50
+    y = (root.winfo_screenheight() - height) / 2 - int(50*datas.scale_factor)
     root.geometry('%dx%d+%d+%d' % (width, height, x, y))
     root.protocol("WM_DELETE_WINDOW", close_select)
     root.iconbitmap('./logo.ico')
@@ -69,20 +72,23 @@ def show_select():
     if config.settings['general']['theme'] == 'dark':
         theme = TinUIDark
         set_window_dark(root)
+        accent_color = config.settings['general']['accentColorD']
     else:
         theme = TinUILight
+        accent_color = config.settings['general']['accentColorL']
     root.focus_force()
     window_no_icon(root.winfo_id())
 
     ui = BasicTinUI(root)
+    ui.set_scale(datas.scale_factor)
     ui.pack(fill=tk.BOTH, expand=True)
-    uit = theme(ui)
+    uit = theme(ui, accent=accent_color)
 
     vp = VerticalPanel(ui)
 
-    listviewt = uit.add_listview((0,0), num=0)
+    listviewt = uit.add_listview((0,0), linew=int(80*datas.scale_factor), num=0)
     listview = listviewt[-2]
-    ep = ExpandPanel(ui, listviewt[-1], padding=(0,0,0,-5))
+    ep = ExpandPanel(ui, listviewt[-1], padding=(0,5,0,0))
     vp.add_child(ep, weight=1)
 
     hp = HorizonPanel(ui, spacing=10)
@@ -94,11 +100,15 @@ def show_select():
     hp.add_child(bep1, weight=1)
     hp.add_child(bep2, weight=1)
 
-    vp.update_layout(5,5,495,495)
+    vp.update_layout(int(5*datas.scale_factor), int(5*datas.scale_factor), int(495*datas.scale_factor), int(495*datas.scale_factor))
 
-    root.bind('<Down>', select_next)
-    root.bind('<Up>', select_prev)
-    root.bind('<Return>', select_workspace)
-    root.bind('<Escape>', close_select)
+    select_shortcuts = config.get_shortcuts('select', config.DEFAULT_SHORTCUTS['select'])
+    bind_shortcuts(root, select_shortcuts, {
+        'next': select_next,
+        'prev': select_prev,
+        'confirm': select_workspace,
+        'close': close_select,
+    })
 
+    root.update_idletasks()
     load_titles()

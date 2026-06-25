@@ -3,12 +3,6 @@
 QuickUp的任务编辑器模块
 """
 import os
-# from sys import getrefcount
-# def tick(something):
-#     print(getrefcount(something))
-# from gc import get_referrers
-# def who(something):
-#     print(get_referrers(something))
 import subprocess
 import json
 import tkinter as tk
@@ -23,20 +17,26 @@ from tinui.theme.tinuilight import TinUILight
 import datas
 from runner.runtask import run_task, run_cmd
 import config
-from ui.utils import set_window_dark, show_dialog
+from ui.utils import set_window_dark, show_dialog, bind_shortcuts
 from runner.create_lnk import create_task_lnk
+from labels import labelsmng
 
-from cppextend.QUmodule import enable_entry_drop, disable_entry_drop, is_valid_windows_filename
+from cppextend.QUmodule import enable_entry_drop, disable_entry_drop, is_valid_windows_filename, get_work_apps
+
+
+accent_color = None
 
 
 def init_editor():
-    global theme, themename, screen_rects, screen_info
+    global theme, themename, screen_rects, screen_info, accent_color
     if config.settings['general']['theme'] == 'dark':
         theme = TinUIDark
         themename = 'dark'
+        accent_color = config.settings['general']['accentColorD']
     else:
         theme = TinUILight
         themename = 'light'
+        accent_color = config.settings['general']['accentColorL']
     left, top, right, bottom = datas.worker_area
     screen_rects = {} # (x,y,w,h)
     screen_rects['lrs'] = (
@@ -87,15 +87,18 @@ class CmdEditor:
         self.contentChanged = None
         self.editor = editor
         self.zone_set_ui:BasicTinUI = None
+        self._destroyed = False
     
     def init(self, target:str="", args:str="", admin:bool=False, wait:bool=False, runMAX:bool=False, runMIN:bool=False, pos:list=[], zone_round:bool=False):
         # 初始化ui接管
         self.targetEntry = self.uixml.tags['targetEntry'][0]
         self.argsEntry = self.uixml.tags['argsEntry'][0]
+        self.target_trace = None
+        self.args_trace = None
         self.flyoutui:BasicTinUI = self.uixml.tags['flyout'][0]
         flyoutuixml:TinUIXml = self.uixml.tags['flyout'][1]
         del flyoutuixml.ui
-        flyoutuixml.ui = theme(self.flyoutui)
+        flyoutuixml.ui = theme(self.flyoutui, accent=accent_color)
         flyoutuixml.funcs.update({
             'if_wait': self.change_wait_state,
             'run_as_admin': None,
@@ -133,12 +136,19 @@ class CmdEditor:
         self.argsEntry.insert(0, args)
     
     def on_destroy(self, _):
+        if self._destroyed:
+            return
+        self._destroyed = True
         disable_entry_drop(self.dt)
         del self.dt
+        if self.target_trace:
+            self.targetEntry.var.trace_remove('write', self.target_trace)
+        if self.args_trace:
+            self.argsEntry.var.trace_remove('write', self.args_trace)
         self.targetEntry.unbind('<Destroy>')
         self.uixml.clean()
         self.flyoutuixml.clean()
-        for attr in ('targetEntry', 'argsEntry', 'flyoutui', 'flyoutuixml', 'checkbox', 'wbutton', 'wbuttont', 'maxcheckbox', 'mincheckbox'):
+        for attr in ('targetEntry', 'argsEntry', 'flyoutui', 'flyoutuixml', 'checkbox', 'wbutton', 'wbuttont', 'maxcheckbox', 'mincheckbox', 'target_trace', 'args_trace'):
             delattr(self, attr)
     
     def run_as_admin(self, tag):
@@ -167,8 +177,9 @@ class CmdEditor:
     
     def open_zone_set(self, _):
         self.zone_set_ui = BasicTinUI(self.ui.master)
+        self.zone_set_ui.set_scale(datas.scale_factor)
         self.zone_set_ui.pack(fill='both', expand=True)
-        zone_set_ui_xml = TinUIXml(theme(self.zone_set_ui))
+        zone_set_ui_xml = TinUIXml(theme(self.zone_set_ui, accent=accent_color))
         zone_set_ui_xml.environment({
             'about-zone': self.about_zone_set,
             'delete': self.delete_zone_set,
@@ -303,9 +314,11 @@ class CmdsEditor:
         self.cmd = 'cmd'# cmd or powershell
         self.wait = False
         self.contentChanged = None
+        self._destroyed = False
     
     def init(self, cmds:list=[], cmd:str='cmd', wait:bool=False):
         # 初始化ui接管
+        self.modified_bind = None
         self.uixml.funcs['if_wait'] = self.change_wait_state
         self.uixml.funcs['set_shell'] = self.set_shell
         self.textbox = self.uixml.tags['textbox'][0]
@@ -328,13 +341,17 @@ class CmdsEditor:
         self.textbox.insert('end', '\n'.join(cmds))
         self.textbox.edit_modified(False)
         self.textbox.update()
-        self.textbox.bind('<<Modified>>', self.textContentChanged)
+        self.modified_bind = self.textbox.bind('<<Modified>>', self.textContentChanged)
         self.textbox.bind('<Destroy>', self.on_destroy)
     
     def on_destroy(self, _):
-        self.textbox.unbind('<<Modified>>')
+        if self._destroyed:
+            return
+        self._destroyed = True
+        if self.modified_bind:
+            self.textbox.unbind('<<Modified>>', self.modified_bind)
         self.uixml.clean()
-        for attr in ('textbox', 'radiobox', 'wbutton', 'wbuttont'):
+        for attr in ('textbox', 'radiobox', 'wbutton', 'wbuttont', 'modified_bind'):
             delattr(self, attr)
     
     def textContentChanged(self, e):
@@ -381,13 +398,25 @@ class TaskEditor:
         self.type = 'task'
         self.task = ''
         self.root = None
+        self._destroyed = False
     
     def init(self, task:str=""):
         # 初始化ui接管
         self.uixml.funcs['edit_task'] = self.edit_task
         self.taskEntry = self.uixml.tags['taskEntry'][0]
+        self.task_trace = None
         self.task = task
         self.taskEntry.insert(0, task)
+
+    def on_destroy(self, _):
+        if self._destroyed:
+            return
+        self._destroyed = True
+        if self.task_trace:
+            self.taskEntry.var.trace_remove('write', self.task_trace)
+        self.uixml.clean()
+        for attr in ('taskEntry', 'task_trace'):
+            delattr(self, attr)
     
     def edit_task(self, e):
         # 编辑子任务（不能修改名称）
@@ -414,13 +443,25 @@ class WspEditor:
         self.type = 'wsp'
         self.name = ''
         self.root = None
+        self._destroyed = False
     
     def init(self, name:str=""):
         # 初始化ui接管
         self.uixml.funcs['open_quickup'] = self.open_quickup
         self.wspEntry = self.uixml.tags['wspEntry'][0]
+        self.wsp_trace = None
         self.name = name
         self.wspEntry.insert(0, name)
+
+    def on_destroy(self, _):
+        if self._destroyed:
+            return
+        self._destroyed = True
+        if self.wsp_trace:
+            self.wspEntry.var.trace_remove('write', self.wsp_trace)
+        self.uixml.clean()
+        for attr in ('wspEntry', 'wsp_trace'):
+            delattr(self, attr)
     
     def open_quickup(self, e):
         # 打开QuickUp
@@ -452,9 +493,11 @@ class TipEditor:
         self.show = True
         self.top = False
         self.contentChanged = None
+        self._destroyed = False
     
     def init(self, tip:str="", wait:bool=False, show:bool=True, top:bool=False):
         # 初始化ui接管
+        self.modified_bind = None
         self.uixml.funcs['if_wait'] = self.change_wait_state
         self.uixml.funcs['show_tip'] = self.change_show_state
         self.uixml.funcs['top_tip'] = self.change_top_state
@@ -476,13 +519,17 @@ class TipEditor:
         self.textbox.insert('end', tip)
         self.textbox.edit_modified(False)
         self.textbox.update()
-        self.textbox.bind('<<Modified>>', self.textContentChanged)
+        self.modified_bind = self.textbox.bind('<<Modified>>', self.textContentChanged)
         self.textbox.bind('<Destroy>', self.on_destroy)
     
     def on_destroy(self, _):
-        self.textbox.unbind('<<Modified>>')
+        if self._destroyed:
+            return
+        self._destroyed = True
+        if self.modified_bind:
+            self.textbox.unbind('<<Modified>>', self.modified_bind)
         self.uixml.clean()
-        for attr in ('textbox', 'wbutton', 'wbuttont', 'tipcheckbox', 'topcheckbox'):
+        for attr in ('textbox', 'wbutton', 'wbuttont', 'tipcheckbox', 'topcheckbox', 'modified_bind'):
             delattr(self, attr)
     
     def textContentChanged(self, e):
@@ -531,9 +578,10 @@ class Editor(tk.Toplevel):
         self.tasks = []# 任务列表，模拟listview增删
         self.saved = True# 是否已保存
         self.hidden = False# 是否隐藏
+        self.task_index = None# 当前选中任务索引
 
-        width = 500
-        height = 600
+        width = int(500*datas.scale_factor)
+        height = int(630*datas.scale_factor)
         geometry = '%dx%d' % (width, height)
         self.geometry(geometry)
         self.iconbitmap('./logo.ico')
@@ -544,8 +592,9 @@ class Editor(tk.Toplevel):
         self.focus_set()
 
         self.ui = BasicTinUI(self, background='#f3f3f3')
+        self.ui.set_scale(datas.scale_factor)
         self.ui.pack(fill=tk.BOTH, expand=True)
-        self.uixml = TinUIXml(theme(self.ui))
+        self.uixml = TinUIXml(theme(self.ui, accent=accent_color))
         self.uixml.environment({
             'save_task': self.save_task,
             'add_task_cmd': self.add_task_cmd,
@@ -559,6 +608,9 @@ class Editor(tk.Toplevel):
             'open_local': self.open_local,
             'set_priority': self.set_priority,
             'if_hide_task': None,
+            'record_apps': self.record_apps,
+            'select_task': self.select_task,
+            'add_label': self.add_label,
         })
         with open('./ui-asset/editor.xml', 'r', encoding='utf-8') as f:
             self.uixml.loadxml(f.read())
@@ -578,13 +630,22 @@ class Editor(tk.Toplevel):
             self.hidden = True
         self.uixml.funcs.update({'if_hide_task': self.if_hide_task})
 
+        self.entry_trace = None
         self.entry.insert(0, task)
-        self.entry.var.trace_add('write', self.contentChanged)
+        self.entry_trace = self.entry.var.trace_add('write', self.contentChanged)
         if not name_changeable:
             self.entry.config(state='disabled')
+
+        self.labels = self.uixml.tags['labels'][-2]
+        if self.task != '':
+            tags = labelsmng.find_labels_by_task(self.task)
+            for tag in tags:
+                self.labels.add(tag, self.delete_label)
         
         self.renew_title()
         self.protocol("WM_DELETE_WINDOW", self.close)
+        self.bind('<Destroy>', self.on_destroy)
+        self.update_idletasks()
 
         with open('./ui-asset/editor-cmd.xml', 'r', encoding='utf-8') as f:
             self.cmdxml = f.read()
@@ -604,17 +665,22 @@ class Editor(tk.Toplevel):
         if self.task != '':
             task_editors[self.task] = self
         
-        self.bind("<Control-w>", lambda e: self.close())
-        self.bind("<Control-s>", self.save_task)
-        self.bind("<Control-r>", self.run_task)
-        self.bind("<Control-e>", self.set_cwd)
-        self.bind("<Alt-a>", self.toggle_priority)
-        self.bind("<Alt-f>", self.open_local)
-        self.bind("<Alt-c>", self.add_task_cmd)
-        self.bind("<Alt-s>", self.add_task_cmds)
-        self.bind("<Alt-t>", self.add_task_task)
-        self.bind("<Alt-w>", self.add_workspace)
-        self.bind("<Alt-i>", self.add_task_tip)
+        editor_shortcuts = config.get_shortcuts('editor', config.DEFAULT_SHORTCUTS['editor'])
+        bind_shortcuts(self, editor_shortcuts, {
+            'close': lambda e: self.close(),
+            'save': self.save_task,
+            'run': self.run_task,
+            'set_cwd': self.set_cwd,
+            'toggle_priority': self.toggle_priority,
+            'open_local': self.open_local,
+            'add_cmd': self.add_task_cmd,
+            'add_cmds': self.add_task_cmds,
+            'add_task': self.add_task_task,
+            'add_workspace': self.add_workspace,
+            'add_tip': self.add_task_tip,
+            'copy_task': self.copy_task,
+            'paste_task': self.paste_task,
+        })
     
     def renew_title(self):
         # 更新标题
@@ -698,6 +764,9 @@ class Editor(tk.Toplevel):
             os.rename(datas.workspace + oldname + '.json', datas.workspace + self.task + '.json')
             del task_editors[oldname]
             task_editors[self.task] = self
+            labelsmng.rename_task(oldname, self.task)
+            if self.data['rate']:
+                datas.rename_priority(oldname, self.task)
             if self.flag == "EDIT":
                 self.callback(oldname, self.task)
         elif self.task == '' or name == '':
@@ -717,24 +786,10 @@ class Editor(tk.Toplevel):
             json.dump(self.data, f, indent=4)
         # 置顶优先级
         if self.data['rate'] != self.original_rate:
-            if not os.path.exists(datas.workspace + 'priority.txt'):
-                # 创建空文件
-                with open(datas.workspace + 'priority.txt', 'w', encoding='utf-8') as f:
-                    pass
-            with open(datas.workspace + 'priority.txt', 'a+', encoding='utf-8') as f:
-                if self.data['rate']:
-                    f.write(self.task + '\n')
-                else:
-                    f.seek(0)
-                    lines = f.readlines()
-                    lines = [line.strip() for line in lines]
-                    if self.task in lines:
-                        lines.remove(self.task)
-                    f.seek(0)
-                    f.truncate()
-                    f.write('\n'.join(lines))
-                    if len(lines) != 0:
-                        f.write('\n')
+            if self.data['rate']:
+                datas.add_priority(self.task)
+            else:
+                datas.remove_priority(self.task)
             self.original_rate = self.data['rate']
         # 是否隐藏任务
         if self.task.endswith('[x]'):
@@ -750,12 +805,12 @@ class Editor(tk.Toplevel):
         self.renew_title()
         return True
 
-    def run_task(self, e):
+    def run_task(self, _):
         # 运行任务
         if self.save_task(None):
             run_task(self.task)
     
-    def set_cwd(self, e):
+    def set_cwd(self, _):
         # 设置当前工作目录
         d = Dialog(self, "string", themename)
         cwd = show_dialog(d, f"设置工作目录 - {self.task}", "请输入该任务工作目录"+"\t"*5, "input", theme=themename, input=self.data['cwd'])
@@ -765,7 +820,7 @@ class Editor(tk.Toplevel):
                 self.saved = False
                 self.renew_title()
     
-    def create_task_lnk(self, e):
+    def create_task_lnk(self, _):
         # 创建快捷方式
         if self.task == '' or not self.saved:
             d = Dialog(self, "error", themename)
@@ -773,7 +828,7 @@ class Editor(tk.Toplevel):
             return
         create_task_lnk(self, self.task)
     
-    def open_local(self, e):
+    def open_local(self, _):
         # 打开本地文件
         if self.task == '':
             d = Dialog(self, "error", themename)
@@ -808,7 +863,7 @@ class Editor(tk.Toplevel):
         self.saved = False
         self.renew_title()
     
-    def toggle_priority(self, e):
+    def toggle_priority(self, _):
         # 切换优先级
         if self.data['rate'] == True:
             self.ratingbar.setrate(0)
@@ -821,13 +876,34 @@ class Editor(tk.Toplevel):
             self.saved = False
             self.renew_title()
     
+    def record_apps(self, _):
+        d = Dialog(self, "question", themename)
+        res = show_dialog(d, "记录应用", "是否将当前正在使用的应用记录为目标？", "msg", theme=themename)
+        if res:
+            apps = get_work_apps()
+            for app in apps:
+                if os.path.isfile(app["processName"]):
+                    task_name = app["processName"]
+                else:
+                    app_names = app["processName"].split('_')
+                    task_name = f'shell:AppsFolder\\{app_names[0]}_{app_names[-1]}!App' # 不一定对，但是对大部分UWP应用没问题
+                if not app["isMinimized"] and not app["isMaximized"]:
+                    rect = app["realRect"]
+                    pos = [rect[1]//datas.scale_factor, rect[0]//datas.scale_factor,
+                           (rect[3]-rect[1])//datas.scale_factor, (rect[2]-rect[0])//datas.scale_factor]
+                    for i in range(len(pos)):
+                        pos[i] = int(pos[i])
+                else:
+                    pos = []
+                self.add_task_cmd(None, task_name, app["commandArgs"], False, False, app["isMaximized"], app["isMinimized"], pos, app["isRoundCorner"])
+
     def add_task_cmd(self, _, target:str="", args:str="", admin:bool=False, wait:bool=False, runmax:bool=False, runmin:bool=False, pos:list=[], zone_round:bool=False):
         # 添加命令任务
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
-        uixml.ui = theme(ui)
+        uixml.ui = theme(ui, accent=accent_color)
         task = CmdEditor(uixml, ui, self)
         uixml.environment({
             'delete_task': lambda _, task=ref(task): self.delete_task(task),
@@ -837,8 +913,8 @@ class Editor(tk.Toplevel):
         task.init(target, args, admin, wait, runmax, runmin, pos, zone_round)
         targetEntry = uixml.tags['targetEntry'][0]
         argsEntry = uixml.tags['argsEntry'][0]
-        targetEntry.var.trace_add('write', self.contentChanged)
-        argsEntry.var.trace_add('write', self.contentChanged)
+        task.target_trace = targetEntry.var.trace_add('write', self.contentChanged)
+        task.args_trace = argsEntry.var.trace_add('write', self.contentChanged)
         self.tasks.append(task)
     
     def add_task_cmds(self, _, cmds:list=[], cmd:str='cmd', wait:bool=False):
@@ -847,7 +923,7 @@ class Editor(tk.Toplevel):
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
-        uixml.ui = theme(ui)
+        uixml.ui = theme(ui, accent=accent_color)
         task = CmdsEditor(uixml)
         uixml.environment({
             'delete_task': lambda _, task=ref(task): self.delete_task(task),
@@ -865,7 +941,7 @@ class Editor(tk.Toplevel):
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
-        uixml.ui = theme(ui)
+        uixml.ui = theme(ui, accent=accent_color)
         task = TaskEditor(uixml)
         task.root = self
         uixml.environment({
@@ -875,7 +951,8 @@ class Editor(tk.Toplevel):
         uixml.loadxml(self.taskxml)
         task.init(stask)
         taskEntry = uixml.tags['taskEntry'][0]
-        taskEntry.var.trace_add('write', self.contentChanged)
+        task.task_trace = taskEntry.var.trace_add('write', self.contentChanged)
+        taskEntry.bind('<Destroy>', task.on_destroy)
         self.tasks.append(task)
     
     def add_workspace(self, _, name:str=""):
@@ -896,7 +973,7 @@ class Editor(tk.Toplevel):
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
-        uixml.ui = theme(ui)
+        uixml.ui = theme(ui, accent=accent_color)
         task = WspEditor(uixml)
         task.root = self
         uixml.environment({
@@ -906,7 +983,8 @@ class Editor(tk.Toplevel):
         uixml.loadxml(self.wspxml)
         task.init(name)
         wspEntry = uixml.tags['wspEntry'][0]
-        wspEntry.var.trace_add('write', self.contentChanged)
+        task.wsp_trace = wspEntry.var.trace_add('write', self.contentChanged)
+        wspEntry.bind('<Destroy>', task.on_destroy)
         self.tasks.append(task)
 
     def add_task_tip(self, e, tip:str="", wait:bool=False, show:bool=True, top:bool=False):
@@ -915,7 +993,7 @@ class Editor(tk.Toplevel):
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
-        uixml.ui = theme(ui)
+        uixml.ui = theme(ui, accent=accent_color)
         task = TipEditor(uixml)
         uixml.environment({
             'delete_task': lambda e, task=ref(task): self.delete_task(task),
@@ -934,8 +1012,56 @@ class Editor(tk.Toplevel):
         self.saved = False
         self.renew_title()
         index = self.tasks.index(task)
+        if self.task_index == index:
+            self.task_index = None
+        elif self.task_index is not None and self.task_index > index:
+            self.task_index -= 1
         self.view.delete(index)
         self.tasks.remove(task)
+    
+    def select_task(self, index):
+        self.task_index = index
+    
+    def add_label(self):
+        all_tags = labelsmng.get_labels()
+        d = Dialog(self, "listbox", themename)
+        label = show_dialog(d, "添加标签", "请选择要添加的标签", "choice", theme=themename, input=all_tags)
+        if label is not None and label != '':
+            if label in labelsmng.find_tasks_by_label(self.task):
+                d = Dialog(self, "error", themename)
+                show_dialog(d, "无法添加", f"任务已包含标签 {label}", "msg", theme=themename)
+                return None, None
+            if labelsmng.add_task_to_label(label, self.task):
+                return label, self.delete_label
+        return None, None
+    
+    def delete_label(self, label):
+        labelsmng.remove_task_from_label(label, self.task)
+
+    def copy_task(self, _):
+        if self.task_index is not None:
+            task = self.tasks[self.task_index]
+            info = task.get()
+            self.clipboard_clear()
+            self.clipboard_append(json.dumps(info))
+    
+    def paste_task(self, _):
+        try:
+            clip_info = self.clipboard_get()
+            info = json.loads(clip_info)
+            match info['type']:
+                case 'cmd':
+                    self.add_task_cmd(None, info.get('target', ''), info.get('args', ''), info.get('admin', False), info.get('wait', False), info.get('max', False), info.get('min', False), info.get('pos', []), info.get('zone_round', False))
+                case 'cmds':
+                    self.add_task_cmds(None, info.get('cmds', []), info.get('cmd', 'cmd'), info.get('wait', False))
+                case 'task':
+                    self.add_task_task(None, info.get('task', ''))
+                case 'wsp':
+                    self.add_workspace(None, info.get('name', ''))
+                case 'tip':
+                    self.add_task_tip(None, info.get('tip', ''), info.get('wait', False), info.get('show', True), info.get('top', False))
+        except:
+            pass
     
     def close(self):
         # 关闭编辑器
@@ -961,9 +1087,20 @@ class Editor(tk.Toplevel):
             del task_editors[self.task]
             if self.flag == "NEW" and self.callback:
                 self.callback(self.task, True)
+
+    def on_destroy(self, _):
+        if _.widget is not self:
+            return
+        if self.entry_trace:
+            self.entry.var.trace_remove('write', self.entry_trace)
+        for task in self.tasks:
+            if hasattr(task, 'on_destroy'):
+                task.on_destroy(None)
         self.uixml.clean()
         self.data.clear()
         self.tasks.clear()
+        for attr in ('entry_trace',):
+            delattr(self, attr)
 
 
 def create_editor(task:str='', callback=None, flag="EDIT", name_changeable=True):

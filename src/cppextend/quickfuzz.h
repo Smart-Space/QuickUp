@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <cctype>
 
 std::vector<uint32_t> utf8_to_codepoints(const char* str, size_t len) {
     std::vector<uint32_t> res;
@@ -41,38 +42,23 @@ std::vector<uint32_t> utf8_to_codepoints(const char* str, size_t len) {
     return res;
 }
 
-int computeLCS(const std::vector<uint32_t>& a, const std::vector<uint32_t>& b, int min_required_len) {
-    const std::vector<uint32_t>* shorter = &a;
-    const std::vector<uint32_t>* longer = &b;
-    if (a.size() > b.size()) {
-        shorter = &b;
-        longer = &a;
+int computeOrderedMatchLen(const std::vector<uint32_t>& query, const std::vector<uint32_t>& candidate) {
+    if (query.empty()) {
+        return 0;
     }
-    const int m = shorter->size();
-    const int n = longer->size();
-    std::vector<int> dp(m+1, 0);
-    for (int i = 1; i <= n; ++i) {
-        int prev_diag_val = 0;
-        uint32_t longer_char = longer->at(i-1);
-        for (int j = 1; j <= m; ++j) {
-            int temp = dp[j];
-            if (longer_char == shorter->at(j-1)) {
-                dp[j] = prev_diag_val + 1;
-            } else {
-                dp[j] = std::max(dp[j-1], dp[j]);
-            }
-            prev_diag_val = temp;
+    size_t qi = 0;
+    const size_t qn = query.size();
+    const size_t cn = candidate.size();
+    for (size_t ci = 0; ci < cn && qi < qn; ++ci) {
+        if (candidate[ci] == query[qi]) {
+            qi++;
         }
-        if (dp[m] >= min_required_len) {
-            // found a match
-            return dp[m];
-        }
-        if (dp[m] + (n-i) < min_required_len) {
-            // no chance of finding a match
-            return -1;
+        // 剪枝：剩余候选字符不足以匹配剩余查询字符
+        if ((cn - ci - 1) < (qn - qi)) {
+            break;
         }
     }
-    return dp[m];
+    return static_cast<int>(qi);
 }
 
 std::vector<uint32_t> target_chars;
@@ -87,8 +73,6 @@ void setTargetChars(const char* str, size_t len, int acc) {
 int calculateSimilarity(const char* b, size_t b_len) {
     if (target_len == 0) return 0;
     std::vector<uint32_t> b_chars = utf8_to_codepoints(b, b_len);
-    int min_lcs_needed = (lcs_acc * target_len + 99) / 100; 
-    int lcs_length = computeLCS(target_chars, b_chars, min_lcs_needed);
-    if (lcs_length == -1) return 0;
-    return (lcs_length * 100) / target_len;
+    int matched_len = computeOrderedMatchLen(target_chars, b_chars);
+    return (matched_len * 100) / target_len;
 }

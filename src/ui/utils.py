@@ -18,6 +18,24 @@ def show_dialog(dialog, title, content, wtype="msg", theme="light", input=""):
         return dialog.initial_msg(title, content)
     elif wtype == "input":
         return dialog.initial_input(title, content, input)
+    elif wtype == "choice":
+        return dialog.initial_choice(title, content, input)
+
+def bind_shortcuts(widget, shortcuts, handlers):
+    if not isinstance(shortcuts, dict):
+        return
+    for action, sequences in shortcuts.items():
+        handler = handlers.get(action)
+        if handler is None:
+            continue
+        if isinstance(sequences, str):
+            sequences = [sequences]
+        if not isinstance(sequences, (list, tuple)):
+            continue
+        for sequence in sequences:
+            if not isinstance(sequence, str) or not sequence:
+                continue
+            widget.bind(sequence, handler)
 
 
 quickup_path = os.path.abspath(".") + "\\QuickUp.exe"
