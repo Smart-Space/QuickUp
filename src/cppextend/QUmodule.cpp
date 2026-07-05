@@ -176,7 +176,20 @@ static PyObject* shell_execute_ex_wrapper(PyObject* self, PyObject* args) {
             modify_window_position(sei, wcmd, launchTime, pos_vec[0], pos_vec[1], pos_vec[2], pos_vec[3], zone_round);
         }
         if (wait) {
-            WaitForSingleObject(sei.hProcess, INFINITE);
+            // 获取真实窗口进程ID并等待
+            HWND realHwnd = find_target_window(wcmd, launchTime);
+            DWORD pid = 0;
+            HANDLE hRealProcess = nullptr;
+            if (realHwnd && GetWindowThreadProcessId(realHwnd, &pid) && pid != 0) {
+                WindowMonitor::RemoveHandledWindow(realHwnd);// 处理完毕，从列表中移除，该方法会销毁判别列表的窗口句柄，在最后一次查找后使用
+                hRealProcess = OpenProcess(SYNCHRONIZE, FALSE, pid);
+            }
+            if (hRealProcess != sei.hProcess && hRealProcess != nullptr) {
+                WaitForSingleObject(hRealProcess, INFINITE);
+                CloseHandle(hRealProcess);
+            } else {
+                WaitForSingleObject(sei.hProcess, INFINITE);
+            }
         }
     } else {
         LPWSTR buffer = nullptr;

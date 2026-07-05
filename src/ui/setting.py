@@ -25,6 +25,7 @@ import datas
 from ui.utils import set_window_dark, show_dialog, bind_shortcuts
 from runner.update import update_program, update_QuickUp
 from ui.about import open_log, open_url, open_doc
+from plugin.manager import plugin_dir
 
 
 def scale(x):
@@ -488,7 +489,8 @@ def init_storage():
     sthemeUI = theme(sUI, accent=accent_color)
     sUIxml = TinUIXml(sthemeUI)
     sUIxml.funcs.update({'refresh_storage': refresh_storage, 'open_selected': open_selected,
-                         'edit_selected': edit_selected, 'about_top_task': about_top_task})
+                         'edit_selected': edit_selected, 'about_top_task': about_top_task,
+                         'plugin_location': plugin_location})
     with open("./ui-asset/setting-storage.xml", "r", encoding="utf-8") as f:
         sUIxml.loadxml(f.read())
     refresh_storage(None)
@@ -548,6 +550,10 @@ def edit_selected(e):
     if nowselected is not None:
         if os.path.isfile(nowselected):
             subprocess.Popen(f'start "" "{nowselected}"', shell=True)
+
+def plugin_location(e):
+    # 打开插件位置
+    subprocess.Popen(f'explorer "{plugin_dir.replace("/", "\\")}"', shell=True)
 
 def about_top_task(e):
     # 打开关于priority.txt的链接页面

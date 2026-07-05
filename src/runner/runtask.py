@@ -10,6 +10,7 @@ from tinui.TinUIDialog import Dialog
 
 from runner import Task
 from runner.runcmd import run_cmd
+from runner.runplugin import run_plugin
 from runner.runwcmd import run_wcmd
 from runner.runcmds import run_cmds
 from runner.runtip import run_tip
@@ -46,7 +47,7 @@ class RunTask(Task):
     def __call_back(self, state:str, val=1):
         if self.callback:
             self.callback(state, val)
-    
+
     def __run_wcmd(self, target:str, args:str, admin:bool, cwd:str='', maximize:bool=False, minimize:bool=False, pos:list=[], zone_round:bool=False):
         res = run_wcmd(self.name, target, args, admin, cwd, maximize, minimize, pos, zone_round)
         if res:
@@ -95,10 +96,16 @@ class RunTask(Task):
                 else:
                     workspace = datas.workname + '/' + task['name']
                 run_cmd(self.name+'_wsp', "QuickUp.exe", f'-w "{workspace}"', False)
-                self.__call_back(False, "success", self.callback_count)
+                self.__call_back("success", self.callback_count)
             elif task['type'] == 'tip':
                 run_tip(self.name, task['tip'], task['wait'], task['show'], task['top'])
                 self.__call_back("success", self.callback_count)
+            elif task['type'] == 'plugin':
+                res = run_plugin(self.name, task, self.cwd, self.deamon)
+                if res:
+                    self.__call_back("success", self.callback_count)
+                else:
+                    self.__call_back("error", self.callback_count)
 
 def run_task(name:str, deamon:bool=True, callback=None):
     task = RunTask(name, deamon=deamon, callback=callback)

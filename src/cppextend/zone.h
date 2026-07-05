@@ -21,16 +21,15 @@ void set_zone_try_times(int times) {
     ZONE_TRY_TIMES = times;
 }
 
-bool modify_window_position(
-    SHELLEXECUTEINFOW& sei,
+// 查找目标窗口的真实HWND
+// 通过特征名称匹配最近显示的主窗口，返回找到的窗口句柄，未找到返回NULL
+HWND find_target_window(
     const std::wstring& exePath,
-    std::chrono::steady_clock::time_point launchTime,
-    int x, int y, int width, int height,
-    bool zone_round
+    std::chrono::steady_clock::time_point launchTime
 ) {
     std::wstring featureName = extractCoreName(exePath);
     if (featureName.empty()) {
-        return false;
+        return NULL;
     }
     // std::wcout << L"featureName: " << featureName << std::endl;
 
@@ -88,11 +87,21 @@ bool modify_window_position(
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
+    return targetHwnd;
+}
+
+bool modify_window_position(
+    SHELLEXECUTEINFOW& sei,
+    const std::wstring& exePath,
+    std::chrono::steady_clock::time_point launchTime,
+    int x, int y, int width, int height,
+    bool zone_round
+) {
+    HWND targetHwnd = find_target_window(exePath, launchTime);
     if (targetHwnd) {
         // std::wcout << L"Window found. Applying layout..." << std::endl;
         WaitForInputIdle(sei.hProcess, 100);
         SmoothMoveWindow(targetHwnd, x, y, width, height, zone_round);
-        WindowMonitor::RemoveHandledWindow(targetHwnd);// 处理完毕，从列表中移除
     } else {
         // std::wcerr << L"Timeout: Window not found." << std::endl;
     }

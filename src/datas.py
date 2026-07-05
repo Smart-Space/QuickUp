@@ -17,7 +17,7 @@ from cppextend.QUmodule import quick_fuzz, worker_size
 import config
 
 # 版本
-version = "4.9"
+version = "4.11"
 
 scale_factor = 1.0# DPI缩放系数
 @functools.cache
@@ -41,6 +41,8 @@ tasks_name = []# 当前显示的tasks，datas.tasks_name是当前显示的所有
 root_callback = None# 主窗口回调函数
 root:Tk = None# 主窗口对象
 root_error_message = None# 主窗口错误信息
+
+app_controller = None# 应用控制接口
 
 workspace = None# 工作区对象
 workname = None# 工作区名称

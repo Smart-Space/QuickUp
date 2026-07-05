@@ -15,7 +15,8 @@
         <button2 text="命令集" command="self.funcs['add_task_cmds']"></button2>
         <button2 text="子任务" command="self.funcs['add_task_task']"></button2>
         <button2 text="工作区" command="self.funcs['add_workspace']"></button2>
-        <button2 text="" icon='&#xE70B;' font="{Segoe Fluent Icons} 16" command="self.funcs['add_tip']"></button2>
+        <button2 text="" icon="&#xE70B;" font="{Segoe Fluent Icons} 16" command="self.funcs['add_tip']"></button2>
+        <button2 text="" icon="&#xEA86;" font="{Segoe Fluent Icons} 16" command="self.funcs['add_plugin']"></button2>
         <button2 text="" icon='&#xE7C8;' font="{Segoe Fluent Icons} 16" command="self.funcs['record_apps']"></button2>
         <line x='495' padx='5' lineanchor='e'>
             <ratingbar num='1' size='16' command="self.funcs['set_priority']">ratingbar</ratingbar>

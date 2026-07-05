@@ -228,6 +228,7 @@ def search_tasks(keyword:str, silence=False):
     global last_search_keyword, tasknames
     if keyword == last_search_keyword:
         return
+    _old_keyword = last_search_keyword
     last_search_keyword = keyword
     if keyword.startswith('|'):
         keyword = keyword[1:]
@@ -242,10 +243,12 @@ def search_tasks(keyword:str, silence=False):
     else:
         new_tasknames = datas.tasks_name_find(keyword)
     if len(new_tasknames) == 0:
+        # 没有找到相关任务
         if not silence:
-            # 没有找到相关任务
+            # 显示提示信息
             d = Dialog(root, 'info', themename)
             show_dialog(d, '没有找到相关任务', f'未找到关于<{keyword}>的任务', "msg", themename)
+        last_search_keyword = _old_keyword # 恢复搜索关键字
     else:
         new_tasknames = sort_with_priority(new_tasknames)
         __clear_all_tasks_ui()

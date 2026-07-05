@@ -56,6 +56,7 @@ from runner.runtask import run_task
 from runner.runtip import init_tip
 from runner.update import installerexe, auto_check_update, update_program, update_QuickUp
 from runner import create_lnk, hotkey
+from plugin.controller import AppController
 
 from cppextend.QUmodule import init_tray, remove_tray, get_parent, get_windowtext, priority_window, is_msix, start_window_hook, stop_window_hook, set_dpi_aware, set_border_color
 datas.scale_factor = scale_factor = set_dpi_aware()
@@ -120,6 +121,7 @@ if os.path.exists(installerexe):
     os.remove(installerexe)
 
 config.init_config()
+datas.app_controller = AppController()
 init_tip()
 labelsmng.load_labels()
 
