@@ -95,6 +95,16 @@ The top bar of editor window:
     - show-button: click to show this tip in a window, or nothing will happen.
     - top-button: whether to top the tip information window.
     
+  - plugin
+  
+    - function: The name of the extended function provided by the plugin.
+    
+    - parameters: Python-style formatted parameters.
+    
+    - threading-mode:  the information passed to the plugin function, indicating whether this function should be executed in parallel.
+    
+    - info-button: the source plugin of this function.
+    
   - record: record the location and status of the currently open application window and write into task.
   
 - labels-bar: add several existing tags to the task.
