@@ -27,6 +27,7 @@ from .taskeditor import TaskEditor
 from .wspeditor import WspEditor
 from .tipeditor import TipEditor
 from .plugineditor import PluginEditor
+from .zonerecord import get_dialog as get_zone_record_dialog
 
 
 class Editor(tk.Toplevel):
@@ -322,8 +323,7 @@ class Editor(tk.Toplevel):
             self.renew_title()
 
     def record_apps(self, _):
-        d = Dialog(self, "question", base.themename)
-        res = show_dialog(d, "记录应用", "是否将当前正在使用的应用记录为目标？", "msg", theme=base.themename)
+        res, record_zone, record_round = get_zone_record_dialog(self, base.themename)
         if res:
             apps = get_work_apps()
             for app in apps:
@@ -332,7 +332,7 @@ class Editor(tk.Toplevel):
                 else:
                     app_names = app["processName"].split('_')
                     task_name = f'shell:AppsFolder\\{app_names[0]}_{app_names[-1]}!App'
-                if not app["isMinimized"] and not app["isMaximized"]:
+                if not app["isMinimized"] and not app["isMaximized"] and record_zone:
                     rect = app["realRect"]
                     pos = [rect[1]//datas.scale_factor, rect[0]//datas.scale_factor,
                            (rect[3]-rect[1])//datas.scale_factor, (rect[2]-rect[0])//datas.scale_factor]
@@ -340,7 +340,7 @@ class Editor(tk.Toplevel):
                         pos[i] = int(pos[i])
                 else:
                     pos = []
-                self.add_task_cmd(None, task_name, app["commandArgs"], False, False, app["isMaximized"], app["isMinimized"], pos, app["isRoundCorner"])
+                self.add_task_cmd(None, task_name, app["commandArgs"], False, False, app["isMaximized"], app["isMinimized"], pos, app["isRoundCorner"] if record_round else False)
 
     def add_task_cmd(self, _, target:str="", args:str="", admin:bool=False, wait:bool=False, runmax:bool=False, runmin:bool=False, pos:list=[], zone_round:bool=False):
         self.saved = False

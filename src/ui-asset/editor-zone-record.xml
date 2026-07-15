@@ -1,0 +1,10 @@
+<tinui>
+<!-- QuickUp Editor apps record dialog -->
+<line y="15" x="5" pady="20">
+    <paragraph width='500' text="是否将当前正在使用的应用记录为目标？"></paragraph>
+</line>
+<line padx="20" x="5">
+    <checkbutton text="记录尺寸位置" command="self.funcs['check_zone']">zonecheck</checkbutton>
+    <checkbutton text="保留圆角" command="self.funcs['check_round']">roundcheck</checkbutton>
+</line>
+</tinui>

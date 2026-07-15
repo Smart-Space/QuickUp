@@ -71,11 +71,12 @@ class RunPlugin(Task):
         return True
 
     def run(self):
-        handler = plugin_manager.get_task_handler(self.task.get('name'))
+        plugin_task = self.task.get('name')
+        handler = plugin_manager.get_task_handler(plugin_task)
         if handler is None:
             datas.root_error_message = f"任务: {self.name}\n\n"\
-            f"插件任务类型: {self.task.get('name', '')}\n\n"\
-            f"错误: {plugin_manager.errors.get(self.task.get('name', ''), '未知错误')}"
+            f"插件任务类型: {plugin_task}\n\n"\
+            f"错误: {plugin_manager.errors.get(plugin_task, '未知错误')}"
             if datas.root:
                 datas.root.event_generate('<<RunCmdError>>')
             return False
@@ -85,7 +86,7 @@ class RunPlugin(Task):
             positional_args, keyword_args = self.__parse_plugin_args(task_payload.get('args', ''))
         except Exception as e:
             datas.root_error_message = f"任务: {self.name}\n\n"\
-            f"插件任务类型: {self.task.get('name', '')}\n\n"\
+            f"插件任务类型: {plugin_task}\n\n"\
             f"插件参数解析失败: \n{e}"
             if datas.root:
                 datas.root.event_generate('<<RunCmdError>>')
@@ -107,7 +108,7 @@ class RunPlugin(Task):
                 res = handler(task_payload, runtime)
         except Exception as e:
             datas.root_error_message = f"任务: {self.name}\n\n"\
-            f"插件任务类型: {self.task.get('name', '')}\n\n"\
+            f"插件任务类型: {plugin_task}\n\n"\
             f"错误: {e}"
             if datas.root:
                 datas.root.event_generate('<<RunCmdError>>')
