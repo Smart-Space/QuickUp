@@ -80,8 +80,7 @@ class Editor(tk.Toplevel):
         self.entryfunc = self.uixml.tags['entry'][1]
         self.entry.config(disabledbackground=self.entry.cget('background'), disabledforeground=self.entry.cget('foreground'))
         self.view = self.uixml.tags['view'][-2]
-        _, ratingbarBack, self.ratingbar, _ = self.uixml.tags['ratingbar']
-        self.ui.itemconfig(ratingbarBack, outline='#f3f3f3' if base.themename == 'light' else '#202020')
+        self.ratingtext, _, _, self.ratingbar, _ = self.uixml.tags['ratingbar']
 
         hidebuttons = self.uixml.tags['hidebutton']
         self.hidebutton = hidebuttons[-2]
@@ -165,7 +164,7 @@ class Editor(tk.Toplevel):
             self.data['tasks'] = json_data['tasks']
             self.original_rate = self.data['rate'] = json_data.get('rate', False)
             if self.data['rate']:
-                self.ratingbar.setrate(1)
+                self.ratingbar.on()
         for one in self.data['tasks']:
             if one['type'] == 'cmd':
                 self.add_task_cmd(None, one['target'], one['args'], one['admin'], False, one.get('max', False), one.get('min', False), one.get('pos', ()), one.get('zone_round', False))
@@ -304,18 +303,22 @@ class Editor(tk.Toplevel):
         self.hidden = tag
         self.contentChanged(None)
 
-    def set_priority(self, num):
-        if num == 1 and self.data['rate'] == True:
-            return
-        self.data['rate'] = True if num == 1 else False
+    def set_priority(self, tag:bool):
+        if tag:
+            self.ui.itemconfig(self.ratingtext, text='\uE735')
+            if self.data['rate'] == True:
+                return
+        else:
+            self.ui.itemconfig(self.ratingtext, text='\uE734')
+        self.data['rate'] = tag
         self.saved = False
         self.renew_title()
 
     def toggle_priority(self, _):
         if self.data['rate'] == True:
-            self.ratingbar.setrate(0)
+            self.ratingbar.off()
         else:
-            self.ratingbar.setrate(1)
+            self.ratingbar.on()
 
     def contentChanged(self, *args):
         if self.saved:
@@ -487,8 +490,15 @@ class Editor(tk.Toplevel):
                 d = Dialog(self, "error", base.themename)
                 show_dialog(d, "无法添加", f"任务已包含标签 {label}", "msg", theme=base.themename)
                 return None, None
-            if labelsmng.add_task_to_label(label, self.task):
-                return label, self.delete_label
+            match labelsmng.add_task_to_label(label, self.task):
+                case True:
+                    return label, self.delete_label
+                case 2:
+                    d = Dialog(self, "error", base.themename)
+                    show_dialog(d, "无法添加", f"任务新建未保存", "msg", theme=base.themename)
+                    return None, None
+                case False:
+                    return None, None
         return None, None
 
     def delete_label(self, label):
@@ -507,7 +517,9 @@ class Editor(tk.Toplevel):
             info = json.loads(clip_info)
             match info['type']:
                 case 'cmd':
-                    self.add_task_cmd(None, info.get('target', ''), info.get('args', ''), info.get('admin', False), info.get('wait', False), info.get('max', False), info.get('min', False), info.get('pos', []), info.get('zone_round', False))
+                    self.add_task_cmd(None, info.get('target', ''), info.get('args', ''), info.get('admin', False), False, info.get('max', False), info.get('min', False), info.get('pos', []), info.get('zone_round', False))
+                case 'wcmd':
+                    self.add_task_cmd(None, info.get('target', ''), info.get('args', ''), info.get('admin', False), True, info.get('max', False), info.get('min', False), info.get('pos', []), info.get('zone_round', False))
                 case 'cmds':
                     self.add_task_cmds(None, info.get('cmds', []), info.get('cmd', 'cmd'), info.get('wait', False))
                 case 'task':

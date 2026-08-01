@@ -211,16 +211,16 @@ def delete_task(task: str) -> bool:
     return save_labels()
 
 
-def add_task_to_label(label: str, task: str) -> bool:
+def add_task_to_label(label: str, task: str) -> bool|int:
     """
-    将任务添加到标签，返回添加是否成功（标签或任务不存在则返回False）
+    将任务添加到标签，返回添加是否成功（标签或任务不存在则返回False，任务不存在但标签存在则返回2）
     """
     labels = labels_data["labels"]
     tasks = labels_data["tasks"]
     if label not in labels:
         return False
     if not __task_exists(task):
-        return False
+        return 2
     if task in labels[label]:
         return False
     label_tasks = labels[label]

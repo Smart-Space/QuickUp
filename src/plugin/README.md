@@ -53,6 +53,9 @@ QuickUp executes plugins in a restricted environment to ensure system stability:
 - `register_permission(name, description="")`: Declares a permission.
 - `hide()` / `show()`: Controls the main application window visibility.
 - `get_config()` / `set_config(data)`: Manages persistent plugin-specific configuration stored in the global settings.
+- `run_task_by_name(name, deamon=True, callback=None)`: Runs an existing task by its name via `runner.runtask.run_task()`.
+- `run_task_built(name, tasks, cwd="", deamon=True, callback=None)`: Builds and runs a task directly from a list of task entry dicts (matching the output format of editor `get()` methods), without requiring a saved task file on disk.
+- `worker_size()`: Returns the screen worker area rectangle `(left, top, right, bottom)` — the usable area excluding the taskbar.
 
 ### Task Handler Signature
 ```python

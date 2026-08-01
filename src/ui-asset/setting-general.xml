@@ -56,7 +56,7 @@
     <line pady="15" padx="20" anchor='w'>
         <paragraph text='窗口透明度'></paragraph>
         <!-- transparencyscale 1-数值/20 为透明度 -->
-        <scalebar width="100" data="[0,1,2,3,4,5,7,8,9,10]" command="self.funcs['sel_transparency']">transparencyscale</scalebar>
+        <scalebar width="200" data="[0,1,2,3,4,5,7,8,9,10]" command="self.funcs['sel_transparency']">transparencyscale</scalebar>
     </line>
     <line pady="15">
         <line pady='10'>

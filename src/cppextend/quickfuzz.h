@@ -3,9 +3,7 @@
 #include <cstdint>
 #include <cctype>
 
-std::vector<uint32_t> utf8_to_codepoints(const char* str, size_t len) {
-    std::vector<uint32_t> res;
-    res.reserve(len);
+void utf8_to_codepoints(const char* str, size_t len, std::vector<uint32_t>& codepoints) {
     size_t i = 0;
     while (i < len) {
         uint8_t c = static_cast<uint8_t>(str[i]);
@@ -37,9 +35,8 @@ std::vector<uint32_t> utf8_to_codepoints(const char* str, size_t len) {
             // 仅处理英文大小写
             ch = std::tolower(ch);
         }
-        res.push_back(ch);
+        codepoints.push_back(ch);
     }
-    return res;
 }
 
 int computeOrderedMatchLen(const std::vector<uint32_t>& query, const std::vector<uint32_t>& candidate) {
@@ -59,20 +56,4 @@ int computeOrderedMatchLen(const std::vector<uint32_t>& query, const std::vector
         }
     }
     return static_cast<int>(qi);
-}
-
-std::vector<uint32_t> target_chars;
-int target_len = 0;
-int lcs_acc = 0;
-void setTargetChars(const char* str, size_t len, int acc) {
-    target_chars = utf8_to_codepoints(str, len);
-    target_len = target_chars.size();
-    lcs_acc = acc;
-}
-
-int calculateSimilarity(const char* b, size_t b_len) {
-    if (target_len == 0) return 0;
-    std::vector<uint32_t> b_chars = utf8_to_codepoints(b, b_len);
-    int matched_len = computeOrderedMatchLen(target_chars, b_chars);
-    return (matched_len * 100) / target_len;
 }

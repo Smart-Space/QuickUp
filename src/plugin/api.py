@@ -64,3 +64,33 @@ class PluginAPI:
         all_cfg[self._plugin_name] = data
         config.settings['storage']['plugins'] = all_cfg
         config.save_config()
+
+    def run_task_by_name(self, name:str, deamon:bool=True, callback=None):
+        """
+        Run an existing task by its name.
+        name: task name (without .json extension).
+        """
+        from runner.runtask import run_task
+        run_task(name, deamon=deamon, callback=callback)
+
+    def worker_size(self):
+        """
+        Get the screen worker area size (usable area excluding taskbar).
+        return: tuple (left, top, right, bottom)
+        """
+        from cppextend.QUmodule import worker_size
+        return worker_size()
+
+    def run_task_built(self, name:str, tasks:list, cwd:str='', deamon:bool=True, callback=None):
+        """
+        Build and run a task from provided task entry data without creating a task file.
+        tasks: list of task entry dicts matching editor get() output format, e.g.:
+            {"type":"cmd","target":"...","args":"...","admin":False,...}
+            {"type":"tip","tip":"...","wait":False,"show":True,"top":False}
+            {"type":"cmds","cmds":[...],"cmd":"cmd","wait":False}
+            {"type":"task","task":"..."}
+            {"type":"wsp","name":"..."}
+            {"type":"plugin","name":"...","args":"...","wait":False}
+        """
+        from runner.runtask import run_task_data
+        run_task_data(name, tasks, cwd=cwd, deamon=deamon, callback=callback)

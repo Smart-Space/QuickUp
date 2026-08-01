@@ -73,10 +73,13 @@ def init(api, manifest):
 3) 任务: 在任务 JSON 中使用 type="mytask"
 
 六、API 能力
-- register_task_type(name, handler)
-- register_permission(name, description)
+- register_task_type(name, handler): 注册自定义任务类型
+- register_permission(name, description): 注册权限
 - hide() / show(): 控制主窗口
 - get_config() / set_config(data): 读写插件私有存储设置
+- run_task_by_name(name, deamon=True, callback=None): 按名称运行已有任务
+- run_task_built(name, tasks, cwd='', deamon=True, callback=None): 直接由任务条目数据构建并运行任务，tasks 格式见各编辑器类的 get() 方法
+- worker_size(): 获取屏幕工作区尺寸 (left, top, right, bottom)，去除任务栏后的可用区域
 
 七、调用
 1) QuickUp中使用插件栏目 -> 确定 task_type

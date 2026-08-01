@@ -156,7 +156,7 @@ def delete_task_view(task:str):
         os.remove(datas.workspace + task + '.json')
 
 def __draw_task_progress(ui:BasicTinUI):
-    back = ui._BasicTinUI__ui_polygon(((datas.mul_scale_factor(360),datas.mul_scale_factor(25)),(datas.mul_scale_factor(470),datas.mul_scale_factor(55))), fill=ui.cget('background'), outline=ui.cget('background'), width=9)
+    back = ui._BasicTinUI__ui_polygon(((datas.mul_scale_factor(360),datas.mul_scale_factor(25)),(datas.mul_scale_factor(470),datas.mul_scale_factor(55))), fill=ui.cget('background'), outline=ui.cget('background'), width=ui.TINUI_RADIUS_SMALL)
     icon = ui.add_paragraph((datas.mul_scale_factor(360), datas.mul_scale_factor(40)), anchor='w', text='\uF16A', font='{Segoe Fluent Icons} 16', fg=progress_colors['running'])
     info = ui.add_paragraph((datas.mul_scale_factor(430), datas.mul_scale_factor(40)), anchor='center', text='', font='{Segoe UI} 12', fg=progress_colors['text'])
     return back, icon, info
@@ -231,17 +231,24 @@ def search_tasks(keyword:str, silence=False):
     _old_keyword = last_search_keyword
     last_search_keyword = keyword
     if keyword.startswith('|'):
-        keyword = keyword[1:]
-        if keyword == '':
+        rest = keyword[1:]
+        if rest == '':
             return
-        # 搜索标签
-        new_tasknames = []
-        for label in labelsmng.get_labels():
-            if keyword[1:] in label:
-                new_tasknames.extend(labelsmng.find_tasks_by_label(label))
-        new_tasknames = list(dict.fromkeys(new_tasknames)) # 去重
+        parts = rest.split('|')
+        if len(parts) >= 2:
+            label_name = '|'.join(parts[:-1])
+            search_word = parts[-1]
+            label_tasks = labelsmng.find_tasks_by_label(label_name)
+            datas.tasks_name = label_tasks.copy()
+            if search_word:
+                new_tasknames = datas.tasks_name_find(search_word, from_list=label_tasks).copy()
+            else:
+                new_tasknames = label_tasks
+        else:
+            new_tasknames = labelsmng.find_tasks_by_label(parts[0])
+            datas.tasks_name = new_tasknames.copy()
     else:
-        new_tasknames = datas.tasks_name_find(keyword)
+        new_tasknames = datas.tasks_name_find(keyword).copy()
     if len(new_tasknames) == 0:
         # 没有找到相关任务
         if not silence:

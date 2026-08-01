@@ -7,7 +7,7 @@ bool set_startup_registry(const std::wstring value_name, const std::wstring app_
     if (RegCreateKeyExW(HKEY_CURRENT_USER, sub_key.c_str(), 0, NULL, 0, KEY_WRITE, NULL, &hKey, NULL) != ERROR_SUCCESS) {
         return false;
     }
-    if (RegSetValueExW(hKey, value_name.c_str(), 0, REG_SZ, (const BYTE*)app_path.c_str(), (app_path.length() + 1)* sizeof(wchar_t)) != ERROR_SUCCESS) {
+    if (RegSetValueExW(hKey, value_name.c_str(), 0, REG_SZ, (const BYTE*)app_path.c_str(), (DWORD)((app_path.length() + 1) * sizeof(wchar_t))) != ERROR_SUCCESS) {
         RegCloseKey(hKey);
         return false;
     }

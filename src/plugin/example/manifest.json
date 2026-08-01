@@ -4,5 +4,5 @@
   "entry": "plugin.py",
   "modules": ["testlib"],
   "permissions": ["task_exec", "ui_main"],
-  "task_types": ["echo", "toggle_main"]
+  "task_types": ["echo", "toggle_main", "my_task"]
 }

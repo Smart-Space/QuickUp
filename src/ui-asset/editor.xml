@@ -19,7 +19,7 @@
         <button2 text="" icon="&#xEA86;" font="{Segoe Fluent Icons} 16" command="self.funcs['add_plugin']"></button2>
         <button2 text="" icon='&#xE7C8;' font="{Segoe Fluent Icons} 16" command="self.funcs['record_apps']"></button2>
         <line x='495' padx='5' lineanchor='e'>
-            <ratingbar num='1' size='16' command="self.funcs['set_priority']">ratingbar</ratingbar>
+            <togglebutton text="&#xE734;" font="{Segoe Fluent Icons} 16" command="self.funcs['set_priority']">ratingbar</togglebutton>
             <toolbutton icon="&#xE8DA;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['open_local']"></toolbutton>
             <toolbutton icon="&#xEE49;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['create_task_lnk']"></toolbutton>
         </line>

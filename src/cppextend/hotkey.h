@@ -35,6 +35,8 @@ void start_hotkey_listener(int _modifers, int _key, PyObject* _callback){
     key = _key;
     callback = _callback;
     hotkey_id = GlobalAddAtomW(L"QuickUpHotkey") - 0xC000;
+    Py_BEGIN_ALLOW_THREADS
     std::thread listener_thread(create_hotkey_listener);
     listener_thread.detach();
+    Py_END_ALLOW_THREADS
 }

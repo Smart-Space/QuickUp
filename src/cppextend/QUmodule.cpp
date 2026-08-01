@@ -176,20 +176,7 @@ static PyObject* shell_execute_ex_wrapper(PyObject* self, PyObject* args) {
             modify_window_position(sei, wcmd, launchTime, pos_vec[0], pos_vec[1], pos_vec[2], pos_vec[3], zone_round);
         }
         if (wait) {
-            // 获取真实窗口进程ID并等待
-            HWND realHwnd = find_target_window(wcmd, launchTime);
-            DWORD pid = 0;
-            HANDLE hRealProcess = nullptr;
-            if (realHwnd && GetWindowThreadProcessId(realHwnd, &pid) && pid != 0) {
-                WindowMonitor::RemoveHandledWindow(realHwnd);// 处理完毕，从列表中移除，该方法会销毁判别列表的窗口句柄，在最后一次查找后使用
-                hRealProcess = OpenProcess(SYNCHRONIZE, FALSE, pid);
-            }
-            if (hRealProcess != sei.hProcess && hRealProcess != nullptr) {
-                WaitForSingleObject(hRealProcess, INFINITE);
-                CloseHandle(hRealProcess);
-            } else {
-                WaitForSingleObject(sei.hProcess, INFINITE);
-            }
+            WaitForSingleObject(sei.hProcess, INFINITE);
         }
     } else {
         LPWSTR buffer = nullptr;
@@ -312,16 +299,22 @@ static PyObject* quick_fuzz(PyObject* self, PyObject* args) {
     }
     Py_ssize_t name_len;
     const char* name = PyUnicode_AsUTF8AndSize(name_obj, &name_len);
-    setTargetChars(name, name_len, acc);
+    std::vector<uint32_t> target_chars;
+    utf8_to_codepoints(name, name_len, target_chars); // 将 utf8 转 codepoint 存储到 target_chars 中
     PyObject* result = PyList_New(0);
-    int length = PyList_Size(list);
+    Py_ssize_t length = PyList_Size(list);
     std::vector<FuzzCandidate> candidates;
-    candidates.reserve(length);
+    candidates.reserve((size_t)length);
+    std::vector<uint32_t> candidate_buffer;
+    candidate_buffer.reserve(64); // 预分配 utf8 转 codepoint 空间，避免频繁分配
     for (int i = 0; i < length; i++) {
         PyObject* item = PyList_GetItem(list, i);
         Py_ssize_t item_len;
         const char* itemstr = PyUnicode_AsUTF8AndSize(item, &item_len);
-        int score = calculateSimilarity(itemstr, item_len);
+        candidate_buffer.clear(); // 清空上次的 utf8 转 codepoint 空间
+        utf8_to_codepoints(itemstr, item_len, candidate_buffer); // 将 utf8 转 codepoint 存储到 candidate_buffer 中
+        int matched_len = computeOrderedMatchLen(target_chars, candidate_buffer);
+        int score = static_cast<int>((matched_len * 100) / target_chars.size());
         if (score >= acc) {
             candidates.push_back({item, score, item_len, i});
         }

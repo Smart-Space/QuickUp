@@ -20,22 +20,26 @@ from ui.utils import show_dialog
 
 class RunTask(Task):
 
-    def __init__(self, name:str, cwd:str='', deamon:bool=True, callback=None):
+    def __init__(self, name:str, cwd:str='', deamon:bool=True, callback=None, task_data:list=None):
         super().__init__(name, "task")
-        filename = datas.workspace + name + '.json'
-        if not os.path.exists(filename):
-            if deamon:
-                d = Dialog(datas.root, 'error', config.settings['general']['theme'])
-                show_dialog(d, "错误", "未在当前任务空间内找到名为 {} 的任务。".format(name), "msg", config.settings['general']['theme'])
-            self.tasks = []
-            return
-        with open(filename, "r", encoding="utf-8") as f:
-            json_data = json.load(f)
-            if 'cwd' in json_data:
-                self.cwd = json_data['cwd'] if json_data['cwd'] else cwd
-            else:
-                self.cwd = cwd
-            self.tasks = json_data['tasks']
+        if task_data is not None:
+            self.cwd = cwd
+            self.tasks = task_data
+        else:
+            filename = datas.workspace + name + '.json'
+            if not os.path.exists(filename):
+                if deamon:
+                    d = Dialog(datas.root, 'error', config.settings['general']['theme'])
+                    show_dialog(d, "错误", "未在当前任务空间内找到名为 {} 的任务。".format(name), "msg", config.settings['general']['theme'])
+                self.tasks = []
+                return
+            with open(filename, "r", encoding="utf-8") as f:
+                json_data = json.load(f)
+                if 'cwd' in json_data:
+                    self.cwd = json_data['cwd'] if json_data['cwd'] else cwd
+                else:
+                    self.cwd = cwd
+                self.tasks = json_data['tasks']
         self.deamon = deamon
         # callback为完成一个任务条目的回调函数
         # def callback(state:str, val=...)
@@ -58,6 +62,7 @@ class RunTask(Task):
     
     def __run_cmds(self, name:str, cmds:list, cmd:str, wait:bool, cwd:str=''):
         run_cmds(name, cmds, cmd, wait, cwd)
+        self.__call_back("success", self.callback_count)
         self.run()
     
     def run(self):
@@ -109,4 +114,12 @@ class RunTask(Task):
 
 def run_task(name:str, deamon:bool=True, callback=None):
     task = RunTask(name, deamon=deamon, callback=callback)
+    task.run()
+
+def run_task_data(name:str, tasks:list, cwd:str='', deamon:bool=True, callback=None):
+    """
+    Run a task directly from a list of task entry data without a task file.
+    tasks: list of task entry dicts matching editor get() output format.
+    """
+    task = RunTask(name, cwd=cwd, deamon=deamon, callback=callback, task_data=tasks)
     task.run()

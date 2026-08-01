@@ -17,7 +17,7 @@ from cppextend.QUmodule import quick_fuzz, worker_size
 import config
 
 # 版本
-version = "4.12"
+version = "5.1"
 
 scale_factor = 1.0# DPI缩放系数
 @functools.cache
@@ -91,20 +91,22 @@ def tasks_name_add(name:str):
     all_tasks_name.append(name)
     tasks_name.append(name)
 
-def tasks_name_find(name:str):
+def tasks_name_find(name:str, from_list=None):
     # 从tasks_name中模糊查找，返回符合条件的列表
     # 忽略大小写
     global tasks_name
     patternRank = config.settings['general']['patternRank']
+    if from_list is None:
+        from_list = all_tasks_name
     if name == '':
-        tasks_name = all_tasks_name.copy()
+        tasks_name = from_list.copy()
         return tasks_name
     else:
         name = name.lower()
     max_search_count = config.settings['general']['maxSearchCount']
     if max_search_count == 0:
-        max_search_count = len(all_tasks_name)
-    tasks_name = quick_fuzz(all_tasks_name, name, patternRank, max_search_count)
+        max_search_count = len(from_list)
+    tasks_name = quick_fuzz(from_list, name, patternRank, max_search_count)
     return tasks_name
 
 

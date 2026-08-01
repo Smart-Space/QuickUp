@@ -11,6 +11,8 @@ reg = None
 def start_listen(command=None):
     # 开始监听热键
     global reg
+    if config.settings['advanced']['callUp'] is False:
+        return
     fsModifiers = config.settings['advanced']['callUp'][0]
     vk = config.settings['advanced']['callUp'][1]
     start_hotkey(fsModifiers, vk, command)

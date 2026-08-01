@@ -1,2 +1,17 @@
-@REM vs prompt x64:
-cl /utf-8 /LD /I/python/include QUmodule.cpp E:/python/libs/python313.lib advapi32.lib Ole32.lib user32.lib Shell32.lib Comctl32.lib dwmapi.lib /std:c++20 /O2 /DNDEBUG /Fe:QUmodule.pyd
+@echo off
+REM Build the QuickUp C++ extension module via setup.py
+
+setlocal
+pushd "%~dp0"
+
+python setup.py build_ext --inplace
+
+set EXITCODE=%ERRORLEVEL%
+popd
+
+@REM rename cppextend\QUmodule.*.pyd to QUmodule.pyd
+if exist QUmodule.*.pyd (
+    ren QUmodule.*.pyd QUmodule.pyd
+)
+
+endlocal & exit /b %EXITCODE%

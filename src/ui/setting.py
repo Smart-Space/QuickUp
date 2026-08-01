@@ -318,18 +318,7 @@ def init_advanced():
     else:
         first_auto_save = False
 
-    modifier_code = config.settings['advanced']['callUp'][0]
-    if modifier_code & HK_CTRL:
-        aUIxml.tags['b1'][-2].on()
-        HK_Modifiers.append(HK_CTRL)
-    if modifier_code & HK_ALT:
-        aUIxml.tags['b2'][-2].on()
-        HK_Modifiers.append(HK_ALT)
-    if modifier_code & HK_SHIFT:
-        aUIxml.tags['b3'][-2].on()
-        HK_Modifiers.append(HK_SHIFT)
     hkentry = aUIxml.tags["hkentry"][0]
-    hkentry.insert(0, chr(config.settings['advanced']['callUp'][1]).upper())
     def __hkentry_keypress(e):
         if e.char and e.char.isascii() and e.char.isalpha():
             hkentry.delete(0, 'end')
@@ -337,6 +326,18 @@ def init_advanced():
             apply_hk()
         return "break"
     hkentry.bind("<KeyPress>", __hkentry_keypress)
+    if config.settings['advanced']['callUp']:
+        modifier_code = config.settings['advanced']['callUp'][0]
+        if modifier_code & HK_CTRL:
+            aUIxml.tags['b1'][-2].on()
+            HK_Modifiers.append(HK_CTRL)
+        if modifier_code & HK_ALT:
+            aUIxml.tags['b2'][-2].on()
+            HK_Modifiers.append(HK_ALT)
+        if modifier_code & HK_SHIFT:
+            aUIxml.tags['b3'][-2].on()
+            HK_Modifiers.append(HK_SHIFT)
+        hkentry.insert(0, chr(config.settings['advanced']['callUp'][1]).upper())
 
     aUIxml.funcs.update({'toggle_hk_ctrl': toggle_hk_ctrl, 'toggle_hk_alt': toggle_hk_alt, 'toggle_hk_shift': toggle_hk_shift})
 
@@ -420,14 +421,19 @@ def toggle_hk_shift(flag):
 
 def apply_hk():
     if len(HK_Modifiers) == 0:
-        d = Dialog(root, "error", dialog_theme)
-        show_dialog(d, "错误", "热键功能键不能为空！", "msg", dialog_theme)
+        # 功能键为空，则清空entry，且保存为False
+        hkentry.delete(0, 'end')
+        config.settings['advanced']['callUp'] = False
+        config.save_config()
         return
     ch:str = hkentry.get()
-    if len(ch) != 1:
+    if len(ch) > 1:
         d = Dialog(root, "error", dialog_theme)
         show_dialog(d, "错误", "热键只能是一个字符！", "msg", dialog_theme)
         return
+    if len(ch) == 0:
+        hkentry.insert(0, 'Q') # 默认热键为Q
+        ch = 'Q'
     if ch.lower() >= 'a' and ch.lower() <= 'z':
         HK_VK = ord(ch.upper())
         hkentry.delete(0, 'end')
