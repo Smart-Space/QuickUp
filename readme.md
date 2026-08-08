@@ -24,20 +24,18 @@ For detailed see [QuickUp's website](https://quickup.smart-space.com.cn/).
 
 ---
 
+<img src="./docs/assets/images/lightback.png" alt="lightback" style="zoom:50%;" /><img src="./docs/assets/images/darkback.png" alt="darkback" style="zoom:50%;" />
+
+---
+
 ## ✨ 核心亮点
 
 - **极简轻量**：体积小巧、低内存占用，可后台静默运行，不拖累系统性能
-
 - **场景化批量启动**：一键启动多软件、执行多命令，支持子任务、子工作区嵌套
-
-- **高度自定义**：热键、界面样式、窗口布局、任务标签、启动权限自定义
-
-- **匹配搜索**：优化模糊搜索算法，大小写忽略、精准匹配任务
-
+- **高度自定义**：热键、界面样式、应用背景、任务标签、启动权限自定义
+- **匹配搜索**：高效模糊搜索，大小写忽略、精准匹配任务
 - **拓展性强**：内置基础插件系统，支持功能拓展，适配更多使用场景
-
 - **人性化细节**：支持系统托盘后台运行、开机自启、窗口状态记录
-
 - **任务窗口组预览**：类似Windows Snap的窗口组预览、呈现与一键调度
 
 ---
@@ -60,7 +58,7 @@ For detailed see [QuickUp's website](https://quickup.smart-space.com.cn/).
 
 - 支持管理员模式启动、窗口最大化/最小化启动，适配特殊使用需求
 
-- 主窗口透明度可调，支持明暗主题、跟随系统样式
+- 主窗口透明度可调，支持明暗主题、跟随系统样式，支持背景混合
 
 - 自动过滤不可缩放窗口，优化窗口适配逻辑
 
@@ -85,7 +83,7 @@ For detailed see [QuickUp's website](https://quickup.smart-space.com.cn/).
 
 ## 📥 下载安装
 
-所有版本免费开源，可通过官方托管平台下载最新安装包与源码：
+所有版本免费使用，可通过官方托管平台下载最新安装包：
 
 - **GitHub**：[https://github\.com/smart\-space/QuickUp/releases](https://github.com/smart-space/QuickUp/releases)
 

@@ -403,15 +403,15 @@ if config.settings['general'].get('accentBorder', False):
 
 initial_tasks_view(taskView, root)# 初始化任务列表
 
-root.bind("<Control-r>", lambda e: refresh_tasks_view())
+root.bind("<Control-r>", lambda _: refresh_tasks_view())
 root.bind("<Control-n>", create_task)
 root.bind("<Control-i>", show_setting)
-root.bind("<Control-q>", lambda e: close_root_check())
+root.bind("<Control-q>", lambda _: close_root_check())
 root.bind("<Shift-Return>", run_this_task)
 root.bind("<Control-e>", edit_this_task)
 root.bind("<Up>", prev_task_view)
 root.bind("<Down>", next_task_view)
-root.bind("<FocusIn>", lambda e: taskEntry.focus_set())
+root.bind("<FocusIn>", lambda _: taskEntry.focus_set())
 root.bind("<Prior>", pageup_task_view)
 root.bind("<Next>", pagedown_task_view)
 root.bind("<Home>", home_task_view)

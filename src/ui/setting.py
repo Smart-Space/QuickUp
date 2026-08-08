@@ -195,6 +195,7 @@ def sel_theme(theme):
     else:
         theme = "system"
     config.theme_original = theme
+    config.settings['general']['theme'] = theme
     config.save_config()
     nowtheme = config.settings['general']['theme']
     if nowtheme == "light":
@@ -696,7 +697,7 @@ def show_setting(e):
     with open("./ui-asset/setting.xml", "r", encoding="utf-8") as f:
         uixml.loadxml(f.read())
     pivot = uixml.tags["pivot"][-2]
-    
+
     init_general()
     init_advanced()
     init_storage()

@@ -10,7 +10,7 @@ permalink: /document-en/
 
 The top bar of main window:
 
-- task-search-entry: enter the name of the task to search for similar tasks. The fuzzy search algorithm in this part is implemented by `./cppextend/quickfuzz.h `. Enter `|` instead of keywords to search for tag tasks.
+- task-search-entry: enter the name of the task to search for similar tasks. The fuzzy search algorithm in this part is implemented by `./cppextend/quickfuzz.h `. Enter `|` instead of keywords to search for tag tasks. `|... |...` search for tasks under the label.
 - add-button: click it to show a new-task editor window. Then you can create a new task throw this it.
 - label-button: open the label management window.
 - setting-button: click it to show setting window of QuickUp.
@@ -149,6 +149,10 @@ It is a function like its name.
 ### Closing QuickUp to system tray
 
 It is a function like its name.
+
+### Background Layer Settings
+
+The background layer of the main window can be set to a solid color, an image, or blank. By adjusting the visibility transparency, you can blend the background and the foreground interaction layer.
 
 ### Updating
 
