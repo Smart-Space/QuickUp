@@ -69,8 +69,7 @@ static PyObject* priority_window(PyObject* self, PyObject* args) {
         PyMem_Free(wname);
     }
     if (hwnd) {
-        ShowWindow(hwnd, SW_SHOW);
-        SetForegroundWindow(hwnd);
+        ShowWindow(hwnd);
         return Py_True;
     }
     return Py_False;
@@ -403,15 +402,18 @@ static PyObject* create_link(PyObject* self, PyObject* args) {
 static PyObject* init_tray(PyObject* self, PyObject* args) {
     unsigned long long pyhwnd;
     PyObject* pytooltip;
+    PyObject* pyworkspace;
+    int dark_mode;
     PyObject* about_callback;
     PyObject* exit_callback;
-    int flag = PyArg_ParseTuple(args, "KOOO:init_tray", &pyhwnd, &pytooltip, &about_callback, &exit_callback);
+    int flag = PyArg_ParseTuple(args, "KOObOO:init_tray", &pyhwnd, &pytooltip, &pyworkspace, &dark_mode, &about_callback, &exit_callback);
     if (!flag) {
         return NULL;
     }
     HWND hWnd = (HWND)pyhwnd;
     wchar_t* tooltip = PyUnicode_AsWideCharString(pytooltip, NULL);
-    if (init_ui_tray(hWnd, tooltip, about_callback, exit_callback)) {
+    wchar_t* workspace_name = PyUnicode_AsWideCharString(pyworkspace, NULL);
+    if (init_ui_tray(hWnd, tooltip, workspace_name, dark_mode, about_callback, exit_callback)) {
         return Py_BuildValue("i", 0);
     }
     return Py_BuildValue("i", -1);
@@ -582,7 +584,7 @@ static PyMethodDef QUModuleMethods[] = {
     {"unregister_start", (PyCFunction)unregister_start, METH_VARARGS, PyDoc_STR("unregister_start(value:str) -> int")},
     {"have_start_value", (PyCFunction)have_start_value, METH_VARARGS, PyDoc_STR("have_start_value(value:str) -> int")},
     {"create_link", (PyCFunction)create_link, METH_VARARGS, PyDoc_STR("create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool")},
-    {"init_tray", (PyCFunction)init_tray, METH_VARARGS, PyDoc_STR("init_tray(window:int, tooltip:str, show_callback:function, about_callback:function, exit_callback:function) -> int")},
+    {"init_tray", (PyCFunction)init_tray, METH_VARARGS, PyDoc_STR("init_tray(window:int, tooltip:str, workspace:str, dark_mode:int, show_callback:function, about_callback:function, exit_callback:function) -> int")},
     {"remove_tray", (PyCFunction)remove_tray, METH_VARARGS, PyDoc_STR("remove_tray() -> None")},
     {"enable_entry_drop", (PyCFunction)enable_entry_drop, METH_VARARGS, PyDoc_STR("enable_entry_drop(hwnd:int, callback:function) -> DropTarget")},
     {"disable_entry_drop", (PyCFunction)disable_entry_drop, METH_VARARGS, PyDoc_STR("disable_entry_drop(dt:DropTarget) -> None")},

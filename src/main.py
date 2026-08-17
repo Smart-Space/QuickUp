@@ -392,7 +392,7 @@ def regeometry(e):
         pass
 root.bind("<Visibility>", regeometry)
 
-init_tray(root.winfo_id(), thisName, show_about, close_root)
+init_tray(root.winfo_id(), thisName, datas.workname, config.settings['general']['theme'] == 'dark', show_about, close_root)
 
 if config.settings['general'].get('accentBorder', False):
     __theme = config.settings['general']['theme']

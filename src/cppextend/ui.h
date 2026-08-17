@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <uxtheme.h>
 #include <dwmapi.h>
 #include <Python.h>
 #include <thread>
@@ -15,9 +16,16 @@ PyObject* exit_callback = nullptr;
 HWND quickup_window;// QuickUp主窗口句柄
 HMENU hmenu;// 菜单句柄
 
-void ShowWindow() {
-    ShowWindow(quickup_window, SW_SHOW);
-    SetForegroundWindow(quickup_window);
+void ShowWindow(HWND hwnd=quickup_window) {
+    // 是否最小化
+    if (IsIconic(hwnd)) {
+        ShowWindow(hwnd, SW_RESTORE);
+    }
+    // 是否显示
+    if (!IsWindowVisible(hwnd)) {
+        ShowWindow(hwnd, SW_SHOW);
+    }
+    SetForegroundWindow(hwnd);
 }
 void AboutWindow() {
     PyGILState_STATE gstate = PyGILState_Ensure();
@@ -37,14 +45,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 ShowWindow();
                 break;
             case WM_RBUTTONDOWN:
+                SetForegroundWindow(hWnd);
+                PostMessage(hWnd, WM_NULL, 0, 0);
                 // 获取鼠标坐标
                 POINT pt;
                 GetCursorPos(&pt);
-                SetForegroundWindow(hWnd);
-                if (IsWindowVisible(quickup_window) || IsIconic(quickup_window)) {
-                    ShowWindow();
-                }
                 int res = TrackPopupMenu(hmenu, TPM_RETURNCMD, pt.x, pt.y, 0, hWnd, NULL);
+                PostMessage(hWnd, WM_NULL, 0, 0);
+                SetForegroundWindow(hWnd);
                 if (res == ID_SHOW) {
                     ShowWindow();
                 } else if (res == ID_ABOUT) {
@@ -82,7 +90,21 @@ HWND create_hidden_window() {
     );
 }
 
-bool init_ui_tray(HWND quhwnd, const wchar_t* tooltip, PyObject* _about_callback, PyObject* _exit_callback) {
+static void enable_dark_mode_for_popup_menu(void) {
+    HMODULE hUxtheme = LoadLibraryW(L"uxtheme.dll");
+    if (!hUxtheme) return;
+    typedef void (WINAPI *fnSetPreferredAppMode)(int);
+    typedef void (WINAPI *fnFlushMenuThemes)(void);
+    auto setMode = (fnSetPreferredAppMode)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(135));
+    auto flush = (fnFlushMenuThemes)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(136));
+    if (setMode && flush) {
+        setMode(2);
+        flush();
+    }
+    FreeLibrary(hUxtheme);
+}
+
+bool init_ui_tray(HWND quhwnd, const wchar_t* tooltip, const wchar_t* workspace_name, bool dark_mode, PyObject* _about_callback, PyObject* _exit_callback) {
     Py_XINCREF(_about_callback);
     Py_XINCREF(_exit_callback);
     about_callback = _about_callback;
@@ -118,10 +140,17 @@ bool init_ui_tray(HWND quhwnd, const wchar_t* tooltip, PyObject* _about_callback
     Shell_NotifyIconW(NIM_ADD, &nid);
 
     hmenu = CreatePopupMenu();
+    if (workspace_name && workspace_name[0] != L'.' && workspace_name[0] != L'\0') {
+        AppendMenuW(hmenu, MF_STRING | MF_DISABLED, 0, workspace_name);
+        AppendMenuW(hmenu, MF_SEPARATOR, 0, NULL);
+    }
     AppendMenuW(hmenu, MF_STRING, ID_SHOW, L"显示");
     AppendMenuW(hmenu, MF_STRING, ID_ABOUT, L"关于");
     AppendMenuW(hmenu, MF_STRING, ID_EXIT, L"退出");
-
+    
+    if (dark_mode) {
+        enable_dark_mode_for_popup_menu();
+    }
     return true;
 }
 

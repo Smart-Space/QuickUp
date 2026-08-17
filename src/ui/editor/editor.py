@@ -30,6 +30,31 @@ from .plugineditor import PluginEditor
 from .zonerecord import get_dialog as get_zone_record_dialog
 
 
+class WeakEditorCallback:
+    """弱引用包装的编辑器回调：Editor 被回收后调用变为空操作，避免子编辑器与 Editor 互相持有。"""
+    __slots__ = ('_ref',)
+
+    def __init__(self, editor):
+        self._ref = ref(editor)
+
+    def __call__(self, *args, **kwargs):
+        editor = self._ref()
+        if editor is not None:
+            editor.contentChanged(*args, **kwargs)
+
+
+def _delete_task_cb(editor, task):
+    editor_ref = ref(editor)
+    task_ref = ref(task)
+
+    def _cb(_, task=task_ref, editor=editor_ref):
+        ed = editor()
+        if ed is not None:
+            ed.delete_task(task)
+
+    return _cb
+
+
 class Editor(tk.Toplevel):
 
     def __init__(self, task:str='', callback=None, flag="EDIT", name_changeable=True):
@@ -219,7 +244,7 @@ class Editor(tk.Toplevel):
                 "放心，这仍然是一个可用的任务，你可以随时通过其它任务或者QuickUp命令行运行它，别忘了\"[x]\"是它名字的一部分。" \
                 "\n\n你可以随时将任务文件名的隐藏标记\"[x]\"去掉。", "msg", theme=base.themename)
             os.rename(datas.workspace + oldname + '.json', datas.workspace + self.task + '.json')
-            del task_editors[oldname]
+            task_editors.pop(oldname, None)
             task_editors[self.task] = self
             labelsmng.rename_task(oldname, self.task)
             if self.data['rate']:
@@ -353,10 +378,10 @@ class Editor(tk.Toplevel):
         uixml.ui = base.theme(ui, accent=base.accent_color)
         task = CmdEditor(uixml, ui, self)
         uixml.environment({
-            'delete_task': lambda _, task=ref(task): self.delete_task(task),
+            'delete_task': _delete_task_cb(self, task),
         })
         uixml.loadxml(self.cmdxml)
-        task.contentChanged = self.contentChanged
+        task.contentChanged = WeakEditorCallback(self)
         task.init(target, args, admin, wait, runmax, runmin, pos, zone_round)
         targetEntry = uixml.tags['targetEntry'][0]
         argsEntry = uixml.tags['argsEntry'][0]
@@ -372,12 +397,12 @@ class Editor(tk.Toplevel):
         uixml.ui = base.theme(ui, accent=base.accent_color)
         task = CmdsEditor(uixml)
         uixml.environment({
-            'delete_task': lambda _, task=ref(task): self.delete_task(task),
+            'delete_task': _delete_task_cb(self, task),
             'if_wait': None,
             'set_shell': None,
         })
         uixml.loadxml(self.cmdsxml)
-        task.contentChanged = self.contentChanged
+        task.contentChanged = WeakEditorCallback(self)
         task.init(cmds, cmd, wait)
         self.tasks.append(task)
 
@@ -387,11 +412,10 @@ class Editor(tk.Toplevel):
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
         uixml.ui = base.theme(ui, accent=base.accent_color)
-        task = TaskEditor(uixml)
-        task.root = self
+        task = TaskEditor(uixml, self)
         uixml.environment({
             'edit_task': None,
-            'delete_task': lambda _, task=ref(task): self.delete_task(task),
+            'delete_task': _delete_task_cb(self, task),
         })
         uixml.loadxml(self.taskxml)
         task.init(stask)
@@ -418,11 +442,10 @@ class Editor(tk.Toplevel):
         ui, _, uixml, _ = self.view.add()
         del uixml.ui
         uixml.ui = base.theme(ui, accent=base.accent_color)
-        task = WspEditor(uixml)
-        task.root = self
+        task = WspEditor(uixml, self)
         uixml.environment({
             'open_quickup': None,
-            'delete_task': lambda _, task=ref(task): self.delete_task(task),
+            'delete_task': _delete_task_cb(self, task),
         })
         uixml.loadxml(self.wspxml)
         task.init(name)
@@ -439,13 +462,13 @@ class Editor(tk.Toplevel):
         uixml.ui = base.theme(ui, accent=base.accent_color)
         task = TipEditor(uixml)
         uixml.environment({
-            'delete_task': lambda e, task=ref(task): self.delete_task(task),
+            'delete_task': _delete_task_cb(self, task),
             'if_wait': None,
             'show_tip': None,
             'top_tip': None,
         })
         uixml.loadxml(self.tipxml)
-        task.contentChanged = self.contentChanged
+        task.contentChanged = WeakEditorCallback(self)
         task.init(tip, wait, show, top)
         self.tasks.append(task)
     
@@ -457,12 +480,12 @@ class Editor(tk.Toplevel):
         uixml.ui = base.theme(ui, accent=base.accent_color)
         task = PluginEditor(uixml, self)
         uixml.environment({
-            'delete_task': lambda _, task=ref(task): self.delete_task(task),
+            'delete_task': _delete_task_cb(self, task),
             'task_pkg_info': None,
             'if_wait': None,
         })
         uixml.loadxml(self.pluginxml)
-        task.contentChanged = self.contentChanged
+        task.contentChanged = WeakEditorCallback(self)
         task.init(name, args, wait)
         self.tasks.append(task)
 
@@ -552,7 +575,7 @@ class Editor(tk.Toplevel):
                 return
         self.destroy()
         if self.task != '':
-            del task_editors[self.task]
+            task_editors.pop(self.task, None)
             if self.flag == "NEW" and self.callback:
                 self.callback(self.task, True)
 
@@ -572,12 +595,14 @@ class Editor(tk.Toplevel):
 
 
 def create_editor(task:str='', callback=None, flag="EDIT", name_changeable=True):
-    if task != '' and task in task_editors:
-        task_editors[task].deiconify()
-        task_editors[task].lift()
-        if not name_changeable:
-            task_editors[task].entry.config(state='disabled')
-        else:
-            task_editors[task].entry.config(state='normal')
-        return
+    if task != '':
+        editor = task_editors.get(task)
+        if editor is not None and editor.winfo_exists():
+            editor.deiconify()
+            editor.lift()
+            if not name_changeable:
+                editor.entry.config(state='disabled')
+            else:
+                editor.entry.config(state='normal')
+            return
     Editor(task, callback, flag, name_changeable)

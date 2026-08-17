@@ -4,6 +4,7 @@
 """
 import os
 import tkinter as tk
+from weakref import ref
 from webbrowser import open as webopen
 from tinui import BasicTinUI, TinUIXml
 from tinui.TinUIDialog import Dialog
@@ -27,7 +28,7 @@ class CmdEditor:
         self.pos = []
         self.zone_round = False
         self.contentChanged = None
-        self.editor = editor
+        self.editor = ref(editor)
         self.zone_set_ui:BasicTinUI = None
         self._destroyed = False
 
@@ -195,8 +196,10 @@ class CmdEditor:
             h = int(h_str)
             self.pos = (x, y, w, h)
         else:
-            d = Dialog(self.editor, "error", base.themename)
-            show_dialog(d, "错误", "位置参数必须为数字", "msg", theme=base.themename)
+            editor = self.editor()
+            if editor is not None:
+                d = Dialog(editor, "error", base.themename)
+                show_dialog(d, "错误", "位置参数必须为数字", "msg", theme=base.themename)
             return
         self.contentChanged(None)
         self.close_zone_set(None)

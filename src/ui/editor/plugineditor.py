@@ -2,6 +2,7 @@
 """
 插件任务编辑器
 """
+from weakref import ref
 from tinui import TinUIXml
 from tinui.TinUIDialog import Dialog
 from ui.utils import show_dialog
@@ -18,7 +19,7 @@ class PluginEditor:
         self.name = ''
         self.args = ''
         self.wait = False
-        self.editor = editor
+        self.editor = ref(editor)
         self.contentChanged = None
     
     def init(self, name:str="", args:str="", wait:bool=False):
@@ -55,11 +56,13 @@ class PluginEditor:
             return
         plugin_manager._discover_plugins()
         owner = plugin_manager.registry.task_sources.get(name)
-        d = Dialog(self.editor, "info", base.themename)
-        if owner:
-            show_dialog(d, "插件信息", f"功能名称：{name}\n来源拓展：{owner}", "msg", theme=base.themename)
-        else:
-            show_dialog(d, "插件信息", f"未找到拓展功能：{name}\n请检查功能名称是否正确", "msg", theme=base.themename)
+        editor = self.editor()
+        if editor is not None:
+            d = Dialog(editor, "info", base.themename)
+            if owner:
+                show_dialog(d, "插件信息", f"功能名称：{name}\n来源拓展：{owner}", "msg", theme=base.themename)
+            else:
+                show_dialog(d, "插件信息", f"未找到拓展功能：{name}\n请检查功能名称是否正确", "msg", theme=base.themename)
 
     def get(self):
         # 获取插件数据

@@ -135,7 +135,8 @@ def add_task_view(task:str, add_back=False):
 def delete_task_view(task:str):
     # task::Task
     # 询问是否删除任务
-    if task in editor.task_editors:
+    ed = editor.task_editors.get(task)
+    if ed is not None and ed.winfo_exists():
         d = Dialog(root, 'info', themename)
         show_dialog(d, '任务正在编辑中', '请先关闭任务编辑器', "msg", themename)
         return

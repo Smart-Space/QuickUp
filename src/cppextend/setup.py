@@ -40,6 +40,7 @@ system_libs = [
     "shell32",
     "comctl32",
     "dwmapi",
+    "uxtheme",
 ]
 
 extra_compile_args = ["/std:c++20", "/utf-8", "/O2", "/DNDEBUG", "/EHsc"]

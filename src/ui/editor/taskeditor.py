@@ -2,6 +2,7 @@
 """
 子任务编辑器 - 支持 task 类型
 """
+from weakref import ref
 from tinui import TinUIXml
 from tinui.TinUIDialog import Dialog
 from ui.utils import show_dialog
@@ -11,11 +12,11 @@ from . import base
 
 class TaskEditor:
 
-    def __init__(self, uixml:TinUIXml):
+    def __init__(self, uixml:TinUIXml, root):
         self.uixml = uixml
         self.type = 'task'
         self.task = ''
-        self.root = None
+        self.root = ref(root)
         self._destroyed = False
 
     def init(self, task:str=""):
@@ -38,8 +39,10 @@ class TaskEditor:
     def edit_task(self, e):
         task_name = self.taskEntry.get()
         if task_name == '' or task_name not in datas.all_tasks_name:
-            d = Dialog(self.root, "error", base.themename)
-            show_dialog(d, "无法编辑", f"任务 {task_name} 不存在", "msg", theme=base.themename)
+            root = self.root()
+            if root is not None:
+                d = Dialog(root, "error", base.themename)
+                show_dialog(d, "无法编辑", f"任务 {task_name} 不存在", "msg", theme=base.themename)
             return
         from .editor import create_editor
         create_editor(task_name, None, "EDIT", False)

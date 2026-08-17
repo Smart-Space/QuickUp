@@ -3,6 +3,7 @@
 工作区编辑器 - 支持 wsp 类型
 """
 import os
+from weakref import ref
 from tinui import TinUIXml
 from tinui.TinUIDialog import Dialog
 from ui.utils import show_dialog
@@ -13,11 +14,11 @@ from . import base
 
 class WspEditor:
 
-    def __init__(self, uixml:TinUIXml):
+    def __init__(self, uixml:TinUIXml, root):
         self.uixml = uixml
         self.type = 'wsp'
         self.name = ''
-        self.root = None
+        self.root = ref(root)
         self._destroyed = False
 
     def init(self, name:str=""):
@@ -40,8 +41,10 @@ class WspEditor:
     def open_quickup(self, e):
         workspace_name = self.wspEntry.get()
         if workspace_name == '' or os.path.exists(datas.workspace + workspace_name) == False:
-            d = Dialog(self.root, "error", base.themename)
-            show_dialog(d, "无法打开", f"工作区 {workspace_name} 不存在", "msg", theme=base.themename)
+            root = self.root()
+            if root is not None:
+                d = Dialog(root, "error", base.themename)
+                show_dialog(d, "无法打开", f"工作区 {workspace_name} 不存在", "msg", theme=base.themename)
             return
         if datas.workname != '.':
             workspace_name = datas.workname + '/' + workspace_name

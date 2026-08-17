@@ -73,10 +73,12 @@ def create_link(app:str, cmd:str, lnkpath:str, icopath:str) -> bool:
     return: True if successful, False otherwise.
     """
     ...
-def init_tray(window:int, tooltip:str, about_callback:function, exit_callback:function) -> int:
+def init_tray(window:int, tooltip:str, workspace:str, dark_mode:bool, about_callback:function, exit_callback:function) -> int:
     """
     window: the handle of the main window
     tooltip: the tooltip to be displayed on the tray icon
+    workspace: the current workspace name shown as the first non-clickable tray item
+    dark_mode: whether the app is using dark mode on Windows 11
     about_callback: the function to be called when the "About" menu item is clicked
     exit_callback: the function to be called when the "Exit" menu item is clicked
     return: 0 if successful, -1 if failed.

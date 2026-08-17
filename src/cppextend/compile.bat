@@ -9,6 +9,11 @@ python setup.py build_ext --inplace
 set EXITCODE=%ERRORLEVEL%
 popd
 
+@REM 删除 cppextend\QUmodule.pyd 文件
+if exist QUmodule.pyd (
+    del QUmodule.pyd
+)
+
 @REM rename cppextend\QUmodule.*.pyd to QUmodule.pyd
 if exist QUmodule.*.pyd (
     ren QUmodule.*.pyd QUmodule.pyd

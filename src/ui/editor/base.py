@@ -2,6 +2,7 @@
 """
 Shared state and initialization for editor modules
 """
+from weakref import WeakValueDictionary
 from tinui.theme.tinuidark import TinUIDark
 from tinui.theme.tinuilight import TinUILight
 
@@ -13,7 +14,7 @@ theme = None
 themename = ''
 screen_rects = {}
 screen_info = ''
-task_editors = dict()
+task_editors = WeakValueDictionary()
 
 
 def init_editor():
