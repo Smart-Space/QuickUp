@@ -6,7 +6,7 @@ from tinui import TinUIXml
 from . import base
 
 
-class TipEditor:
+class TipEditor(base.UsedMixin):
 
     def __init__(self, uixml:TinUIXml):
         self.uixml = uixml
@@ -18,8 +18,9 @@ class TipEditor:
         self.contentChanged = None
         self._destroyed = False
 
-    def init(self, tip:str="", wait:bool=False, show:bool=True, top:bool=False):
+    def init(self, used:bool=True, tip:str="", wait:bool=False, show:bool=True, top:bool=False):
         self.modified_bind = None
+        self.init_used(used)
         self.uixml.funcs['if_wait'] = self.change_wait_state
         self.uixml.funcs['show_tip'] = self.change_show_state
         self.uixml.funcs['top_tip'] = self.change_top_state
@@ -79,6 +80,7 @@ class TipEditor:
         self.tip = self.textbox.get('1.0', 'end').strip()
         return {
             "type": self.type,
+            "used": self.used,
             "tip": self.tip,
             "wait": self.wait,
             "show": self.show,

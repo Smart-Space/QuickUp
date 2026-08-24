@@ -14,7 +14,7 @@ import datas
 from . import base
 
 
-class CmdEditor:
+class CmdEditor(base.UsedMixin):
 
     def __init__(self, uixml:TinUIXml, ui:BasicTinUI, editor):
         self.uixml = uixml
@@ -32,7 +32,7 @@ class CmdEditor:
         self.zone_set_ui:BasicTinUI = None
         self._destroyed = False
 
-    def init(self, target:str="", args:str="", admin:bool=False, wait:bool=False, runMAX:bool=False, runMIN:bool=False, pos:list=[], zone_round:bool=False):
+    def init(self, used:bool=True, target:str="", args:str="", admin:bool=False, wait:bool=False, runMAX:bool=False, runMIN:bool=False, pos:list=[], zone_round:bool=False):
         self.targetEntry = self.uixml.tags['targetEntry'][0]
         self.targetEntry.bind("<Enter>", lambda _: self.ui.event_generate("<Enter>"), True)
         self.targetEntry.bind("<FocusIn>", lambda _: self.ui.event_generate("<Button-1>"), True)
@@ -41,6 +41,7 @@ class CmdEditor:
         self.argsEntry.bind("<FocusIn>", lambda _: self.ui.event_generate("<Button-1>"), True)
         self.target_trace = None
         self.args_trace = None
+        self.init_used(used)
         self.flyoutui:BasicTinUI = self.uixml.tags['flyout'][0]
         flyoutuixml:TinUIXml = self.uixml.tags['flyout'][1]
         del flyoutuixml.ui
@@ -235,6 +236,7 @@ class CmdEditor:
         self.args = self.argsEntry.get()
         return {
             "type": self.type,
+            "used": self.used,
             "target": self.target,
             "args": self.args,
             "admin": self.admin,

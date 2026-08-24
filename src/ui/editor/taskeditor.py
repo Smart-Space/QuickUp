@@ -10,7 +10,7 @@ import datas
 from . import base
 
 
-class TaskEditor:
+class TaskEditor(base.UsedMixin):
 
     def __init__(self, uixml:TinUIXml, root):
         self.uixml = uixml
@@ -19,7 +19,8 @@ class TaskEditor:
         self.root = ref(root)
         self._destroyed = False
 
-    def init(self, task:str=""):
+    def init(self, used:bool=True, task:str=""):
+        self.init_used(used)
         self.uixml.funcs['edit_task'] = self.edit_task
         self.taskEntry = self.uixml.tags['taskEntry'][0]
         self.taskEntry.bind("<Enter>", lambda _: self.uixml.realui.event_generate("<Enter>"), True)
@@ -51,5 +52,6 @@ class TaskEditor:
         self.task = self.taskEntry.get()
         return {
             "type": self.type,
+            "used": self.used,
             "task": self.task,
         }

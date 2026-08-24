@@ -10,7 +10,7 @@ from plugin.manager import plugin_manager
 from . import base
 
 
-class PluginEditor:
+class PluginEditor(base.UsedMixin):
     # 插件编辑器
     def __init__(self, uixml:TinUIXml, editor):
         self.uixml = uixml
@@ -22,8 +22,9 @@ class PluginEditor:
         self.editor = ref(editor)
         self.contentChanged = None
     
-    def init(self, name:str="", args:str="", wait:bool=False):
+    def init(self, used:bool=True, name:str="", args:str="", wait:bool=False):
         # 初始化ui接管
+        self.init_used(used)
         self.uixml.funcs['if_wait'] = self.if_wait
         self.uixml.funcs['task_pkg_info'] = self.task_pkg_info
         self.pluginEntry = self.uixml.tags['typeEntry'][0]
@@ -70,6 +71,7 @@ class PluginEditor:
         self.args = self.argsEntry.get()
         return {
             "type": self.type,
+            "used": self.used,
             "name": self.name,
             "args": self.args,
             "wait": self.wait,

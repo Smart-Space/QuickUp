@@ -3,7 +3,7 @@
 <line y="25" anchor="w" lineanchor="w">
     <paragraph text="目标"></paragraph>
     <entry width="357">targetEntry</entry>
-    <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']"></button2>
+    <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']">delbtn</button2>
 </line>
 <line y="75" anchor="w" lineanchor="w">
     <paragraph text="参数"></paragraph>

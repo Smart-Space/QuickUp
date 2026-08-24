@@ -70,6 +70,9 @@ class RunTask(Task):
             task = self.tasks.pop(0)
             self.__call_back("running", self.callback_count+1)
             self.callback_count += 1
+            if not task.get('used', True):
+                self.__call_back("success", self.callback_count)
+                continue
             if task['type'] == 'cmd':
                 res = run_cmd(self.name, task['target'], task['args'], task['admin'], self.cwd, task.get('max', False), task.get('min', False), task.get('pos', []), task.get('zone_round', False))
                 if  res:

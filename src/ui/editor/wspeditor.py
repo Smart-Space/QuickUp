@@ -12,7 +12,7 @@ import datas
 from . import base
 
 
-class WspEditor:
+class WspEditor(base.UsedMixin):
 
     def __init__(self, uixml:TinUIXml, root):
         self.uixml = uixml
@@ -21,7 +21,8 @@ class WspEditor:
         self.root = ref(root)
         self._destroyed = False
 
-    def init(self, name:str=""):
+    def init(self, used:bool=True, name:str=""):
+        self.init_used(used)
         self.uixml.funcs['open_quickup'] = self.open_quickup
         self.wspEntry = self.uixml.tags['wspEntry'][0]
         self.wspEntry.bind("<Enter>", lambda _: self.uixml.realui.event_generate("<Enter>"), True)
@@ -54,5 +55,6 @@ class WspEditor:
         self.name = self.wspEntry.get()
         return {
             "type": self.type,
+            "used": self.used,
             "name": self.name,
         }

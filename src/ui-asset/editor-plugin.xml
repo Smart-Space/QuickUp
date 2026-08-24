@@ -4,7 +4,7 @@
     <paragraph text="功能"></paragraph>
     <entry width="308">typeEntry</entry>
     <togglebutton text="并行" command="self.funcs['if_wait']">wbutton</togglebutton>
-    <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']"></button2>
+    <button2 icon="&#xE74D;" text="" font="{Segoe Fluent Icons} 16" command="self.funcs['delete_task']">delbtn</button2>
 </line>
 <line y="75" anchor="w" lineanchor="w">
     <paragraph text="参数"></paragraph>

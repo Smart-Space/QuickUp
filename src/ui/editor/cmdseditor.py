@@ -6,7 +6,7 @@ from tinui import TinUIXml
 from . import base
 
 
-class CmdsEditor:
+class CmdsEditor(base.UsedMixin):
 
     def __init__(self, uixml:TinUIXml):
         self.uixml = uixml
@@ -17,8 +17,9 @@ class CmdsEditor:
         self.contentChanged = None
         self._destroyed = False
 
-    def init(self, cmds:list=[], cmd:str='cmd', wait:bool=False):
+    def init(self, used:bool=True, cmds:list=[], cmd:str='cmd', wait:bool=False):
         self.modified_bind = None
+        self.init_used(used)
         self.uixml.funcs['if_wait'] = self.change_wait_state
         self.uixml.funcs['set_shell'] = self.set_shell
         self.textbox = self.uixml.tags['textbox'][0]
@@ -80,6 +81,7 @@ class CmdsEditor:
             self.cmds.append(cmd.strip())
         return {
             "type": self.type,
+            "used": self.used,
             "cmds": self.cmds,
             "cmd": self.cmd,
             "wait": self.wait,

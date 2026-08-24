@@ -17,7 +17,7 @@ from cppextend.QUmodule import quick_fuzz, worker_size
 import config
 
 # 版本
-version = "5.3"
+version = "5.4"
 
 scale_factor = 1.0# DPI缩放系数
 @functools.cache

@@ -48,6 +48,8 @@ def _delete_task_cb(editor, task):
     task_ref = ref(task)
 
     def _cb(_, task=task_ref, editor=editor_ref):
+        if hasattr(task(), 'used') and not task().used: # 跳过，不删除
+            return
         ed = editor()
         if ed is not None:
             ed.delete_task(task)
@@ -192,19 +194,19 @@ class Editor(tk.Toplevel):
                 self.ratingbar.on()
         for one in self.data['tasks']:
             if one['type'] == 'cmd':
-                self.add_task_cmd(None, one['target'], one['args'], one['admin'], False, one.get('max', False), one.get('min', False), one.get('pos', ()), one.get('zone_round', False))
+                self.add_task_cmd(None, one.get('used', True), one['target'], one['args'], one['admin'], False, one.get('max', False), one.get('min', False), one.get('pos', ()), one.get('zone_round', False))
             elif one['type'] == 'wcmd':
-                self.add_task_cmd(None, one['target'], one['args'], one['admin'], True, one.get('max', False), one.get('min', False), one.get('pos', ()), one.get('zone_round', False))
+                self.add_task_cmd(None, one.get('used', True), one['target'], one['args'], one['admin'], True, one.get('max', False), one.get('min', False), one.get('pos', ()), one.get('zone_round', False))
             elif one['type'] == 'cmds':
-                self.add_task_cmds(None, one['cmds'], one['cmd'], one['wait'])
+                self.add_task_cmds(None, one.get('used', True), one['cmds'], one['cmd'], one['wait'])
             elif one['type'] == 'task':
-                self.add_task_task(None, one['task'])
+                self.add_task_task(None, one.get('used', True), one['task'])
             elif one['type'] == 'wsp':
-                self.add_workspace(None, one['name'])
+                self.add_workspace(None, one.get('used', True), one['name'])
             elif one['type'] == 'tip':
-                self.add_task_tip(None, one['tip'], one['wait'], one['show'], one['top'])
+                self.add_task_tip(None, one.get('used', True), one['tip'], one['wait'], one['show'], one['top'])
             elif one['type'] == 'plugin':
-                self.add_plugin(None, one['name'], one['args'], one['wait'])
+                self.add_plugin(None, one.get('used', True), one['name'], one['args'], one['wait'])
         self.saved = True
         self.renew_title()
 
@@ -368,9 +370,9 @@ class Editor(tk.Toplevel):
                         pos[i] = int(pos[i])
                 else:
                     pos = []
-                self.add_task_cmd(None, task_name, app["commandArgs"], False, False, app["isMaximized"], app["isMinimized"], pos, app["isRoundCorner"] if record_round else False)
+                self.add_task_cmd(None, True, task_name, app["commandArgs"], False, False, app["isMaximized"], app["isMinimized"], pos, app["isRoundCorner"] if record_round else False)
 
-    def add_task_cmd(self, _, target:str="", args:str="", admin:bool=False, wait:bool=False, runmax:bool=False, runmin:bool=False, pos:list=[], zone_round:bool=False):
+    def add_task_cmd(self, e=None, used:bool=True, target:str="", args:str="", admin:bool=False, wait:bool=False, runmax:bool=False, runmin:bool=False, pos:list=[], zone_round:bool=False):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
@@ -382,14 +384,14 @@ class Editor(tk.Toplevel):
         })
         uixml.loadxml(self.cmdxml)
         task.contentChanged = WeakEditorCallback(self)
-        task.init(target, args, admin, wait, runmax, runmin, pos, zone_round)
+        task.init(used, target, args, admin, wait, runmax, runmin, pos, zone_round)
         targetEntry = uixml.tags['targetEntry'][0]
         argsEntry = uixml.tags['argsEntry'][0]
         task.target_trace = targetEntry.var.trace_add('write', self.contentChanged)
         task.args_trace = argsEntry.var.trace_add('write', self.contentChanged)
         self.tasks.append(task)
 
-    def add_task_cmds(self, _, cmds:list=[], cmd:str='cmd', wait:bool=False):
+    def add_task_cmds(self, e=None, used:bool=True, cmds:list=[], cmd:str='cmd', wait:bool=False):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
@@ -403,10 +405,10 @@ class Editor(tk.Toplevel):
         })
         uixml.loadxml(self.cmdsxml)
         task.contentChanged = WeakEditorCallback(self)
-        task.init(cmds, cmd, wait)
+        task.init(used, cmds, cmd, wait)
         self.tasks.append(task)
 
-    def add_task_task(self, _, stask:str=""):
+    def add_task_task(self, e=None, used:bool=True, stask:str=""):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
@@ -418,13 +420,14 @@ class Editor(tk.Toplevel):
             'delete_task': _delete_task_cb(self, task),
         })
         uixml.loadxml(self.taskxml)
-        task.init(stask)
+        task.contentChanged = WeakEditorCallback(self)
+        task.init(used, stask)
         taskEntry = uixml.tags['taskEntry'][0]
         task.task_trace = taskEntry.var.trace_add('write', self.contentChanged)
         taskEntry.bind('<Destroy>', task.on_destroy)
         self.tasks.append(task)
 
-    def add_workspace(self, _, name:str=""):
+    def add_workspace(self, e=None, used:bool=True, name:str=""):
         if name == '':
             d = Dialog(self, "input", base.themename)
             name = show_dialog(d, "添加工作区组", "请输入工作区组名称"+"\t"*5, "input", theme=base.themename)
@@ -448,13 +451,14 @@ class Editor(tk.Toplevel):
             'delete_task': _delete_task_cb(self, task),
         })
         uixml.loadxml(self.wspxml)
-        task.init(name)
+        task.contentChanged = WeakEditorCallback(self)
+        task.init(used, name)
         wspEntry = uixml.tags['wspEntry'][0]
         task.wsp_trace = wspEntry.var.trace_add('write', self.contentChanged)
         wspEntry.bind('<Destroy>', task.on_destroy)
         self.tasks.append(task)
 
-    def add_task_tip(self, e, tip:str="", wait:bool=False, show:bool=True, top:bool=False):
+    def add_task_tip(self, e=None, used:bool=True, tip:str="", wait:bool=False, show:bool=True, top:bool=False):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
@@ -469,10 +473,10 @@ class Editor(tk.Toplevel):
         })
         uixml.loadxml(self.tipxml)
         task.contentChanged = WeakEditorCallback(self)
-        task.init(tip, wait, show, top)
+        task.init(used, tip, wait, show, top)
         self.tasks.append(task)
     
-    def add_plugin(self, e, name:str="", args:str="", wait:bool=False):
+    def add_plugin(self, e=None, used:bool=True, name:str="", args:str="", wait:bool=False):
         self.saved = False
         self.renew_title()
         ui, _, uixml, _ = self.view.add()
@@ -486,7 +490,7 @@ class Editor(tk.Toplevel):
         })
         uixml.loadxml(self.pluginxml)
         task.contentChanged = WeakEditorCallback(self)
-        task.init(name, args, wait)
+        task.init(used, name, args, wait)
         self.tasks.append(task)
 
     def delete_task(self, _task:ReferenceType[Union[CmdEditor, TaskEditor]]):
@@ -540,19 +544,19 @@ class Editor(tk.Toplevel):
             info = json.loads(clip_info)
             match info['type']:
                 case 'cmd':
-                    self.add_task_cmd(None, info.get('target', ''), info.get('args', ''), info.get('admin', False), False, info.get('max', False), info.get('min', False), info.get('pos', []), info.get('zone_round', False))
+                    self.add_task_cmd(None, info.get('used', True), info.get('target', ''), info.get('args', ''), info.get('admin', False), False, info.get('max', False), info.get('min', False), info.get('pos', []), info.get('zone_round', False))
                 case 'wcmd':
-                    self.add_task_cmd(None, info.get('target', ''), info.get('args', ''), info.get('admin', False), True, info.get('max', False), info.get('min', False), info.get('pos', []), info.get('zone_round', False))
+                    self.add_task_cmd(None, info.get('used', True), info.get('target', ''), info.get('args', ''), info.get('admin', False), True, info.get('max', False), info.get('min', False), info.get('pos', []), info.get('zone_round', False))
                 case 'cmds':
-                    self.add_task_cmds(None, info.get('cmds', []), info.get('cmd', 'cmd'), info.get('wait', False))
+                    self.add_task_cmds(None, info.get('used', True), info.get('cmds', []), info.get('cmd', 'cmd'), info.get('wait', False))
                 case 'task':
-                    self.add_task_task(None, info.get('task', ''))
+                    self.add_task_task(None, info.get('used', True), info.get('task', ''))
                 case 'wsp':
-                    self.add_workspace(None, info.get('name', ''))
+                    self.add_workspace(None, info.get('used', True), info.get('name', ''))
                 case 'tip':
-                    self.add_task_tip(None, info.get('tip', ''), info.get('wait', False), info.get('show', True), info.get('top', False))
+                    self.add_task_tip(None, info.get('used', True), info.get('tip', ''), info.get('wait', False), info.get('show', True), info.get('top', False))
                 case 'plugin':
-                    self.add_plugin(None, info.get('name', ''), info.get('args', ''), info.get('wait', False))
+                    self.add_plugin(None, info.get('used', True), info.get('name', ''), info.get('args', ''), info.get('wait', False))
                 case _:
                     pass
         except:
